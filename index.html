@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>StemmaLM</title>
+<meta name="description" content="Small language models raised from scratch on what adults say to children, one snapshot per month of age, numbered into a lineage.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg: #ffffff; --ink: #1a1a1a; --muted: #666666; --rule: #999999; --head: #eeeeee; --link: #1a3d8f; --mark: #fffbe6;
+  --font-body: "EB Garamond", Georgia, serif;
+  --font-id: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #161616; --ink: #e4e4e4; --muted: #a0a0a0; --rule: #555555; --head: #232323; --link: #8fb0f0; --mark: #2a2716; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 17px; line-height: 1.6; }
+.wrap { max-width: 820px; margin: 0 auto; padding: 28px 16px 48px; }
+h1 { font-size: 30px; font-weight: 500; margin: 0; }
+.sub { font-style: italic; color: var(--muted); margin-top: 2px; }
+h2 { font-size: 20px; font-weight: 500; margin: 28px 0 8px; }
+hr { border: 0; border-top: 1px solid var(--rule); margin: 14px 0; }
+.id { font-family: var(--font-id); font-size: 0.82em; font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 420px; font-size: 15px; }
+th, td { padding: 4px 8px; text-align: left; white-space: nowrap; }
+thead th { font-weight: 500; border-top: 1.5px solid var(--ink); border-bottom: 1px solid var(--ink); }
+tbody tr:last-child td { border-bottom: 1.5px solid var(--ink); }
+tr.group td { font-style: italic; color: var(--muted); }
+tr.ind { cursor: pointer; }
+tr.ind:hover td, tr.ind.sel td { background: var(--mark); }
+tr.ind:focus-visible { outline: 2px solid var(--link); outline-offset: -2px; }
+.age { margin: 8px 0 10px; display: grid; gap: 2px; max-width: 520px; }
+.age input { width: 100%; accent-color: var(--link); }
+.ticks { display: flex; justify-content: space-between; font-family: var(--font-id); font-size: 11px; color: var(--muted); }
+.log { border: 1px solid var(--rule); min-height: 150px; max-height: 340px; overflow-y: auto; padding: 10px 12px; display: grid; gap: 4px; align-content: start; }
+.line { display: grid; grid-template-columns: 7.5em minmax(0, 1fr); gap: 10px; }
+.line .who { font-family: var(--font-id); font-size: 12px; color: var(--muted); padding-top: 3px; }
+.line .text { overflow-wrap: anywhere; }
+.empty { color: var(--muted); font-style: italic; padding-block: 36px; text-align: center; margin: 0; }
+form { display: flex; gap: 8px; margin-top: 10px; }
+form input { flex: 1; min-width: 0; font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--rule); padding: 3px 6px; }
+form button { font: inherit; color: var(--ink); background: var(--head); border: 1px solid var(--rule); padding: 3px 14px; cursor: pointer; }
+form :disabled { opacity: 0.5; cursor: not-allowed; }
+footer { font-size: 13.5px; color: var(--muted); margin-top: 32px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>StemmaLM</h1>
+  <div class="sub">Model organisms of language</div>
+  <hr>
+
+  <h2>Registry</h2>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>No.</th><th>ID</th><th>Parent</th><th>Status</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+
+  <h2>Talk</h2>
+  <div class="id" id="who" style="font-size:16px">#1@30m</div>
+  <div class="age">
+    <label for="age" class="muted" style="font-size:14px">Age in months</label>
+    <input type="range" id="age" min="0" max="72" step="1" value="30">
+    <div class="ticks" aria-hidden="true"><span>0</span><span>12</span><span>24</span><span>36</span><span>48</span><span>60</span><span>72</span></div>
+  </div>
+  <div class="log" id="log" aria-live="polite"></div>
+  <div class="muted" id="status" style="font-size:14px;min-height:1.4em" aria-live="polite"></div>
+  <form id="compose" autocomplete="off">
+    <input id="say" type="text" aria-label="What you say">
+    <button type="submit" id="send">Send</button>
+  </form>
+
+  <hr>
+  <footer>Data: CHILDES (CC BY-NC-SA 4.0). The model runs in your browser; names in its replies are replaced by “(name)”.</footer>
+</div>
+
+<script type="module">
+import { decode, makeModel, reply, scrub } from "./stemma.js";
+
+// weights: the public model repo on Hugging Face; a local folder when previewing on this machine
+var LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+var BASE = LOCAL ? "weights/" : "https://huggingface.co/xchuanli/stemmalm-weights/resolve/main/";
+var manifests = {}, models = new Map();
+
+function pad(n) { return String(n).padStart(3, "0"); }
+async function manifest(serial) {
+  if (!manifests[serial]) manifests[serial] = fetch(BASE + "n" + pad(serial) + "/web/manifest.json").then(function (r) { if (!r.ok) throw 0; return r.json(); });
+  return manifests[serial];
+}
+async function modelAt(serial, age) {
+  var man = await manifest(serial);
+  var month = Math.max.apply(null, man.snapshots.filter(function (s) { return s <= age; }));
+  var key = serial + "@" + month;
+  if (!models.has(key)) {
+    var buf = await fetch(BASE + "n" + pad(serial) + "/web/m" + String(month).padStart(2, "0") + ".bin").then(function (r) { if (!r.ok) throw 0; return r.arrayBuffer(); });
+    models.set(key, makeModel(man, decode(buf)));
+    if (models.size > 3) models.delete(models.keys().next().value);
+  }
+  return models.get(key);
+}
+
+var REGISTRY = { individuals: [] };
+var STATUS = { untrained: "Not trained", training: "Training", trained: "Grown" };
+var state = { selected: 1, age: 30, logs: {}, api: false };
+
+function fullId(i) { return [i.strain, i.env, "G" + i.gen, i.lesion || "—", "s" + i.seed].join("·"); }
+function find(n) { return REGISTRY.individuals.find(function (i) { return i.serial === n; }); }
+function td(text, cls) { var c = document.createElement("td"); if (cls) c.className = cls; c.textContent = text; return c; }
+
+function renderTable() {
+  var body = document.getElementById("rows");
+  body.innerHTML = "";
+  var gens = {};
+  REGISTRY.individuals.forEach(function (i) { (gens[i.gen] = gens[i.gen] || []).push(i); });
+  Object.keys(gens).map(Number).sort(function (a, b) { return a - b; }).forEach(function (g) {
+    var gr = document.createElement("tr"); gr.className = "group";
+    var c = td("G" + g); c.colSpan = 4; gr.appendChild(c); body.appendChild(gr);
+    gens[g].forEach(function (i) {
+      var tr = document.createElement("tr");
+      tr.className = "ind" + (i.serial === state.selected ? " sel" : "");
+      tr.tabIndex = 0;
+      tr.setAttribute("aria-label", "#" + i.serial + " " + fullId(i) + " " + STATUS[i.status]);
+      tr.appendChild(td("#" + i.serial, "id"));
+      tr.appendChild(td(fullId(i), "id"));
+      tr.appendChild(td(i.parent ? "#" + i.parent : "—", "id"));
+      tr.appendChild(td(STATUS[i.status]));
+      tr.addEventListener("click", function () { select(i.serial); });
+      tr.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(i.serial); } });
+      body.appendChild(tr);
+    });
+  });
+}
+
+function renderTalk() {
+  var i = find(state.selected);
+  if (!i) return;
+  var trained = i.status === "trained";
+  document.getElementById("who").textContent = "#" + i.serial + "@" + state.age + "m";
+  document.getElementById("age").disabled = !trained;
+  var can = trained && state.api;
+  document.getElementById("say").disabled = !can;
+  document.getElementById("send").disabled = !can;
+  var log = document.getElementById("log");
+  log.innerHTML = "";
+  var msgs = state.logs[i.serial + "@" + state.age] || [];
+  if (!msgs.length) {
+    var p = document.createElement("p"); p.className = "empty";
+    p.textContent = !trained ? "Not grown yet" : !state.api ? "Not connected" : "";
+    log.appendChild(p); return;
+  }
+  msgs.forEach(function (m) {
+    var d = document.createElement("div"); d.className = "line";
+    var w = document.createElement("span"); w.className = "who";
+    w.textContent = m.role === "adult" ? "you" : "#" + i.serial + "@" + state.age + "m";
+    var t = document.createElement("span"); t.className = "text"; t.textContent = m.text;
+    d.appendChild(w); d.appendChild(t); log.appendChild(d);
+  });
+  log.scrollTop = log.scrollHeight;
+}
+
+function select(n) {
+  state.selected = n;
+  try { history.replaceState(null, "", "#i" + n); } catch (e) {}
+  renderTable(); renderTalk();
+}
+
+document.getElementById("age").addEventListener("input", function (e) { state.age = Number(e.target.value); renderTalk(); });
+document.getElementById("compose").addEventListener("submit", function (e) {
+  e.preventDefault();
+  var input = document.getElementById("say"), text = input.value.trim();
+  if (!text) return;
+  var i = find(state.selected), key = i.serial + "@" + state.age;
+  var msgs = state.logs[key] = state.logs[key] || [];
+  msgs.push({ role: "adult", text: text }); input.value = ""; renderTalk();
+  document.getElementById("send").disabled = true;
+  var status = document.getElementById("status");
+  status.textContent = models.size ? "…" : "loading the model (about 21 MB)…";
+  var age = state.age;
+  modelAt(i.serial, age)
+    .then(function (model) {
+      return new Promise(function (res) { setTimeout(function () {
+        // the conversation so far, one turn per line, as the individual has always heard speech
+        var text = msgs.map(function (m) { return m.text.replace(/\s+/g, " ").slice(0, 200); }).join("\n") + "\n";
+        res(scrub(reply(model, text)));
+      }, 20); });
+    })
+    .then(function (t) { msgs.push({ role: "model", text: t }); })
+    .catch(function () { msgs.push({ role: "model", text: "(no answer)" }); })
+    .then(function () { status.textContent = ""; renderTalk(); });
+});
+
+(function boot() {
+  var m = /^#i(\d+)$/.exec(location.hash || "");
+  if (m) state.selected = Number(m[1]);
+  fetch("registry.json").then(function (r) { if (!r.ok) throw 0; return r.json(); })
+    .then(function (reg) { REGISTRY = reg; state.api = true; if (!find(state.selected)) state.selected = 1; renderTable(); renderTalk(); })
+    .catch(function () { renderTable(); renderTalk(); });
+})();
+</script>
+</body>
+</html>

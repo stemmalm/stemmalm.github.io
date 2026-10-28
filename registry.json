@@ -1,0 +1,40 @@
+{
+  "strains": {
+    "EN1": "English; character-level nanoGPT, 6 layers × 6 heads × 384 wide, about 10.8M parameters"
+  },
+  "envs": {
+    "WT1": "adult speech from AO-CHILDES with all child turns removed, fed once in order of the child's age, 0–72 months"
+  },
+  "individuals": [
+    {
+      "serial": 1,
+      "strain": "EN1",
+      "env": "WT1",
+      "gen": 0,
+      "lesion": null,
+      "seed": 1,
+      "parent": null,
+      "status": "trained"
+    },
+    {
+      "serial": 2,
+      "strain": "EN1",
+      "env": "WT1",
+      "gen": 0,
+      "lesion": null,
+      "seed": 2,
+      "parent": null,
+      "status": "training"
+    },
+    {
+      "serial": 3,
+      "strain": "EN1",
+      "env": "WT1",
+      "gen": 0,
+      "lesion": null,
+      "seed": 3,
+      "parent": null,
+      "status": "training"
+    }
+  ]
+}
