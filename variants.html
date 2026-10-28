@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Variants · StemmaLM</title>
+<link rel="stylesheet" href="style.css?v=20261028224143">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+</head>
+<body>
+<div class="wrap wide">
+  <div class="bar"></div>
+  <h1>Variants</h1>
+  <p class="sub">Word pairs that copying lapses brought into a copy, and who says them later.</p>
+
+  <section class="cols var-top">
+    <div>
+      <div class="fig">
+        <p class="fig-cap" id="cap">fig. 2 — choose a variant below</p>
+        <div id="tree"></div>
+      </div>
+    </div>
+    <div>
+      <h2>Do children say their parent's lapses?</h2>
+      <div id="result"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Registry of variants</h2>
+    <div class="var-tools">
+      <label>group <select id="grp">
+        <option value="private_1">only in #1's copy</option>
+        <option value="control">only in #2's or #3's copy</option>
+        <option value="shared">in all three copies</option>
+        <option value="">all</option>
+      </select></label>
+      <label>find <input id="q" type="search" placeholder="are he"></label>
+      <span id="count" class="muted"></span>
+    </div>
+    <div class="tbl-wrap">
+      <table class="reg var" id="tbl">
+        <thead><tr><th>pair</th><th class="num">Ω</th><th class="num">copy #1</th><th class="num">#2</th><th class="num">#3</th>
+          <th class="num">said by G0<br><span class="muted">#1 #2 #3</span></th><th class="num">said by G1<br><span class="muted">#4 #5 #6</span></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="tbl-note" id="note"></p>
+  </section>
+</div>
+
+<script type="module">
+import { header, registry, lineageMap, el } from "./site.js?v=20261028224143";
+header("variants");
+const [reg, stats, V] = await Promise.all([registry(),
+  fetch("stats.json?v=" + Date.now()).then((r) => r.json()), fetch("variants.json?v=" + Date.now()).then((r) => r.json())]);
+const map = lineageMap(reg, stats);
+document.getElementById("tree").append(map);
+
+// the result
+const R = V.result, f = (x) => (Math.round(x * 100) / 100).toFixed(2);
+const res = document.getElementById("result");
+const bar = (label, r, max) => el("div", { class: "dose" }, el("span", { class: "mono", text: label }),
+  el("span", { class: "dose-bar" }, el("span", { style: `width:${Math.min(100, 100 * r / max)}%` })), el("span", { class: "mono num", text: f(r) + "×" }));
+const max = Math.max(...Object.values(R.dose).map((d) => d.ratio));
+res.append(
+  el("p", { text: `A variant here is a word pair that is rare in Ω (at most ${V.settings.omega_max} times) and that lapses brought into one copy at least ${V.settings.copy_min} times. Only #1's copy raised children (#4–#6). Counted in what each individual said from ${V.settings.months[0]} to ${V.settings.months[1]} months, G1 against G0:` }),
+  el("div", { class: "kv-big" },
+    el("div", {}, el("span", { class: "big", text: f(R.pooled.private_1.ratio) + "×" }), el("span", { text: `variants only in #1's copy (${R.pooled.private_1.n})` })),
+    el("div", {}, el("span", { class: "big", text: f(R.pooled.control.ratio) + "×" }), el("span", { text: `variants only in #2's or #3's copy (${R.pooled.control.n})` }))),
+  el("p", { text: `The first is ${f(R.ratio_private_over_control)} times the second (95% interval ${f(R.ci95_ratio[0])}–${f(R.ci95_ratio[1])}, permutation p = ${R.permutation_p_one_sided.toFixed(3)}). By how often #1's copy carried a variant:` }),
+  ...Object.entries(R.dose).map(([k, d]) => bar(k.replace(" (control)", ""), d.ratio, max)),
+  el("p", { class: "muted small", text: "Exploratory. Only one family has children so far." }));
+
+// the table
+const body = document.querySelector("#tbl tbody"), grp = document.getElementById("grp"), q = document.getElementById("q");
+let current = null;
+function pick(v, tr) {
+  for (const x of body.querySelectorAll("tr.on")) x.classList.remove("on");
+  tr.classList.add("on");
+  current = v.pair;
+  map.highlight(v.speech);
+  document.getElementById("cap").textContent = `fig. 2 — who said “${v.pair}” (24–72 months)`;
+}
+function draw() {
+  const rows = V.variants.filter((v) => (!grp.value || v.group === grp.value) && (!q.value || v.pair.includes(q.value.trim())))
+    .sort((a, b) => (b.g1 - b.g0) - (a.g1 - a.g0) || b.g1 - a.g1);
+  body.replaceChildren();
+  for (const v of rows.slice(0, 200)) {
+    const s = v.speech, c = v.copies;
+    const tr = el("tr", { tabindex: "0" });
+    tr.append(el("td", { class: "mono", text: v.pair }), el("td", { class: "num", text: v.omega }),
+      el("td", { class: "num", text: c["1"] }), el("td", { class: "num", text: c["2"] }), el("td", { class: "num", text: c["3"] }),
+      el("td", { class: "num mono", text: `${s["1"]} ${s["2"]} ${s["3"]}` }), el("td", { class: "num mono", text: `${s["4"]} ${s["5"]} ${s["6"]}` }));
+    tr.addEventListener("click", () => pick(v, tr));
+    tr.addEventListener("keydown", (e) => { if (e.key === "Enter") pick(v, tr); });
+    if (v.pair === current) tr.classList.add("on");
+    body.append(tr);
+  }
+  document.getElementById("count").textContent = `${rows.length} variants` + (rows.length > 200 ? ", first 200 shown" : "");
+  document.getElementById("note").textContent = "Ω, copy: times in the source and times lapses brought the pair into each copy. Said by: times in each individual's speech. Sorted by how much more G1 says it than G0. Capitalised names are shown as (name).";
+}
+grp.addEventListener("change", draw);
+q.addEventListener("input", draw);
+draw();
+const first = body.querySelector("tr");
+if (first) first.click();
+</script>
+</body>
+</html>

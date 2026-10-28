@@ -27,7 +27,7 @@ export function header(active) {
   const bar = document.querySelector(".bar");
   const link = (href, name) => `<a href="${href}"${name === active ? ' aria-current="page"' : ""}>${name}</a>`;
   bar.innerHTML = `<a class="home" href="./">${LOGO}<span>stemma.lm</span></a>`
-    + `<nav>${link("./", "overview")}${link("lineage.html", "lineage")}${link("log.html", "log")}${link("about.html", "about")}</nav>`;
+    + `<nav>${link("./", "overview")}${link("lineage.html", "lineage")}${link("variants.html", "variants")}${link("log.html", "log")}${link("about.html", "about")}</nav>`;
 }
 
 // The lineage as a right-angled tree: the real caregivers at the root, each generation one column
@@ -39,6 +39,28 @@ function s(tag, attrs = {}, text) {
   for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
   if (text != null) e.textContent = text;
   return e;
+}
+
+
+// The figure's legend (B22a2 §3b): shape = strain, colour = environment, hollow = lesioned,
+// line = how the parent passed its speech on, a thin ring = lived past the first 72 months.
+export const SHAPES = ["circle", "square", "triangle", "diamond"];
+export const ENV_COLORS = { WT1: "var(--ink)", WT2: "#2f6fd0" };
+export const MODES = {
+  care: { name: "real caregivers' speech", dash: "", width: 1, color: "var(--muted)" },
+  c: { name: "copy", dash: "", width: 1.3 },
+  f: { name: "free speech", dash: "5 3", width: 1.3 },
+  r: { name: "respeak", dash: "1.5 2.5", width: 1.3 },
+  d: { name: "distill", dash: "", width: 3 },
+};
+export const modeOf = (i) => (i.parent ? (/·([a-z])/.exec(i.heard || "") || [, "c"])[1] : "care");
+export const envOf = (i) => (i.extended && i.extended.length ? i.extended[i.extended.length - 1].env : i.env);
+export function mark(shape, x, y, r, color, hollow) {
+  const paint = hollow ? { fill: "var(--bg)", stroke: color, "stroke-width": 1.4 } : { fill: color };
+  if (shape === "square") return s("rect", { x: x - r * 0.9, y: y - r * 0.9, width: r * 1.8, height: r * 1.8, ...paint });
+  if (shape === "triangle") return s("path", { d: `M${x} ${y - r * 1.15}L${x + r * 1.05} ${y + r * 0.75}L${x - r * 1.05} ${y + r * 0.75}Z`, ...paint });
+  if (shape === "diamond") return s("path", { d: `M${x} ${y - r * 1.2}L${x + r * 1.2} ${y}L${x} ${y + r * 1.2}L${x - r * 1.2} ${y}Z`, ...paint });
+  return s("circle", { cx: x, cy: y, r, ...paint });
 }
 
 export function lineageFigure(reg0, { compact = false } = {}) {
@@ -60,15 +82,19 @@ export function lineageFigure(reg0, { compact = false } = {}) {
   const rootY = rootYs.reduce((a, b) => a + b, 0) / Math.max(1, rootYs.length);
   const W = xs(depth - 1) + (compact ? 150 : 250), H = 16 + ROW * Math.max(1, leaf);
   const svg = s("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Lineage of StemmaLM individuals" });
-  const line = (d) => svg.append(s("path", { d, fill: "none", stroke: "currentColor", "stroke-width": 1.2, opacity: 0.75 }));
+  const strains = Object.keys(reg.strains || {});
+  const shapeOf = (i) => SHAPES[Math.max(0, strains.indexOf(i.strain)) % SHAPES.length];
+  const line = (d, m = MODES.c) => svg.append(s("path", { d, fill: "none", stroke: m.color || "currentColor", "stroke-width": m.width, "stroke-dasharray": m.dash, opacity: 0.8 }));
   const font = { "font-family": "IBM Plex Mono, ui-monospace, monospace", "font-size": compact ? 11.5 : 12.5, fill: "currentColor" };
 
   function edges(parentX, parentY, children) {
     if (!children.length) return;
     const ex = xs(children[0].gen) - LEAD;
     const ys = children.map((c) => pos.get(c.serial));
-    line(`M${parentX} ${parentY}H${ex}M${ex} ${Math.min(...ys)}V${Math.max(...ys)}`);
-    for (const c of children) line(`M${ex} ${pos.get(c.serial)}H${xs(c.gen)}`);
+    const ms = children.map((c) => MODES[modeOf(c)] || MODES.c);
+    const trunk = ms.every((m) => m === ms[0]) ? ms[0] : MODES.c;
+    line(`M${parentX} ${parentY}H${ex}M${ex} ${Math.min(...ys)}V${Math.max(...ys)}`, trunk);
+    children.forEach((c, k) => line(`M${ex} ${pos.get(c.serial)}H${xs(c.gen) - 4}`, ms[k]));
   }
   // root: the real caregivers
   svg.append(s("circle", { cx: X0, cy: rootY, r: 3.5, fill: "currentColor" }));
@@ -78,7 +104,9 @@ export function lineageFigure(reg0, { compact = false } = {}) {
     const x = xs(i.gen), y = pos.get(i.serial), ch = kids(i.serial);
     edges(x, y, ch);
     const a = s("a", { href: `individual.html?n=${i.serial}`, "data-serial": i.serial, "aria-label": `#${i.serial} ${fullId(i)}` });
-    a.append(s("circle", { cx: x, cy: y, r: 3.5, fill: "currentColor" }));
+    if (envOf(i) !== i.env) a.append(s("circle", { cx: x, cy: y, r: 7, fill: "none", stroke: "currentColor", "stroke-width": 0.8, opacity: 0.7 }));
+    a.append(mark(shapeOf(i), x, y, 4, ENV_COLORS[envOf(i)] || "var(--ink)", !!i.lesion));
+    a.append(s("circle", { cx: x, cy: y, r: 9, fill: "transparent" }));  // a bigger target for the pointer
     const label = `#${i.serial}` + (compact ? "" : `  ${fullId(i)}`);
     a.append(s("text", { ...font, x: x + 8, y: ch.length ? y - 7 : y + 4 }, label));
     svg.append(a);
@@ -191,7 +219,7 @@ export function lineageMap(reg, stats = { individuals: {} }, opts = {}) {
     if (curve.length) card.append(el("div", { class: "card-spark" }, sparkline(curve, { w: 200, h: 28 }), el("span", { text: "0 → 72 months" })));
     card.append(el("a", { class: "card-go", href: a.getAttribute("href"), text: "meet #" + i.serial + " →" }));
     card.hidden = false;
-    const r = box.getBoundingClientRect(), n = a.querySelector("circle").getBoundingClientRect();
+    const r = box.getBoundingClientRect(), n = a.querySelector("circle[fill=transparent]").getBoundingClientRect();
     let x = n.right - r.left + 12, y = n.top - r.top - 10;
     const cw = card.offsetWidth, ch = card.offsetHeight;
     if (x + cw > r.width - 6) x = n.left - r.left - cw - 12;
@@ -211,5 +239,41 @@ export function lineageMap(reg, stats = { individuals: {} }, opts = {}) {
   }
   card.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") hide(); });
   svg.addEventListener("pointerdown", (e) => { if (!e.target.closest("a")) hide(); });
+  const wrap = el("div", { class: "map-wrap" }, box, legend(reg));
+  // rings around the individuals that said something, thicker for more (counts by serial)
+  wrap.highlight = (counts, label = "") => {
+    for (const r of svg.querySelectorAll(".hl")) r.remove();
+    const max = Math.max(1, ...Object.values(counts || {}));
+    for (const a of svg.querySelectorAll("a[data-serial]")) {
+      const n = (counts || {})[a.getAttribute("data-serial")];
+      if (!n) continue;
+      const c = a.querySelector("circle[fill=transparent]");
+      const [x, y] = [c.getAttribute("cx"), c.getAttribute("cy")];
+      a.prepend(s("circle", { class: "hl", cx: x, cy: y, r: 6 + 6 * Math.sqrt(n / max), fill: "var(--mark)", stroke: "#c98a00", "stroke-width": 1.2 }));
+      a.append(s("text", { class: "hl", "text-anchor": "end", x: +x - 15, y: +y + 4, "font-family": "IBM Plex Mono, monospace", "font-size": 10.5, fill: "#9a6a00" }, String(n)));
+    }
+  };
+  return wrap;
+}
+
+// the legend shows only what the lineage has so far
+function legend(reg) {
+  const grown = reg.individuals.filter((i) => i.status === "trained");
+  const strains = Object.keys(reg.strains || {});
+  const box = el("div", { class: "map-legend" });
+  const item = (svgKids, text) => {
+    const g = s("svg", { viewBox: "0 0 26 12", width: 26, height: 12, "aria-hidden": "true" });
+    for (const k of svgKids) g.append(k);
+    box.append(el("div", {}, g, el("span", { text })));
+  };
+  for (const st of [...new Set(grown.map((i) => i.strain))])
+    item([mark(SHAPES[Math.max(0, strains.indexOf(st)) % SHAPES.length], 13, 6, 4, "var(--ink)", false)], st);
+  for (const env of [...new Set(grown.map(envOf))].filter((e) => e !== "WT1"))
+    item([mark("circle", 13, 6, 4, ENV_COLORS[env] || "var(--ink)", false)], "lived on " + env);
+  if (grown.some((i) => i.lesion)) item([mark("circle", 13, 6, 4, "var(--ink)", true)], "lesioned");
+  for (const m of [...new Set(grown.map(modeOf))]) {
+    const M = MODES[m] || MODES.c;
+    item([s("path", { d: "M1 6H25", stroke: M.color || "var(--ink)", "stroke-width": M.width, "stroke-dasharray": M.dash, fill: "none" })], M.name);
+  }
   return box;
 }
