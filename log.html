@@ -6,7 +6,7 @@
 <title>Log · StemmaLM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=202610281845">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <style>
   .entry { margin-top: 34px; }
@@ -33,7 +33,7 @@
 </div>
 
 <script type="module">
-import { el, header } from "./site.js";
+import { el, header } from "./site.js?v=202610281845";
 header("log");
 
 const entries = await fetch("log.json").then((r) => r.json());
