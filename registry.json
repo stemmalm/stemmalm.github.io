@@ -57,7 +57,7 @@
       "input": "#1's word-by-word copy of what it heard, 5% lapses per word",
       "born": null,
       "grown": null,
-      "heard": "Ω>#1@72m·5"
+      "heard": "Ω>#1@72m·c5"
     },
     {
       "serial": 5,
@@ -71,7 +71,7 @@
       "input": "#1's word-by-word copy of what it heard, 5% lapses per word",
       "born": null,
       "grown": null,
-      "heard": "Ω>#1@72m·5"
+      "heard": "Ω>#1@72m·c5"
     },
     {
       "serial": 6,
@@ -85,7 +85,7 @@
       "input": "#1's word-by-word copy of what it heard, 5% lapses per word",
       "born": null,
       "grown": null,
-      "heard": "Ω>#1@72m·5"
+      "heard": "Ω>#1@72m·c5"
     }
   ],
   "sources": {
@@ -93,6 +93,6 @@
   },
   "corpora": {
     "Ω": "AO-CHILDES: what adults said to children in recorded North American families, 0–72 months (the original)",
-    "Ω>#1@72m·5": "#1's word-by-word copy of Ω, made when #1 was 72 months old, 5% lapses per word"
+    "Ω>#1@72m·c5": "#1's word-by-word copy of Ω, made when #1 was 72 months old; 5% of words written its own way (c = copying)"
   }
 }
