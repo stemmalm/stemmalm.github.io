@@ -5,41 +5,113 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>StemmaLM</title>
 <meta name="description" content="A lineage of small language models, each raised from scratch on what adults say to children.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="style.css?v=202610282205">
+<link rel="stylesheet" href="style.css?v=20261028222544">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 </head>
 <body>
-<div class="wrap">
+<div class="wrap wide">
   <div class="bar"></div>
 
-  <h1>StemmaLM</h1>
-  <div class="sub">A lineage of small language models, each raised from scratch on what adults say to children.</div>
+  <section class="hero">
+    <div class="hero-text">
+      <h1>StemmaLM</h1>
+      <p class="sub">A lineage of small language models, each raised from scratch on what adults say to children.</p>
+      <p class="lede">Every individual hears real family conversations in order of the child's age, month by month, and can be asked to speak at every month of its life. Grown individuals can teach the next generation with their own speech, and the numbers join into a family tree.</p>
+      <p class="links"><a href="lineage.html">lineage →</a><a href="log.html">log →</a><a href="about.html">about →</a></p>
+    </div>
+    <div class="fig hero-fig">
+      <p class="fig-cap">fig. 0 — the lineage so far</p>
+      <div id="fig0"></div>
+    </div>
+  </section>
 
-  <div class="paper fig" style="margin-top:22px">
-    <p class="fig-cap">fig. 0 — the lineage so far</p>
-    <div id="fig0"></div>
-  </div>
+  <section class="tiles" id="tiles"></section>
 
-  <h2>An individual</h2>
-  <p>Each individual begins as a model that knows nothing. It hears what adults said to real children, taken from recorded family conversations and fed in order of the child's age, month by month, up to six years. It never hears the children themselves, and it never sees the world they talk about: it is a child with only words. A snapshot is kept for every month of its life, and at every month it can be asked to speak.</p>
+  <section>
+    <h2>Registry</h2>
+    <div class="tbl-wrap">
+      <table class="reg" id="reg">
+        <thead><tr><th>no.</th><th>id</th><th>gen</th><th>parent</th><th>heard</th><th>words per utterance, 0→72 m</th><th class="num">at 72 m</th><th class="num">loss</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="tbl-note">Words per utterance: real words only, 1,000 utterances per month. Loss: training loss at 72 months (nats per character).</p>
+  </section>
 
-  <h2>A lineage</h2>
-  <p>Every individual has a number and a full name that records how it came to be: its strain (the learner it was born as), its upbringing (what was changed in what it heard), its generation (who taught it), any lesion it received in adulthood, and a seed that tells siblings apart. Grown individuals can teach the next generation with their own speech, and the numbers join into a family tree.</p>
+  <section class="cols">
+    <div>
+      <h2>Latest log</h2>
+      <ol class="latest" id="latest"></ol>
+    </div>
+    <div>
+      <h2>How a generation is made</h2>
+      <ol class="steps">
+        <li><span class="step-k">raise</span> A model that knows nothing hears a book of speech in order of the child's age, from 0 to 72 months.</li>
+        <li><span class="step-k">speak</span> At every month it is given an adult's line and answers; what it says is kept.</li>
+        <li><span class="step-k">copy</span> Grown, it copies the book word by word; at 5% of words it writes its own guess. Its copy raises the next generation.</li>
+      </ol>
+    </div>
+  </section>
 
-  <h2>Why</h2>
-  <p>A <em>stemma</em> is the family tree of a text copied by hand: each copy inherits the errors of its source and adds its own, and the tree is read back from the variants. Language is passed on the same way, from what one generation says to what the next one learns. Raising the copies ourselves makes it possible to watch what is kept, what is lost and what is new.</p>
-
-  <a class="next" href="lineage.html">See the lineage →</a>
-
-  <footer>Data: CHILDES (CC BY-NC-SA 4.0), via AO-CHILDES. The models run in your browser; names in their replies are replaced by “(name)”.</footer>
+  <footer class="prov">
+    <span>data: CHILDES via AO-CHILDES (CC BY-NC-SA 4.0)</span>
+    <span>weights: <a href="https://huggingface.co/xchuanli/stemmalm-weights">xchuanli/stemmalm-weights</a></span>
+    <span>registry: <a href="registry.json">registry.json</a> · <a href="stats.json">stats.json</a></span>
+    <span>models run in your browser; names in replies are replaced by “(name)”</span>
+  </footer>
 </div>
+
 <script type="module">
-import { header, registry, lineageFigure } from "./site.js?v=202610282205";
-header("about");
-const reg = await registry();
-document.getElementById("fig0").append(lineageFigure(reg, { compact: true }));
+import { header, registry, lineageMap, fullId, el, sparkline } from "./site.js?v=20261028222544";
+header("overview");
+const [reg, stats, log] = await Promise.all([
+  registry(), fetch("stats.json?v=" + Date.now()).then((r) => r.json()), fetch("log.json?v=" + Date.now()).then((r) => r.json())]);
+const grown = reg.individuals.filter((i) => i.status === "trained");
+document.getElementById("fig0").append(lineageMap(reg, stats, { compact: true }));
+
+// tiles: counts that grow with the lineage
+const fmt = (n) => n.toLocaleString("en-US");
+const tiles = [
+  [grown.length, "individuals"],
+  [new Set(grown.map((i) => i.gen)).size, "generations"],
+  [1 + Object.keys(stats.corpora).length, "books of speech"],
+  [fmt(stats.totals.words_heard_0_72m), "words heard per life"],
+  [fmt(stats.totals.utterances_spoken), "utterances spoken"],
+  [fmt(stats.totals.lapses_recorded), "copying lapses recorded"],
+];
+const tbox = document.getElementById("tiles");
+for (const [v, k] of tiles) tbox.append(el("div", { class: "tile" }, el("div", { class: "tile-v", text: String(v) }), el("div", { class: "tile-k", text: k })));
+
+// registry table
+const body = document.querySelector("#reg tbody");
+for (const i of grown) {
+  const st = stats.individuals[String(i.serial)] || {};
+  const curve = st.mlu_curve || [];
+  const at72 = curve.length ? curve[curve.length - 1][1] : null;
+  const go = () => (location.href = `individual.html?n=${i.serial}`);
+  const tr = el("tr", { tabindex: "0" });
+  tr.addEventListener("click", go);
+  tr.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
+  const spark = el("td", { class: "spark" });
+  if (curve.length) spark.append(sparkline(curve));
+  tr.append(
+    el("td", {}, el("a", { href: `individual.html?n=${i.serial}`, text: "#" + i.serial })),
+    el("td", { class: "mono", text: fullId(i) }),
+    el("td", { text: "G" + i.gen }),
+    el("td", { text: i.parent ? "#" + i.parent : "—" }),
+    el("td", { class: "mono", text: i.heard || "Ω" }),
+    spark,
+    el("td", { class: "num", text: at72 != null ? at72.toFixed(1) : "—" }),
+    el("td", { class: "num", text: st.loss_72m != null ? st.loss_72m.toFixed(3) : "—" }),
+  );
+  body.append(tr);
+}
+
+// latest log entries
+const latest = document.getElementById("latest");
+for (const e of [...log].sort((a, b) => b.id.localeCompare(a.id)).slice(0, 4)) {
+  latest.append(el("li", {}, el("a", { href: `log.html#${e.id}` }, el("span", { class: "mono log-id", text: e.id }), el("span", { text: e.title }))));
+}
 </script>
 </body>
 </html>

@@ -6,7 +6,7 @@
 <title>StemmaLM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="style.css?v=202610282205">
+<link rel="stylesheet" href="style.css?v=20261028222544">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 </head>
 <body>
@@ -44,9 +44,9 @@
 </div>
 
 <script type="module">
-import { registry, fullId, STATUS, el, header } from "./site.js?v=202610282205";
+import { registry, fullId, STATUS, el, header } from "./site.js?v=20261028222544";
 header("");
-import { decode, makeModel, reply, scrub } from "./stemma.js?v=202610282205";
+import { decode, makeModel, reply, scrub } from "./stemma.js?v=20261028222544";
 
 // weights: the public model repo on Hugging Face; a local folder when previewing on this machine
 const LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
@@ -77,7 +77,7 @@ for (const [k, v] of rows) anat.append(el("dt", { text: k }), el("dd", { text: v
 const life = document.getElementById("life");
 const lifeRows = [
   ["Born", when(ind.born)],
-  ["Grown", ind.grown ? when(ind.grown) : STATUS[ind.status]],
+  ["Grown", when(ind.grown)],
   ["Heard", ind.heard ? `${ind.heard} — ${reg.corpora?.[ind.heard] || ""}` : "—"],
   ["Parent", ind.parent ? `#${ind.parent}` : "none (real caregivers)"],
 ];

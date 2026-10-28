@@ -6,18 +6,18 @@
 <title>Lineage · StemmaLM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="style.css?v=202610282205">
+<link rel="stylesheet" href="style.css?v=20261028222544">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 </head>
 <body>
-<div class="wrap">
+<div class="wrap wide">
   <div class="bar"></div>
 
   <h1>Lineage</h1>
   <div class="sub">Choose an individual to meet it.</div>
 
-  <div class="paper fig" style="margin-top:22px">
-    <p class="fig-cap">fig. 1 — every individual, by generation; filled = grown, open = not yet</p>
+  <div class="fig" style="margin-top:22px">
+    <p class="fig-cap">fig. 1 — every individual, by generation</p>
     <div id="tree"></div>
   </div>
 
@@ -25,10 +25,12 @@
 </div>
 
 <script type="module">
-import { header, registry, lineageFigure } from "./site.js?v=202610282205";
+import { header, registry, lineageMap } from "./site.js?v=20261028222544";
 header("lineage");
-const reg = await registry();
-document.getElementById("tree").append(lineageFigure(reg));
+const [reg, stats] = await Promise.all([registry(), fetch("stats.json?v=" + Date.now()).then((r) => r.json())]);
+const map = lineageMap(reg, stats);
+map.style.setProperty("--map-h", "520px");
+document.getElementById("tree").append(map);
 </script>
 </body>
 </html>

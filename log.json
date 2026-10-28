@@ -165,5 +165,51 @@
         ]
       }
     ]
+  },
+  {
+    "id": "20261028-04",
+    "date": "2026-10-28",
+    "title": "A slip the next generation repeats? (a hint, not a finding)",
+    "body": [
+      "#4, #5 and #6 are grown. They are the first children of the lineage: same learner and same upbringing as #1, #2 and #3, same seeds, but instead of the original recordings they heard #1's copy of them, in which 5% of words were written #1's own way.",
+      "Some of #1's lapses broke agreement between subject and verb: “when are you gonna bring em home” became “when is you gonna bring em home”. Phrases like “are he” do not occur in the original at all; #1's copy has 14 of them.",
+      "When the children speak, these mismatches turn up a little more often than in their parents' generation. #4 says “where are he going” and “what are he doing”. Over all the speech each generation produced (about 58,000 utterances per individual), “are he” appears 15 times in the children against 5 in the parents, “is we” 13 against 4, “are it” 7 against 2.",
+      "This is a hint, not a result. The counts are tiny, some matches are ordinary sentences, and there is no comparison yet with a null model or with a second generation. The real test comes when #4 copies the book it grew up with: if the mismatches it learned make its own lapses lean the same way, the slip has started to spread."
+    ],
+    "tables": [
+      {
+        "caption": "Occurrences of three agreement mismatches",
+        "head": [
+          "Phrase",
+          "Original",
+          "#1's copy",
+          "Parents speaking (#1–#3)",
+          "Children speaking (#4–#6)"
+        ],
+        "rows": [
+          [
+            "are he",
+            "0",
+            "14",
+            "5",
+            "15"
+          ],
+          [
+            "is we",
+            "27",
+            "46",
+            "4",
+            "13"
+          ],
+          [
+            "are it",
+            "2",
+            "29",
+            "2",
+            "7"
+          ]
+        ]
+      }
+    ]
   }
 ]
