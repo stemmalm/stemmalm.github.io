@@ -6,18 +6,27 @@
 <title>Log · StemmaLM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="style.css?v=202610281845">
+<link rel="stylesheet" href="style.css?v=202610281854">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <style>
-  .entry { margin-top: 34px; }
-  .entry .date { font-family: var(--font-id); font-size: 13px; color: var(--muted); }
-  .entry h2 { margin: 2px 0 10px; }
-  .entry table { border-collapse: collapse; width: 100%; font-size: 15.5px; margin: 6px 0 18px; }
-  .entry caption { text-align: left; font-style: italic; color: var(--muted); padding-bottom: 4px; }
-  .entry th, .entry td { padding: 3px 8px; text-align: left; }
-  .entry thead th { font-weight: 500; border-top: 1.5px solid var(--ink); border-bottom: 1px solid var(--ink); }
-  .entry tbody tr:last-child td { border-bottom: 1.5px solid var(--ink); }
-  .entry + .entry { border-top: 1px solid var(--faint); padding-top: 26px; }
+  .log-list { margin-top: 26px; border-top: 1px solid var(--rule); }
+  .log-item { border-bottom: 1px solid var(--faint); }
+  .log-item > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 7.6rem minmax(0, 1fr) 1rem; gap: 12px; align-items: baseline; padding: 10px 2px; }
+  .log-item > summary::-webkit-details-marker { display: none; }
+  .log-item > summary:hover { background: var(--mark); }
+  .log-item > summary:focus-visible { outline: 2px solid var(--link); outline-offset: -2px; }
+  .log-id { font-family: var(--font-id); font-size: 13px; color: var(--muted); }
+  .log-title { font-weight: 500; }
+  .log-caret { font-family: var(--font-id); color: var(--muted); transition: transform 0.15s; }
+  .log-item[open] .log-caret { transform: rotate(90deg); }
+  .log-body { padding: 4px 2px 18px 0; }
+  @media (min-width: 560px) { .log-body { padding-left: calc(7.6rem + 12px); } }
+  .log-body table { border-collapse: collapse; width: 100%; font-size: 15px; margin: 6px 0 16px; }
+  .log-body caption { text-align: left; color: var(--muted); font-size: 13.5px; padding-bottom: 4px; }
+  .log-body th, .log-body td { padding: 3px 8px 3px 0; text-align: left; }
+  .log-body thead th { font-family: var(--font-id); font-size: 13px; font-weight: 500; border-top: 1.5px solid var(--ink); border-bottom: 1px solid var(--ink); }
+  .log-body tbody tr:last-child td { border-bottom: 1.5px solid var(--ink); }
+  .log-body .permalink { font-family: var(--font-id); font-size: 12.5px; }
 </style>
 </head>
 <body>
@@ -25,31 +34,41 @@
   <div class="bar"></div>
 
   <h1>Log</h1>
-  <div class="sub">What happened along the way, newest first.</div>
+  <div class="sub">A lab notebook: each entry numbered by date and order of the day, newest first.</div>
 
-  <div id="entries"></div>
+  <div class="log-list" id="entries"></div>
 
   <footer>Data: CHILDES (CC BY-NC-SA 4.0), via AO-CHILDES. Findings here are exploratory.</footer>
 </div>
 
 <script type="module">
-import { el, header } from "./site.js?v=202610281845";
+import { el, header } from "./site.js?v=202610281854";
 header("log");
 
-const entries = await fetch("log.json").then((r) => r.json());
+const entries = await fetch("log.json?v=" + Date.now()).then((r) => r.json());
 const box = document.getElementById("entries");
-const fmt = (d) => new Date(d + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-for (const e of [...entries].reverse()) {
-  const art = el("article", { class: "entry" }, el("div", { class: "date", text: fmt(e.date) }), el("h2", { text: e.title }));
-  for (const p of e.body) art.append(el("p", { text: p }));
+for (const e of [...entries].sort((a, b) => b.id.localeCompare(a.id))) {
+  const item = el("details", { class: "log-item", id: e.id },
+    el("summary", {}, el("span", { class: "log-id", text: e.id }), el("span", { class: "log-title", text: e.title }), el("span", { class: "log-caret", text: "›", "aria-hidden": "true" })));
+  const body = el("div", { class: "log-body" });
+  for (const p of e.body) body.append(el("p", { text: p }));
   for (const tb of e.tables || (e.table ? [e.table] : [])) {
     const t = el("table", {}, el("caption", { text: tb.caption }));
     t.append(el("thead", {}, el("tr", {}, ...tb.head.map((h) => el("th", { text: h })))));
     t.append(el("tbody", {}, ...tb.rows.map((r) => el("tr", {}, ...r.map((c) => el("td", { text: c }))))));
-    art.append(t);
+    body.append(t);
   }
-  box.append(art);
+  body.append(el("a", { class: "permalink", href: "#" + e.id, text: "link to " + e.id }));
+  item.append(body);
+  box.append(item);
 }
+// open the entry a link points to, on load and when the link changes
+function openFromHash() {
+  const target = location.hash && document.getElementById(location.hash.slice(1));
+  if (target) { target.open = true; target.scrollIntoView(); }
+}
+openFromHash();
+addEventListener("hashchange", openFromHash);
 </script>
 </body>
 </html>
