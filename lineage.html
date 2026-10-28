@@ -34,25 +34,21 @@ for (const i of reg.individuals) (gens[i.gen] = gens[i.gen] || []).push(i);
 const last = Math.max(...Object.keys(gens).map(Number), ...(reg.planned || []).map((p) => p.gen));
 
 for (let g = 0; g <= last; g++) {
-  // what this generation heard: real caregivers for G0, its parents' speech after that
-  if (g === 0) {
-    tree.append(el("div", { class: "gen" }, el("div", { class: "gen-label", text: "" }),
-      el("div", { class: "row" }, el("div", { class: "source", text: reg.sources?.["0"] || "Real caregivers" }))));
-  }
-  tree.append(el("div", { class: "stem" }));
-  const row = el("div", { class: "row" });
-  for (const i of gens[g] || []) {
-    row.append(el("a", { class: "node", href: `individual.html?n=${i.serial}` },
-      el("span", { class: "serial", text: "#" + i.serial }),
-      el("span", { class: "full", text: fullId(i) }),
-      el("span", { class: "state", text: STATUS[i.status] })));
-  }
+  const kids = (gens[g] || []).map((i) => el("a", { class: "node", href: `individual.html?n=${i.serial}` },
+    el("span", { class: "serial", text: "#" + i.serial }),
+    el("span", { class: "full", text: fullId(i) }),
+    el("span", { class: "state", text: STATUS[i.status] })));
   for (const p of (reg.planned || []).filter((p) => p.gen === g)) {
-    row.append(el("div", { class: "node planned" },
-      el("span", { class: "serial", text: "G" + g }),
-      el("span", { class: "state", text: p.label })));
+    kids.push(el("div", { class: "node planned" }, el("span", { class: "state", text: p.label })));
   }
-  tree.append(el("div", { class: "gen" }, el("div", { class: "gen-label", text: "G" + g }), row));
+  // what this generation heard: real caregivers for G0, its parents' speech after that
+  const heard = g === 0
+    ? el("div", {}, el("div", { class: "source-row" }, el("div", { class: "source", text: reg.sources?.["0"] || "Real caregivers" })), el("div", { class: "drop" }))
+    : (gens[g] || []).length ? el("div", { class: "drop" }) : el("div", { style: "height:22px" });  // no parent line until a parent exists
+  const sibs = el("div", { class: "sibs" + (kids.length === 1 ? " one" : "") }, ...kids);
+  sibs.style.setProperty("--n", Math.max(1, kids.length));
+  tree.append(el("div", { class: "gen" }, el("div", { class: "gen-label" }), heard));
+  tree.append(el("div", { class: "gen" }, el("div", { class: "gen-label", text: "G" + g }), sibs));
 }
 </script>
 </body>

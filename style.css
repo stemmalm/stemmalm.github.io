@@ -29,18 +29,23 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 16px 0; }
 
 .next { display: inline-block; margin-top: 18px; font-size: 18px; }
 
-/* lineage tree */
-.tree { margin-top: 8px; }
-.gen { display: grid; grid-template-columns: 3.2rem minmax(0, 1fr); gap: 12px; align-items: start; }
-.gen + .gen { margin-top: 0; }
-.gen-label { font-family: var(--font-id); font-size: 13px; color: var(--muted); padding-top: 14px; }
-.row { display: flex; flex-wrap: wrap; gap: 12px; padding: 6px 0 18px; position: relative; }
-.source { font-style: italic; color: var(--muted); border: 1px dashed var(--rule); padding: 8px 12px; }
-.stem { height: 22px; margin-left: calc(3.2rem + 12px + 20px); border-left: 1px solid var(--rule); }
-.node { display: block; min-width: 13.5rem; border: 1px solid var(--rule); padding: 8px 12px; text-decoration: none; color: var(--ink); background: var(--bg); }
+/* lineage tree: each generation is one row of siblings, joined by a bracket to what they heard */
+.tree { margin-top: 28px; }
+.gen { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr); gap: 10px; align-items: start; }
+.gen-label { font-family: var(--font-id); font-size: 13px; color: var(--muted); padding-top: 24px; }
+.source-row { display: flex; justify-content: center; }
+.source { font-style: italic; color: var(--muted); border: 1px dashed var(--rule); padding: 6px 12px; text-align: center; }
+.drop { width: 0; height: 18px; margin: 0 auto; border-left: 1px solid var(--rule); }
+.sibs { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 10px; position: relative; padding-top: 16px; }
+.sibs::before { /* the bracket: from the first sibling's centre to the last one's */
+  content: ""; position: absolute; top: 0; height: 16px;
+  left: calc(50% / var(--n)); right: calc(50% / var(--n));
+  border-top: 1px solid var(--rule); border-left: 1px solid var(--rule); border-right: 1px solid var(--rule); }
+.sibs.one::before { left: 50%; right: auto; border-right: 0; border-top: 0; }
+.node { display: block; border: 1px solid var(--rule); padding: 8px 10px; text-decoration: none; color: var(--ink); background: var(--bg); text-align: center; }
 .node:hover, .node:focus-visible { background: var(--mark); outline: none; }
-.node .serial { font-family: var(--font-id); font-size: 15px; }
-.node .full { display: block; font-family: var(--font-id); font-size: 12.5px; color: var(--muted); }
+.node .serial { font-family: var(--font-id); font-size: 17px; }
+.node .full { display: block; font-family: var(--font-id); font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
 .node .state { display: block; font-size: 14.5px; margin-top: 2px; }
 .node.planned { border-style: dashed; color: var(--muted); pointer-events: none; }
 
