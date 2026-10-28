@@ -6,7 +6,7 @@
 <title>Log · StemmaLM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="style.css?v=202610281913">
+<link rel="stylesheet" href="style.css?v=202610282047">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <style>
   .log-list { margin-top: 26px; border-top: 1px solid var(--rule); }
@@ -26,6 +26,7 @@
   .log-body th, .log-body td { padding: 3px 8px 3px 0; text-align: left; }
   .log-body thead th { font-family: var(--font-id); font-size: 13px; font-weight: 500; border-top: 1.5px solid var(--ink); border-bottom: 1px solid var(--ink); }
   .log-body tbody tr:last-child td { border-bottom: 1.5px solid var(--ink); }
+  .log-correction { border-left: 2px solid var(--rule); padding-left: 10px; color: var(--muted); font-size: 14.5px; }
   .log-body .permalink { font-family: var(--font-id); font-size: 12.5px; }
 </style>
 </head>
@@ -42,7 +43,7 @@
 </div>
 
 <script type="module">
-import { el, header } from "./site.js?v=202610281913";
+import { el, header } from "./site.js?v=202610282047";
 header("log");
 
 const entries = await fetch("log.json?v=" + Date.now()).then((r) => r.json());
@@ -51,6 +52,7 @@ for (const e of [...entries].sort((a, b) => b.id.localeCompare(a.id))) {
   const item = el("details", { class: "log-item", id: e.id },
     el("summary", {}, el("span", { class: "log-id", text: e.id }), el("span", { class: "log-title", text: e.title }), el("span", { class: "log-caret", text: "›", "aria-hidden": "true" })));
   const body = el("div", { class: "log-body" });
+  if (e.correction) body.append(el("p", { class: "log-correction", text: e.correction }));
   for (const p of e.body) body.append(el("p", { text: p }));
   for (const tb of e.tables || (e.table ? [e.table] : [])) {
     const t = el("table", {}, el("caption", { text: tb.caption }));

@@ -110,6 +110,60 @@
           ]
         ]
       }
+    ],
+    "correction": "Correction (see 20261028-03): on the full copy, “rare words often turn into common ones” does not hold beyond what any word swap would do. The examples were picked from a small test."
+  },
+  {
+    "id": "20261028-03",
+    "date": "2026-10-28",
+    "title": "Correction: the lapses do not favour common words",
+    "body": [
+      "The full first copy is done: 800,527 lines, 82% unchanged, 180,335 lapses. Entry 20261028-02 said that a lapse leans towards common words. That came from a handful of examples, and it does not survive a fair comparison.",
+      "The comparison is a null model: at every lapse, instead of letting #1 write a word, draw a word at random by how often it occurs in the original. Any swap pulls a rare word towards commoner ones, simply because most words drawn are common; that is regression to the mean, not a property of the copyist.",
+      "Measured against this null, #1 pulls rare words upward slightly less than random swapping does, and pulls frequent words downward slightly less too. Its replacements stay closer to the frequency of the word they replace. What #1 does at a lapse looks more like finding a word that fits the context than like reaching for a common one. It also invented 7,479 non-words."
+    ],
+    "tables": [
+      {
+        "caption": "Change in word frequency at a lapse (log10, mean), by how frequent the original word is",
+        "head": [
+          "Original word, log10 frequency",
+          "#1",
+          "Random by frequency",
+          "n"
+        ],
+        "rows": [
+          [
+            "0–1",
+            "+3.02",
+            "+3.20",
+            "2,468"
+          ],
+          [
+            "1–2",
+            "+2.01",
+            "+2.26",
+            "7,690"
+          ],
+          [
+            "2–3",
+            "+1.00",
+            "+1.26",
+            "21,785"
+          ],
+          [
+            "3–4",
+            "+0.25",
+            "+0.30",
+            "43,446"
+          ],
+          [
+            "4 and above",
+            "−0.59",
+            "−0.71",
+            "82,070"
+          ]
+        ]
+      }
     ]
   }
 ]
