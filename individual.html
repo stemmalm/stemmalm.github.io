@@ -6,7 +6,7 @@
 <title>StemmaLM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="style.css?v=202610282047">
+<link rel="stylesheet" href="style.css?v=202610282103">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 </head>
 <body>
@@ -24,18 +24,19 @@
 
   <section id="talk-sec" hidden>
     <h2>Talk</h2>
-    <div class="id" id="who" style="font-size:16px"></div>
     <div class="age">
       <label for="age" class="muted" style="font-size:14px">Age in months</label>
       <input type="range" id="age" min="0" max="72" step="1" value="30">
       <div class="ticks" aria-hidden="true"><span>0</span><span>12</span><span>24</span><span>36</span><span>48</span><span>60</span><span>72</span></div>
     </div>
-    <div class="log" id="log" aria-live="polite"></div>
-    <div class="muted" id="status" style="font-size:14px;min-height:1.4em" aria-live="polite"></div>
-    <form id="compose" autocomplete="off">
-      <input id="say" type="text" aria-label="What you say">
-      <button type="submit" id="send">Send</button>
-    </form>
+    <div class="chat">
+      <div class="chat-head"><span class="chat-avatar" aria-hidden="true"></span><span class="chat-name" id="chat-name"></span><span class="chat-sub" id="chat-sub"></span></div>
+      <div class="chat-log" id="log" aria-live="polite"></div>
+      <form id="compose" class="chat-compose" autocomplete="off">
+        <input id="say" type="text" placeholder="Message" aria-label="What you say">
+        <button type="submit" id="send" aria-label="Send">↑</button>
+      </form>
+    </div>
   </section>
   <p class="muted" id="not-yet" hidden style="margin-top:28px;font-family:var(--font-id);font-size:14px">// not grown yet — you can talk to it once it is grown</p>
 
@@ -43,9 +44,9 @@
 </div>
 
 <script type="module">
-import { registry, fullId, STATUS, el, header } from "./site.js?v=202610282047";
+import { registry, fullId, STATUS, el, header } from "./site.js?v=202610282103";
 header("");
-import { decode, makeModel, reply, scrub } from "./stemma.js?v=202610282047";
+import { decode, makeModel, reply, scrub } from "./stemma.js?v=202610282103";
 
 // weights: the public model repo on Hugging Face; a local folder when previewing on this machine
 const LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
@@ -103,17 +104,19 @@ if (ind.status !== "trained") {
     return models.get(month);
   }
 
-  function render() {
-    document.getElementById("who").textContent = `#${serial}@${state.age}m`;
+  function render(typing = false) {
+    document.getElementById("chat-name").textContent = `#${serial}`;
+    document.getElementById("chat-sub").textContent = `${state.age} months`;
     const log = document.getElementById("log");
     log.innerHTML = "";
     const msgs = state.logs[state.age] || [];
-    if (!msgs.length) { log.append(el("p", { class: "empty", text: "Say something." })); return; }
-    for (const m of msgs) {
-      log.append(el("div", { class: "line" },
-        el("span", { class: "who", text: m.role === "adult" ? "you" : `#${serial}@${state.age}m` }),
-        el("span", { class: "text", text: m.text })));
-    }
+    if (!msgs.length && !typing) log.append(el("p", { class: "chat-empty", text: `Say something to #${serial} at ${state.age} months.` }));
+    msgs.forEach((m, k) => {
+      const mine = m.role === "adult", next = msgs[k + 1];
+      const tail = !next || next.role !== m.role;  // the last bubble of a run gets the tail
+      log.append(el("div", { class: "bubble " + (mine ? "me" : "it") + (tail ? " tail" : "") , text: m.text || "…" }));
+    });
+    if (typing) log.append(el("div", { class: "bubble it tail typing", "aria-label": "typing" }, el("span"), el("span"), el("span")));
     log.scrollTop = log.scrollHeight;
   }
 
@@ -123,10 +126,10 @@ if (ind.status !== "trained") {
     const input = document.getElementById("say"), text = input.value.trim();
     if (!text) return;
     const age = state.age, msgs = state.logs[age] = state.logs[age] || [];
-    msgs.push({ role: "adult", text }); input.value = ""; render();
-    const status = document.getElementById("status"), send = document.getElementById("send");
+    msgs.push({ role: "adult", text }); input.value = ""; render(true);
+    const send = document.getElementById("send");
     send.disabled = true;
-    status.textContent = models.size ? "…" : "loading the model (about 21 MB)…";
+    if (!models.size) document.getElementById("chat-sub").textContent = "loading (about 21 MB)…";
     try {
       const model = await modelAt(age);
       await new Promise((r) => setTimeout(r, 20));
@@ -136,7 +139,7 @@ if (ind.status !== "trained") {
     } catch {
       msgs.push({ role: "model", text: "(no answer)" });
     }
-    status.textContent = ""; send.disabled = false; render();
+    send.disabled = false; render(); input.focus();
   });
   render();
 }

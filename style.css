@@ -61,3 +61,28 @@ form input { flex: 1; min-width: 0; font: inherit; color: var(--ink); background
 form button { font: inherit; color: var(--ink); background: var(--head); border: 1px solid var(--rule); padding: 3px 14px; cursor: pointer; }
 form :disabled { opacity: 0.5; cursor: not-allowed; }
 footer { font-size: 14px; color: var(--muted); margin-top: 40px; border-top: 1px solid var(--rule); padding-top: 12px; }
+
+/* chat: message bubbles */
+.chat { border: 1px solid var(--rule); background: var(--bg); max-width: 560px; }
+.chat-head { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-bottom: 1px solid var(--faint); }
+.chat-avatar { width: 22px; height: 22px; border-radius: 50%; background: var(--ink); flex: none; }
+.chat-name { font-family: var(--font-id); font-weight: 500; }
+.chat-sub { font-family: var(--font-id); font-size: 12.5px; color: var(--muted); }
+.chat-log { display: flex; flex-direction: column; gap: 3px; padding: 14px 12px; height: 340px; overflow-y: auto; }
+.chat-empty { margin: auto; color: var(--muted); font-size: 14px; }
+.bubble { max-width: 78%; padding: 7px 12px; border-radius: 18px; line-height: 1.35; font-size: 15.5px; overflow-wrap: anywhere; }
+.bubble.me { align-self: flex-end; background: #2f7cf6; color: #fff; }
+.bubble.it { align-self: flex-start; background: var(--head); color: var(--ink); }
+.bubble.me.tail { border-bottom-right-radius: 5px; margin-bottom: 6px; }
+.bubble.it.tail { border-bottom-left-radius: 5px; margin-bottom: 6px; }
+.bubble.typing { display: flex; gap: 4px; padding: 11px 13px; }
+.bubble.typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: blink 1.2s infinite ease-in-out; }
+.bubble.typing span:nth-child(2) { animation-delay: 0.2s; }
+.bubble.typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink { 0%, 80%, 100% { opacity: 0.25; } 40% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .bubble.typing span { animation: none; opacity: 0.6; } }
+.chat-compose { display: flex; gap: 8px; align-items: center; margin: 0; padding: 9px 10px; border-top: 1px solid var(--faint); }
+.chat-compose input { flex: 1; min-width: 0; font: inherit; font-size: 15px; color: var(--ink); background: var(--bg); border: 1px solid var(--rule); border-radius: 18px; padding: 6px 14px; }
+.chat-compose input:focus-visible { outline: 2px solid #2f7cf6; outline-offset: 0; }
+.chat-compose button { width: 32px; height: 32px; flex: none; border-radius: 50%; border: 0; background: #2f7cf6; color: #fff; font-size: 17px; line-height: 1; cursor: pointer; padding: 0; }
+.chat-compose button:disabled { opacity: 0.4; cursor: default; }
