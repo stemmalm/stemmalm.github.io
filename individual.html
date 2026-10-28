@@ -6,7 +6,7 @@
 <title>StemmaLM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="style.css?v=202610281854">
+<link rel="stylesheet" href="style.css?v=202610281913">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 </head>
 <body>
@@ -18,6 +18,9 @@
   <div class="sub id" id="full"></div>
 
   <dl class="anat" id="anat"></dl>
+
+  <h2>Life</h2>
+  <dl class="anat" id="life"></dl>
 
   <section id="talk-sec" hidden>
     <h2>Talk</h2>
@@ -40,9 +43,9 @@
 </div>
 
 <script type="module">
-import { registry, fullId, STATUS, el, header } from "./site.js?v=202610281854";
+import { registry, fullId, STATUS, el, header } from "./site.js?v=202610281913";
 header("");
-import { decode, makeModel, reply, scrub } from "./stemma.js?v=202610281854";
+import { decode, makeModel, reply, scrub } from "./stemma.js?v=202610281913";
 
 // weights: the public model repo on Hugging Face; a local folder when previewing on this machine
 const LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
@@ -59,16 +62,27 @@ document.getElementById("full").textContent = fullId(ind);
 
 // how the full name reads, part by part
 const anat = document.getElementById("anat");
+const when = (iso) => iso ? new Date(iso).toLocaleString("en-GB", { timeZone: "Europe/Berlin", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) + " CET" : "—";
 const rows = [
   ["Strain", `${ind.strain} — ${reg.strains[ind.strain]}`],
   ["Upbringing", `${ind.env} — ${reg.envs[ind.env]}`],
-  ["Generation", ind.gen === 0 ? "G0 — taught by real caregivers" : `G${ind.gen} — taught by ${ind.input || "its parent"}`],
+  ["Generation", ind.gen === 0 ? "G0 — taught by real caregivers" : `G${ind.gen} — taught by its parent's copy`],
   ["Lesion", ind.lesion || "none"],
   ["Seed", `s${ind.seed}`],
-  ["Parent", ind.parent ? `#${ind.parent}` : "none"],
-  ["Status", STATUS[ind.status]],
 ];
 for (const [k, v] of rows) anat.append(el("dt", { text: k }), el("dd", { text: v }));
+
+// its life so far: facts from the registry
+const life = document.getElementById("life");
+const lifeRows = [
+  ["Born", when(ind.born)],
+  ["Grown", ind.grown ? when(ind.grown) : STATUS[ind.status]],
+  ["Heard", ind.heard ? `${ind.heard} — ${reg.corpora?.[ind.heard] || ""}` : "—"],
+  ["Parent", ind.parent ? `#${ind.parent}` : "none (real caregivers)"],
+];
+for (const [k, v] of lifeRows) life.append(el("dt", { text: k }), el("dd", { text: v }));
+const pa = life.querySelectorAll("dd")[3];
+if (ind.parent) { pa.textContent = ""; pa.append(el("a", { href: `individual.html?n=${ind.parent}`, text: `#${ind.parent}` })); }
 
 if (ind.status !== "trained") {
   document.getElementById("not-yet").hidden = false;

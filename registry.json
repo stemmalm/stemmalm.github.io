@@ -14,7 +14,10 @@
       "lesion": null,
       "seed": 1,
       "parent": null,
-      "status": "trained"
+      "status": "trained",
+      "born": "2026-10-28T17:24:46+01:00",
+      "grown": "2026-10-28T17:46:19+01:00",
+      "heard": "Ω"
     },
     {
       "serial": 2,
@@ -24,7 +27,10 @@
       "lesion": null,
       "seed": 2,
       "parent": null,
-      "status": "training"
+      "status": "trained",
+      "born": "2026-10-28T18:28:47+01:00",
+      "grown": "2026-10-28T18:50:28+01:00",
+      "heard": "Ω"
     },
     {
       "serial": 3,
@@ -34,7 +40,10 @@
       "lesion": null,
       "seed": 3,
       "parent": null,
-      "status": "training"
+      "status": "trained",
+      "born": "2026-10-28T18:29:47+01:00",
+      "grown": "2026-10-28T18:50:47+01:00",
+      "heard": "Ω"
     },
     {
       "serial": 4,
@@ -45,7 +54,10 @@
       "seed": 1,
       "parent": 1,
       "status": "queued",
-      "input": "#1's word-by-word copy of what it heard, 5% lapses per word"
+      "input": "#1's word-by-word copy of what it heard, 5% lapses per word",
+      "born": null,
+      "grown": null,
+      "heard": "Ω>#1·5"
     },
     {
       "serial": 5,
@@ -56,7 +68,10 @@
       "seed": 2,
       "parent": 1,
       "status": "queued",
-      "input": "#1's word-by-word copy of what it heard, 5% lapses per word"
+      "input": "#1's word-by-word copy of what it heard, 5% lapses per word",
+      "born": null,
+      "grown": null,
+      "heard": "Ω>#1·5"
     },
     {
       "serial": 6,
@@ -67,10 +82,17 @@
       "seed": 3,
       "parent": 1,
       "status": "queued",
-      "input": "#1's word-by-word copy of what it heard, 5% lapses per word"
+      "input": "#1's word-by-word copy of what it heard, 5% lapses per word",
+      "born": null,
+      "grown": null,
+      "heard": "Ω>#1·5"
     }
   ],
   "sources": {
     "0": "Real caregivers (AO-CHILDES)"
+  },
+  "corpora": {
+    "Ω": "AO-CHILDES: what adults said to children in recorded North American families, 0–72 months (the original)",
+    "Ω>#1·5": "#1's word-by-word copy of Ω, 5% lapses per word"
   }
 }

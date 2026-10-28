@@ -77,7 +77,8 @@ export function lineageFigure(reg, { compact = false } = {}) {
     const x = xs(i.gen), y = pos.get(i.serial), ch = kids(i.serial);
     edges(x, y, ch);
     const a = s("a", { href: `individual.html?n=${i.serial}` });
-    a.append(s("title", {}, `#${i.serial} ${fullId(i)} — ${STATUS[i.status]}`));
+    const born = i.born ? ", born " + new Date(i.born).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
+    a.append(s("title", {}, `#${i.serial} ${fullId(i)} — ${STATUS[i.status]}${born}${i.heard ? ", heard " + i.heard : ""}`));
     a.append(s("circle", { cx: x, cy: y, r: 3.5, fill: i.status === "trained" ? "currentColor" : "var(--bg)", stroke: "currentColor", "stroke-width": 1.4 }));
     const label = `#${i.serial}` + (compact ? "" : `  ${fullId(i)}`) + `  ${STATUS[i.status]}`;
     a.append(s("text", { ...font, x: x + 8, y: ch.length ? y - 7 : y + 4 }, label));
