@@ -53,10 +53,10 @@
       "lesion": null,
       "seed": 1,
       "parent": 1,
-      "status": "queued",
+      "status": "trained",
       "input": "#1's word-by-word copy of what it heard, 5% lapses per word",
-      "born": null,
-      "grown": null,
+      "born": "2026-10-28T21:11:48+01:00",
+      "grown": "2026-10-28T21:32:59+01:00",
       "heard": "Ω>#1@72m·c5"
     },
     {
@@ -67,10 +67,10 @@
       "lesion": null,
       "seed": 2,
       "parent": 1,
-      "status": "queued",
+      "status": "trained",
       "input": "#1's word-by-word copy of what it heard, 5% lapses per word",
-      "born": null,
-      "grown": null,
+      "born": "2026-10-28T21:11:48+01:00",
+      "grown": "2026-10-28T21:33:15+01:00",
       "heard": "Ω>#1@72m·c5"
     },
     {
@@ -81,10 +81,10 @@
       "lesion": null,
       "seed": 3,
       "parent": 1,
-      "status": "queued",
+      "status": "trained",
       "input": "#1's word-by-word copy of what it heard, 5% lapses per word",
-      "born": null,
-      "grown": null,
+      "born": "2026-10-28T21:12:48+01:00",
+      "grown": "2026-10-28T21:33:42+01:00",
       "heard": "Ω>#1@72m·c5"
     }
   ],
