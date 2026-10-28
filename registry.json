@@ -36,5 +36,14 @@
       "parent": null,
       "status": "training"
     }
+  ],
+  "sources": {
+    "0": "Real caregivers (AO-CHILDES)"
+  },
+  "planned": [
+    {
+      "gen": 1,
+      "label": "to be taught by grown G0 individuals"
+    }
   ]
 }

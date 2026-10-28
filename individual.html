@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>StemmaLM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="bar">
+    <a class="home" href="./">StemmaLM</a>
+    <nav><a href="./">About</a><a href="lineage.html">Lineage</a></nav>
+  </div>
+
+  <a href="lineage.html" class="muted" style="font-size:15px">← Lineage</a>
+  <h1 id="title" style="margin-top:6px">#</h1>
+  <div class="sub id" id="full"></div>
+
+  <dl class="anat" id="anat"></dl>
+
+  <section id="talk-sec" hidden>
+    <h2>Talk</h2>
+    <div class="id" id="who" style="font-size:16px"></div>
+    <div class="age">
+      <label for="age" class="muted" style="font-size:14px">Age in months</label>
+      <input type="range" id="age" min="0" max="72" step="1" value="30">
+      <div class="ticks" aria-hidden="true"><span>0</span><span>12</span><span>24</span><span>36</span><span>48</span><span>60</span><span>72</span></div>
+    </div>
+    <div class="log" id="log" aria-live="polite"></div>
+    <div class="muted" id="status" style="font-size:14px;min-height:1.4em" aria-live="polite"></div>
+    <form id="compose" autocomplete="off">
+      <input id="say" type="text" aria-label="What you say">
+      <button type="submit" id="send">Send</button>
+    </form>
+  </section>
+  <p class="muted" id="not-yet" hidden style="margin-top:28px;font-style:italic">Still growing. You can talk to it once it is grown.</p>
+
+  <footer>Data: CHILDES (CC BY-NC-SA 4.0), via AO-CHILDES. The model runs in your browser; names in its replies are replaced by “(name)”.</footer>
+</div>
+
+<script type="module">
+import { registry, fullId, STATUS, el } from "./site.js";
+import { decode, makeModel, reply, scrub } from "./stemma.js";
+
+// weights: the public model repo on Hugging Face; a local folder when previewing on this machine
+const LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+const BASE = LOCAL ? "weights/" : "https://huggingface.co/xchuanli/stemmalm-weights/resolve/main/";
+
+const reg = await registry();
+const serial = Number(new URLSearchParams(location.search).get("n")) || 1;
+const ind = reg.individuals.find((i) => i.serial === serial) || reg.individuals[0];
+const pad = (n) => String(n).padStart(3, "0");
+
+document.title = `#${ind.serial} · StemmaLM`;
+document.getElementById("title").textContent = "#" + ind.serial;
+document.getElementById("full").textContent = fullId(ind);
+
+// how the full name reads, part by part
+const anat = document.getElementById("anat");
+const rows = [
+  ["Strain", `${ind.strain} — ${reg.strains[ind.strain]}`],
+  ["Upbringing", `${ind.env} — ${reg.envs[ind.env]}`],
+  ["Generation", ind.gen === 0 ? "G0 — taught by real caregivers" : `G${ind.gen}`],
+  ["Lesion", ind.lesion || "none"],
+  ["Seed", `s${ind.seed}`],
+  ["Parent", ind.parent ? `#${ind.parent}` : "none"],
+  ["Status", STATUS[ind.status]],
+];
+for (const [k, v] of rows) anat.append(el("dt", { text: k }), el("dd", { text: v }));
+
+if (ind.status !== "trained") {
+  document.getElementById("not-yet").hidden = false;
+} else {
+  document.getElementById("talk-sec").hidden = false;
+  const state = { age: 30, logs: {} };
+  let man = null;
+  const models = new Map();
+
+  async function modelAt(age) {
+    man = man || await fetch(`${BASE}n${pad(serial)}/web/manifest.json`).then((r) => { if (!r.ok) throw 0; return r.json(); });
+    const month = Math.max(...man.snapshots.filter((s) => s <= age));
+    if (!models.has(month)) {
+      const buf = await fetch(`${BASE}n${pad(serial)}/web/m${String(month).padStart(2, "0")}.bin`).then((r) => { if (!r.ok) throw 0; return r.arrayBuffer(); });
+      models.set(month, makeModel(man, decode(buf)));
+      if (models.size > 3) models.delete(models.keys().next().value);
+    }
+    return models.get(month);
+  }
+
+  function render() {
+    document.getElementById("who").textContent = `#${serial}@${state.age}m`;
+    const log = document.getElementById("log");
+    log.innerHTML = "";
+    const msgs = state.logs[state.age] || [];
+    if (!msgs.length) { log.append(el("p", { class: "empty", text: "Say something." })); return; }
+    for (const m of msgs) {
+      log.append(el("div", { class: "line" },
+        el("span", { class: "who", text: m.role === "adult" ? "you" : `#${serial}@${state.age}m` }),
+        el("span", { class: "text", text: m.text })));
+    }
+    log.scrollTop = log.scrollHeight;
+  }
+
+  document.getElementById("age").addEventListener("input", (e) => { state.age = Number(e.target.value); render(); });
+  document.getElementById("compose").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const input = document.getElementById("say"), text = input.value.trim();
+    if (!text) return;
+    const age = state.age, msgs = state.logs[age] = state.logs[age] || [];
+    msgs.push({ role: "adult", text }); input.value = ""; render();
+    const status = document.getElementById("status"), send = document.getElementById("send");
+    send.disabled = true;
+    status.textContent = models.size ? "…" : "loading the model (about 21 MB)…";
+    try {
+      const model = await modelAt(age);
+      await new Promise((r) => setTimeout(r, 20));
+      // the conversation so far, one turn per line, as the individual has always heard speech
+      const convo = msgs.map((m) => m.text.replace(/\s+/g, " ").slice(0, 200)).join("\n") + "\n";
+      msgs.push({ role: "model", text: scrub(reply(model, convo)) });
+    } catch {
+      msgs.push({ role: "model", text: "(no answer)" });
+    }
+    status.textContent = ""; send.disabled = false; render();
+  });
+  render();
+}
+</script>
+</body>
+</html>
