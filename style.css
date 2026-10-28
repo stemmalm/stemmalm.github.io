@@ -170,3 +170,14 @@ table.reg { border-collapse: collapse; width: 100%; min-width: 760px; font-size:
 .muted { color: var(--muted); }
 .small { font-size: 12.5px; }
 @media (max-width: 560px) { .bar nav { display: flex; flex-wrap: wrap; row-gap: 2px; } }
+.reg.var tr.ex-row { cursor: default; }
+.reg.var tr.ex-row td { background: var(--bg); padding: 10px 8px 14px; white-space: normal; }
+.ex-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.ex-col h3 { font: 500 12.5px var(--font-id); margin: 0 0 6px; color: var(--muted); }
+.ex-item { border-left: 2px solid var(--faint); padding: 2px 0 2px 8px; margin: 0 0 8px; font-size: 13.5px; line-height: 1.45; }
+.ex-meta { font: 11px var(--font-id); color: var(--muted); }
+.ex-ctx { color: var(--muted); }
+.sent mark { background: var(--mark); color: var(--ink); outline: 1px solid #e3c25b; padding: 0 1px; }
+.sent .lapse { text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 2px; }
+@media (max-width: 820px) { .ex-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 820px) { .reg.var tr.ex-row td > * { position: sticky; left: 0; max-width: calc(100vw - 48px); } }

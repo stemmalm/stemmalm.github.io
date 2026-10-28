@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Variants · StemmaLM</title>
-<link rel="stylesheet" href="style.css?v=20261028224143">
+<link rel="stylesheet" href="style.css?v=20261028224954">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 </head>
 <body>
@@ -50,7 +50,7 @@
 </div>
 
 <script type="module">
-import { header, registry, lineageMap, el } from "./site.js?v=20261028224143";
+import { header, registry, lineageMap, el } from "./site.js?v=20261028224954";
 header("variants");
 const [reg, stats, V] = await Promise.all([registry(),
   fetch("stats.json?v=" + Date.now()).then((r) => r.json()), fetch("variants.json?v=" + Date.now()).then((r) => r.json())]);
@@ -74,13 +74,66 @@ res.append(
 
 // the table
 const body = document.querySelector("#tbl tbody"), grp = document.getElementById("grp"), q = document.getElementById("q");
-let current = null;
-function pick(v, tr) {
+let current = null, EX = null;
+const getEx = () => EX || (EX = fetch("excerpts.json?v=" + Date.now()).then((r) => r.json()));
+
+// a sentence with the pair marked; lapse words (copies) underlined
+function sentence(text, pair, lapses = []) {
+  const w = text.split(" "), p = pair.split(" "), out = el("span", { class: "sent" });
+  const hit = new Set();
+  for (let i = 0; i + 1 < w.length; i++) if (w[i] === p[0] && w[i + 1] === p[1]) { hit.add(i); hit.add(i + 1); }
+  w.forEach((x, i) => {
+    if (i) out.append(" ");
+    const tag = hit.has(i) ? "mark" : "span";
+    const e = el(tag, { text: x });
+    if (lapses.includes(i)) e.classList.add("lapse");
+    out.append(e);
+  });
+  return out;
+}
+function block(title, items) {
+  const b = el("div", { class: "ex-col" }, el("h3", { text: title }));
+  if (!items.length) b.append(el("p", { class: "muted small", text: "—" }));
+  for (const it of items) b.append(it);
+  return b;
+}
+async function expand(v, tr) {
+  const ex = (await getEx())[v.id];
+  const omega = ex.omega.map((o) => el("div", { class: "ex-item" },
+    el("div", { class: "ex-meta", text: `Ω @${o.month}m` }),
+    ...(o.before ? [el("div", { class: "ex-ctx", text: o.before })] : []), sentence(o.line, v.pair)));
+  const copies = [];
+  for (const [c, list] of Object.entries(ex.copies)) for (const o of list)
+    copies.push(el("div", { class: "ex-item" },
+      el("div", { class: "ex-meta", text: `copy by #${c} @${o.month}m` }),
+      el("div", { class: "ex-ctx" }, el("span", { class: "muted", text: "Ω  " }), sentence(o.src, "", o.lapses)),
+      el("div", {}, el("span", { class: "muted", text: "→  " }), sentence(o.copy, v.pair, o.lapses))));
+  const said = (ns) => {
+    const out = [];
+    for (const n of ns) for (const o of ex.speech[n] || [])
+      out.push(el("div", { class: "ex-item" },
+        el("div", { class: "ex-meta", text: `#${n} @${o.month}m` }),
+        el("div", { class: "ex-ctx" }, el("span", { class: "muted", text: "adult  " }), el("span", { text: o.adult })),
+        el("div", {}, el("span", { class: "muted", text: `#${n}  ` }), sentence(o.said, v.pair))));
+    return out;
+  };
+  const row = el("tr", { class: "ex-row" }, el("td", { colspan: "7" },
+    el("div", { class: "ex-grid" },
+      block("source and copies", [...omega, ...copies]),
+      block("said by G0 (#1–#3, heard Ω)", said(["1", "2", "3"])),
+      block("said by G1 (#4–#6, heard #1's copy)", said(["4", "5", "6"]))),
+    el("p", { class: "muted small", text: "At most three per column; marked: the pair; underlined: words the copyist wrote in a lapse. Adult lines are from CHILDES via AO-CHILDES (CC BY-NC-SA 4.0), names shown as (name)." })));
+  tr.after(row);
+}
+async function pick(v, tr) {
+  const open = tr.nextElementSibling && tr.nextElementSibling.classList.contains("ex-row");
   for (const x of body.querySelectorAll("tr.on")) x.classList.remove("on");
+  for (const x of body.querySelectorAll("tr.ex-row")) x.remove();
   tr.classList.add("on");
   current = v.pair;
   map.highlight(v.speech);
   document.getElementById("cap").textContent = `fig. 2 — who said “${v.pair}” (24–72 months)`;
+  if (!open) await expand(v, tr);
 }
 function draw() {
   const rows = V.variants.filter((v) => (!grp.value || v.group === grp.value) && (!q.value || v.pair.includes(q.value.trim())))
@@ -103,8 +156,8 @@ function draw() {
 grp.addEventListener("change", draw);
 q.addEventListener("input", draw);
 draw();
-const first = body.querySelector("tr");
-if (first) first.click();
+const top = body.querySelector("tr");
+if (top) { const v = V.variants.find((x) => x.pair === top.firstChild.textContent); top.classList.add("on"); current = v.pair; map.highlight(v.speech); document.getElementById("cap").textContent = `fig. 2 — who said “${v.pair}” (24–72 months)`; }
 </script>
 </body>
 </html>
