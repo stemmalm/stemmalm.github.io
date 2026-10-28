@@ -7,18 +7,20 @@
 <meta name="description" content="A lineage of small language models, each raised from scratch on what adults say to children.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="style.css">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
 </head>
 <body>
 <div class="wrap">
-  <div class="bar">
-    <a class="home" href="./">StemmaLM</a>
-    <nav><a href="./" aria-current="page">About</a><a href="lineage.html">Lineage</a></nav>
-  </div>
+  <div class="bar"></div>
 
   <h1>StemmaLM</h1>
   <div class="sub">A lineage of small language models, each raised from scratch on what adults say to children.</div>
+
+  <div class="paper fig" style="margin-top:22px">
+    <p class="fig-cap">fig. 0 — the lineage so far</p>
+    <div id="fig0"></div>
+  </div>
 
   <h2>An individual</h2>
   <p>Each individual begins as a model that knows nothing. It hears what adults said to real children, taken from recorded family conversations and fed in order of the child's age, month by month, up to six years. It never hears the children themselves, and it never sees the world they talk about: it is a child with only words. A snapshot is kept for every month of its life, and at every month it can be asked to speak.</p>
@@ -33,5 +35,11 @@
 
   <footer>Data: CHILDES (CC BY-NC-SA 4.0), via AO-CHILDES. The models run in your browser; names in their replies are replaced by “(name)”.</footer>
 </div>
+<script type="module">
+import { header, registry, lineageFigure } from "./site.js";
+header("about");
+const reg = await registry();
+document.getElementById("fig0").append(lineageFigure(reg, { compact: true }));
+</script>
 </body>
 </html>

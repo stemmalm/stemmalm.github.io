@@ -6,51 +6,29 @@
 <title>Lineage · StemmaLM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="style.css">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
 </head>
 <body>
 <div class="wrap">
-  <div class="bar">
-    <a class="home" href="./">StemmaLM</a>
-    <nav><a href="./">About</a><a href="lineage.html" aria-current="page">Lineage</a></nav>
-  </div>
+  <div class="bar"></div>
 
   <h1>Lineage</h1>
   <div class="sub">Choose an individual to meet it.</div>
 
-  <div class="tree" id="tree" style="margin-top:28px"></div>
+  <div class="paper fig" style="margin-top:22px">
+    <p class="fig-cap">fig. 1 — every individual, by generation; filled = grown, open = not yet</p>
+    <div id="tree"></div>
+  </div>
 
   <footer>Data: CHILDES (CC BY-NC-SA 4.0), via AO-CHILDES.</footer>
 </div>
 
 <script type="module">
-import { registry, fullId, STATUS, el } from "./site.js";
-
+import { header, registry, lineageFigure } from "./site.js";
+header("lineage");
 const reg = await registry();
-const tree = document.getElementById("tree");
-const gens = {};
-for (const i of reg.individuals) (gens[i.gen] = gens[i.gen] || []).push(i);
-const last = Math.max(...Object.keys(gens).map(Number), ...(reg.planned || []).map((p) => p.gen));
-
-for (let g = 0; g <= last; g++) {
-  const kids = (gens[g] || []).map((i) => el("a", { class: "node", href: `individual.html?n=${i.serial}` },
-    el("span", { class: "serial", text: "#" + i.serial }),
-    el("span", { class: "full", text: fullId(i) }),
-    el("span", { class: "state", text: STATUS[i.status] })));
-  for (const p of (reg.planned || []).filter((p) => p.gen === g)) {
-    kids.push(el("div", { class: "node planned" }, el("span", { class: "state", text: p.label })));
-  }
-  const real = (gens[g] || []).length;
-  const sibs = el("div", { class: "sibs" + (!real ? " bare" : kids.length === 1 ? " one" : "") }, ...kids);
-  // what this generation heard: real caregivers for G0, its parents' speech after that
-  const heard = g === 0
-    ? el("div", {}, el("div", { class: "source-row" }, el("div", { class: "source", text: reg.sources?.["0"] || "Real caregivers" })), el("div", { class: "drop" }))
-    : real ? el("div", { class: "drop" }) : el("div", { style: "height:22px" });  // no parent line until a parent exists
-  sibs.style.setProperty("--n", Math.max(1, kids.length));
-  tree.append(el("div", { class: "gen" }, el("div", { class: "gen-label" }), heard));
-  tree.append(el("div", { class: "gen" }, el("div", { class: "gen-label", text: "G" + g }), sibs));
-}
+document.getElementById("tree").append(lineageFigure(reg));
 </script>
 </body>
 </html>

@@ -6,15 +6,12 @@
 <title>StemmaLM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="style.css">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
 </head>
 <body>
 <div class="wrap">
-  <div class="bar">
-    <a class="home" href="./">StemmaLM</a>
-    <nav><a href="./">About</a><a href="lineage.html">Lineage</a></nav>
-  </div>
+  <div class="bar"></div>
 
   <a href="lineage.html" class="muted" style="font-size:15px">← Lineage</a>
   <h1 id="title" style="margin-top:6px">#</h1>
@@ -37,13 +34,14 @@
       <button type="submit" id="send">Send</button>
     </form>
   </section>
-  <p class="muted" id="not-yet" hidden style="margin-top:28px;font-style:italic">Still growing. You can talk to it once it is grown.</p>
+  <p class="muted" id="not-yet" hidden style="margin-top:28px;font-family:var(--font-id);font-size:14px">// not grown yet — you can talk to it once it is grown</p>
 
   <footer>Data: CHILDES (CC BY-NC-SA 4.0), via AO-CHILDES. The model runs in your browser; names in its replies are replaced by “(name)”.</footer>
 </div>
 
 <script type="module">
-import { registry, fullId, STATUS, el } from "./site.js";
+import { registry, fullId, STATUS, el, header } from "./site.js";
+header("");
 import { decode, makeModel, reply, scrub } from "./stemma.js";
 
 // weights: the public model repo on Hugging Face; a local folder when previewing on this machine
@@ -64,7 +62,7 @@ const anat = document.getElementById("anat");
 const rows = [
   ["Strain", `${ind.strain} — ${reg.strains[ind.strain]}`],
   ["Upbringing", `${ind.env} — ${reg.envs[ind.env]}`],
-  ["Generation", ind.gen === 0 ? "G0 — taught by real caregivers" : `G${ind.gen}`],
+  ["Generation", ind.gen === 0 ? "G0 — taught by real caregivers" : `G${ind.gen} — taught by ${ind.input || "its parent"}`],
   ["Lesion", ind.lesion || "none"],
   ["Seed", `s${ind.seed}`],
   ["Parent", ind.parent ? `#${ind.parent}` : "none"],

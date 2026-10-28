@@ -1,54 +1,48 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;1,400&display=swap");
 :root {
-  --bg: #ffffff; --ink: #1a1a1a; --muted: #666666; --rule: #999999; --faint: #d6d6d6;
-  --head: #eeeeee; --link: #1a3d8f; --mark: #fffbe6;
-  --font-body: "EB Garamond", Georgia, serif;
+  --bg: #fbfbf8; --ink: #1a1a1a; --muted: #6a6a66; --rule: #8f8f8a; --faint: #d9d9d3;
+  --grid: #ececE6; --head: #efefea; --link: #1f4f8f; --mark: #fff6d6;
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
   --font-id: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
-  :root { --bg: #161616; --ink: #e4e4e4; --muted: #a0a0a0; --rule: #555555; --faint: #333333;
-    --head: #232323; --link: #8fb0f0; --mark: #2a2716; color-scheme: dark; }
+  :root { --bg: #141513; --ink: #e6e6e1; --muted: #9a9a94; --rule: #5f5f5a; --faint: #2e2f2c;
+    --grid: #1f201d; --head: #222320; --link: #8fb4ec; --mark: #2b2816; color-scheme: dark; }
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 18px; line-height: 1.6; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16.5px; line-height: 1.65; }
 .wrap { max-width: 760px; margin: 0 auto; padding: 24px 16px 56px; }
 a { color: var(--link); }
 p { margin: 0 0 12px; }
-h1 { font-size: 34px; font-weight: 500; margin: 0; letter-spacing: 0.01em; }
-h2 { font-size: 21px; font-weight: 500; margin: 32px 0 10px; }
+h1 { font-family: var(--font-id); font-size: 28px; font-weight: 500; margin: 0; letter-spacing: -0.01em; }
+h2 { font-family: var(--font-id); font-size: 16px; font-weight: 500; margin: 32px 0 10px; }
+h2::before { content: "§ "; color: var(--muted); }
 hr { border: 0; border-top: 1px solid var(--rule); margin: 16px 0; }
 .id { font-family: var(--font-id); font-size: 0.8em; font-variant-numeric: tabular-nums; }
 .muted { color: var(--muted); }
-.sub { font-style: italic; color: var(--muted); margin-top: 2px; }
+.sub { color: var(--muted); margin-top: 4px; }
 
-/* top bar: name left, two links right */
-.bar { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--rule); margin-bottom: 36px; }
-.bar .home { font-weight: 500; text-decoration: none; color: var(--ink); }
-.bar nav a { margin-left: 16px; font-size: 16px; }
-.bar nav a[aria-current="page"] { color: var(--ink); text-decoration: none; }
+/* top bar: logo and wordmark left, links right */
+.bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--rule); margin-bottom: 32px; }
+.bar .home { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font-family: var(--font-id); font-size: 16px; }
+.bar .home svg { width: 30px; height: 25px; flex: none; }
+.bar nav { font-family: var(--font-id); font-size: 13.5px; }
+.bar nav a { margin-left: 14px; color: var(--muted); text-decoration: none; }
+.bar nav a:hover { color: var(--ink); text-decoration: underline; }
+.bar nav a[aria-current="page"] { color: var(--ink); }
 
-.next { display: inline-block; margin-top: 18px; font-size: 18px; }
+/* grid paper: the banner and the lineage figure sit on it */
+.paper { border: 1px solid var(--rule); padding: 12px 14px 10px; background-color: var(--bg);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 16px 16px; }
+.fig-cap { font-family: var(--font-id); font-size: 12.5px; color: var(--muted); margin: 0 0 6px; }
+.fig svg { display: block; width: 100%; height: auto; }
+.fig { color: var(--ink); }
+.fig a { cursor: pointer; color: var(--ink); }
+.fig a:hover text, .fig a:focus text { text-decoration: underline; }
 
-/* lineage tree: each generation is one row of siblings, joined by a bracket to what they heard */
-.tree { margin-top: 28px; }
-.gen { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr); gap: 10px; align-items: start; }
-.gen-label { font-family: var(--font-id); font-size: 13px; color: var(--muted); padding-top: 24px; }
-.source-row { display: flex; justify-content: center; }
-.source { font-style: italic; color: var(--muted); border: 1px dashed var(--rule); padding: 6px 12px; text-align: center; }
-.drop { width: 0; height: 18px; margin: 0 auto; border-left: 1px solid var(--rule); }
-.sibs { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 10px; position: relative; padding-top: 16px; }
-.sibs::before { /* the bracket: from the first sibling's centre to the last one's */
-  content: ""; position: absolute; top: 0; height: 16px;
-  left: calc(50% / var(--n)); right: calc(50% / var(--n));
-  border-top: 1px solid var(--rule); border-left: 1px solid var(--rule); border-right: 1px solid var(--rule); }
-.sibs.bare::before { content: none; }
-.sibs.one::before { left: 50%; right: auto; border-right: 0; border-top: 0; }
-.node { display: block; border: 1px solid var(--rule); padding: 8px 10px; text-decoration: none; color: var(--ink); background: var(--bg); text-align: center; }
-.node:hover, .node:focus-visible { background: var(--mark); outline: none; }
-.node .serial { font-family: var(--font-id); font-size: 17px; }
-.node .full { display: block; font-family: var(--font-id); font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
-.node .state { display: block; font-size: 14.5px; margin-top: 2px; }
-.node.planned { border-style: dashed; color: var(--muted); pointer-events: none; }
+.next { display: inline-block; margin-top: 18px; font-family: var(--font-id); font-size: 14.5px; }
 
 /* individual */
 dl.anat { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 4px 14px; margin: 8px 0 0; }

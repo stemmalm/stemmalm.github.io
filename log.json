@@ -1,0 +1,113 @@
+[
+  {
+    "date": "2026-10-28",
+    "title": "It speaks like an adult before it speaks like a child",
+    "body": [
+      "#1 has lived its first 72 months. Before it heard anything it produced random characters. At 12 months it already strings real words together, and from then on it talks in whole adult sentences: asked “do you want to play with the ball?”, the 18-month snapshot answers “we wanted to play with you today”.",
+      "Real children are nowhere near this. Counting only real words, #1 at 12 months says 3.5 words per utterance; children of the same age in the same recordings say 0.9. At 18 months it is 4.4 against 1.5; at 36 months 5.0 against 3.4.",
+      "The reason is how it was raised. It only ever heard adults talking to children, so the first thing it learns to imitate is an adult. The short, telegraphic speech of a two-year-old does not grow out of learning from this input alone. Whatever produces it — a body, a world, a mind that cannot yet hold a long sentence — is missing from #1."
+    ],
+    "table": {
+      "caption": "Mean real words per utterance",
+      "head": [
+        "Age (months)",
+        "#1",
+        "Children, same recordings"
+      ],
+      "rows": [
+        [
+          "12",
+          "3.5",
+          "0.9"
+        ],
+        [
+          "18",
+          "4.4",
+          "1.5"
+        ],
+        [
+          "24",
+          "4.9",
+          "2.4"
+        ],
+        [
+          "36",
+          "5.0",
+          "3.4"
+        ]
+      ]
+    }
+  },
+  {
+    "date": "2026-10-28",
+    "title": "The first copy",
+    "body": [
+      "The lineage starts by copying. Grown #1 copies, word by word, everything adults said to children in its own upbringing. At each word it lapses with probability 5% and writes the word it expects instead of the one in front of it. Its copy will raise the next generation.",
+      "In a first test on 800 lines, 82% came through unchanged. A lapse is the parent's own guess, so it leans towards what the parent expects: rare words often turn into common ones (“ball” became “beautiful”, “telephones” became “and”), and agreement can shift (“when are you gonna bring em home” became “when is you gonna bring em home”). Whether these drifts pile up over generations is what the lineage is for."
+    ],
+    "tables": [
+      {
+        "caption": "Lines from the first test copy",
+        "head": [
+          "Source",
+          "Copy"
+        ],
+        "rows": [
+          [
+            "and what else did we do yesterday",
+            "and what else did you do yesterday"
+          ],
+          [
+            "when are you gonna bring em home",
+            "when is you gonna bring em home"
+          ],
+          [
+            "which one do you wanna ride on",
+            "which one do you wanna figure on"
+          ]
+        ]
+      },
+      {
+        "caption": "Lapses in the first test copy: the word in the source, and what #1 wrote",
+        "head": [
+          "Source word",
+          "Written by #1"
+        ],
+        "rows": [
+          [
+            "ball",
+            "beautiful"
+          ],
+          [
+            "telephones",
+            "and"
+          ],
+          [
+            "fell",
+            "asked"
+          ],
+          [
+            "push",
+            "go"
+          ],
+          [
+            "the",
+            "that"
+          ],
+          [
+            "put",
+            "let's"
+          ],
+          [
+            "that's",
+            "is"
+          ],
+          [
+            "do",
+            "is"
+          ]
+        ]
+      }
+    ]
+  }
+]

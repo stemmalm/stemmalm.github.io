@@ -35,15 +35,42 @@
       "seed": 3,
       "parent": null,
       "status": "training"
+    },
+    {
+      "serial": 4,
+      "strain": "EN1",
+      "env": "WT1",
+      "gen": 1,
+      "lesion": null,
+      "seed": 1,
+      "parent": 1,
+      "status": "queued",
+      "input": "#1's word-by-word copy of what it heard, 5% lapses per word"
+    },
+    {
+      "serial": 5,
+      "strain": "EN1",
+      "env": "WT1",
+      "gen": 1,
+      "lesion": null,
+      "seed": 2,
+      "parent": 1,
+      "status": "queued",
+      "input": "#1's word-by-word copy of what it heard, 5% lapses per word"
+    },
+    {
+      "serial": 6,
+      "strain": "EN1",
+      "env": "WT1",
+      "gen": 1,
+      "lesion": null,
+      "seed": 3,
+      "parent": 1,
+      "status": "queued",
+      "input": "#1's word-by-word copy of what it heard, 5% lapses per word"
     }
   ],
   "sources": {
     "0": "Real caregivers (AO-CHILDES)"
-  },
-  "planned": [
-    {
-      "gen": 1,
-      "label": "to be taught by grown G0 individuals"
-    }
-  ]
+  }
 }
