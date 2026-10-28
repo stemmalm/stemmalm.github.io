@@ -41,6 +41,7 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 16px 0; }
   content: ""; position: absolute; top: 0; height: 16px;
   left: calc(50% / var(--n)); right: calc(50% / var(--n));
   border-top: 1px solid var(--rule); border-left: 1px solid var(--rule); border-right: 1px solid var(--rule); }
+.sibs.bare::before { content: none; }
 .sibs.one::before { left: 50%; right: auto; border-right: 0; border-top: 0; }
 .node { display: block; border: 1px solid var(--rule); padding: 8px 10px; text-decoration: none; color: var(--ink); background: var(--bg); text-align: center; }
 .node:hover, .node:focus-visible { background: var(--mark); outline: none; }

@@ -41,11 +41,12 @@ for (let g = 0; g <= last; g++) {
   for (const p of (reg.planned || []).filter((p) => p.gen === g)) {
     kids.push(el("div", { class: "node planned" }, el("span", { class: "state", text: p.label })));
   }
+  const real = (gens[g] || []).length;
+  const sibs = el("div", { class: "sibs" + (!real ? " bare" : kids.length === 1 ? " one" : "") }, ...kids);
   // what this generation heard: real caregivers for G0, its parents' speech after that
   const heard = g === 0
     ? el("div", {}, el("div", { class: "source-row" }, el("div", { class: "source", text: reg.sources?.["0"] || "Real caregivers" })), el("div", { class: "drop" }))
-    : (gens[g] || []).length ? el("div", { class: "drop" }) : el("div", { style: "height:22px" });  // no parent line until a parent exists
-  const sibs = el("div", { class: "sibs" + (kids.length === 1 ? " one" : "") }, ...kids);
+    : real ? el("div", { class: "drop" }) : el("div", { style: "height:22px" });  // no parent line until a parent exists
   sibs.style.setProperty("--n", Math.max(1, kids.length));
   tree.append(el("div", { class: "gen" }, el("div", { class: "gen-label" }), heard));
   tree.append(el("div", { class: "gen" }, el("div", { class: "gen-label", text: "G" + g }), sibs));
