@@ -6,7 +6,7 @@
 <title>Log · StemmaLM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="style.css?v=20261029075208">
+<link rel="stylesheet" href="style.css?v=20261029080833">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <style>
   .log-list { margin-top: 26px; border-top: 1px solid var(--rule); }
@@ -20,6 +20,7 @@
   .log-caret { font-family: var(--font-id); color: var(--muted); transition: transform 0.15s; }
   .log-item[open] .log-caret { transform: rotate(90deg); }
   .log-body { padding: 4px 2px 18px 0; }
+  .log-body > p, .log-body > ul, .log-body > ol, .log-body > .log-correction { max-width: 74ch; }
   @media (min-width: 560px) { .log-body { padding-left: calc(7.6rem + 12px); } }
   .log-body table { border-collapse: collapse; width: 100%; font-size: 15px; margin: 6px 0 16px; }
   .log-body caption { text-align: left; color: var(--muted); font-size: 13.5px; padding-bottom: 4px; }
@@ -31,7 +32,7 @@
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="wrap wide">
   <div class="bar"></div>
 
   <h1>Log</h1>
@@ -43,7 +44,7 @@
 </div>
 
 <script type="module">
-import { el, header } from "./site.js?v=20261029075208";
+import { el, header } from "./site.js?v=20261029080833";
 header("log");
 
 const entries = await fetch("log.json?v=" + Date.now()).then((r) => r.json());

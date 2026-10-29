@@ -209,3 +209,5 @@ table.reg { border-collapse: collapse; width: 100%; min-width: 760px; font-size:
 .cmp-adult { font-size: 14.5px; margin-bottom: 6px; }
 .cmp-pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
 .cmp-cell { border-left: 2px solid var(--faint); padding-left: 8px; font-size: 14.5px; line-height: 1.45; }
+.ind-top, .ind-talk { align-items: start; }
+.ind-talk .chat, .ind-talk .age { max-width: none; }

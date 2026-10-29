@@ -6,21 +6,23 @@
 <title>StemmaLM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="style.css?v=20261029075208">
+<link rel="stylesheet" href="style.css?v=20261029080833">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 </head>
 <body>
-<div class="wrap">
+<div class="wrap wide">
   <div class="bar"></div>
 
   <a href="lineage.html" class="muted" style="font-size:15px">← Lineage</a>
   <h1 id="title" style="margin-top:6px">#</h1>
   <div class="sub id" id="full"></div>
 
-  <dl class="anat" id="anat"></dl>
+  <div class="cols ind-top">
+    <div><h2>Name</h2><dl class="anat" id="anat"></dl></div>
+    <div><h2>Life</h2><dl class="anat" id="life"></dl></div>
+  </div>
 
-  <h2>Life</h2>
-  <dl class="anat" id="life"></dl>
+  <div class="cols ind-talk">
 
   <section id="talk-sec" hidden>
     <h2>Talk</h2>
@@ -51,15 +53,16 @@
     </form>
     <div id="cmp-log" class="cmp-log" aria-live="polite"></div>
   </section>
+  </div>
   <p class="muted" id="not-yet" hidden style="margin-top:28px;font-family:var(--font-id);font-size:14px">// not grown yet — you can talk to it once it is grown</p>
 
   <footer>Data: CHILDES (CC BY-NC-SA 4.0), via AO-CHILDES. The model runs in your browser; names in its replies are replaced by “(name)”.</footer>
 </div>
 
 <script type="module">
-import { registry, fullId, STATUS, el, header } from "./site.js?v=20261029075208";
+import { registry, fullId, STATUS, el, header } from "./site.js?v=20261029080833";
 header("");
-import { decode, makeModel, reply, scrub } from "./stemma.js?v=20261029075208";
+import { decode, makeModel, reply, scrub } from "./stemma.js?v=20261029080833";
 
 // weights: the public model repo on Hugging Face; a local folder when previewing on this machine
 const LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && !new URLSearchParams(location.search).has("hf");  // ?hf: use the public weights while previewing
