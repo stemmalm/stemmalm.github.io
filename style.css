@@ -132,9 +132,11 @@ table.reg { border-collapse: collapse; width: 100%; min-width: 760px; font-size:
 .map > svg { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
 .map.dragging > svg { cursor: grabbing; }
 .map a { cursor: pointer; }
-.map-ui { position: absolute; right: 8px; top: 8px; display: flex; flex-direction: column; border: 1px solid var(--rule); background: var(--bg); }
-.map-ui button { width: 28px; height: 28px; border: 0; border-bottom: 1px solid var(--faint); background: none; color: var(--ink); font: 15px/1 var(--font-id); cursor: pointer; padding: 0; }
-.map-ui button:last-child { border-bottom: 0; }
+.map-foot { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.map-ui { display: flex; flex: none; margin-top: 6px; border: 1px solid var(--faint); background: var(--bg); }
+.map-ui button { min-width: 26px; height: 22px; border: 0; border-right: 1px solid var(--faint); background: none; color: var(--muted); font: 12.5px/1 var(--font-id); cursor: pointer; padding: 0 6px; }
+.map-ui button:last-child { border-right: 0; }
+.map-ui button:hover { color: var(--ink); }
 .map-ui button:hover { background: var(--head); }
 .map-hint { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); font: 11.5px var(--font-id); color: var(--muted); background: var(--bg); border: 1px solid var(--faint); padding: 2px 8px; opacity: 0; transition: opacity .2s; pointer-events: none; white-space: nowrap; }
 .map.show-hint .map-hint { opacity: 1; }
@@ -228,3 +230,7 @@ table.reg { border-collapse: collapse; width: 100%; min-width: 760px; font-size:
 .ck-panel svg { width: 100%; height: auto; display: block; }
 .ck-panel .ax { font: 10px var(--font-id); fill: var(--muted); }
 .ck-line:hover { stroke-width: 2.4; opacity: 1; }
+
+.cols3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
+.cols3 p { font-size: 15.5px; }
+@media (max-width: 860px) { .cols3 { grid-template-columns: minmax(0, 1fr); gap: 4px; } }

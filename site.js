@@ -27,7 +27,7 @@ export function header(active) {
   const bar = document.querySelector(".bar");
   const link = (href, name) => `<a href="${href}"${name === active ? ' aria-current="page"' : ""}>${name}</a>`;
   bar.innerHTML = `<a class="home" href="./">${LOGO}<span>stemma.lm</span></a>`
-    + `<nav>${link("./", "overview")}${link("lineage.html", "lineage")}${link("variants.html", "variants")}${link("checkup.html", "check-up")}${link("log.html", "log")}${link("about.html", "about")}</nav>`;
+    + `<nav>${link("./", "overview")}${link("lineage.html", "lineage")}${link("variants.html", "variants")}${link("checkup.html", "check-up")}${link("log.html", "log")}</nav>`;
 }
 
 // The lineage as a right-angled tree: the real caregivers at the root, each generation one column
@@ -148,7 +148,7 @@ export function lineageMap(reg, stats = { individuals: {} }, opts = {}) {
   const btn = (label, title, fn) => { const b = el("button", { type: "button", title, "aria-label": title, text: label }); b.addEventListener("click", fn); ui.append(b); };
   const hint = el("div", { class: "map-hint", text: "drag to move · pinch or ⌘/ctrl + scroll to zoom" });
   const card = el("div", { class: "map-card", hidden: "" });
-  box.append(svg, ui, hint, card);
+  box.append(svg, hint, card);
 
   const fit = { x: -12, y: -12, w: W + 24, h: H + 24 };
   let vb = { ...fit };
@@ -165,7 +165,7 @@ export function lineageMap(reg, stats = { individuals: {} }, opts = {}) {
   }
   btn("+", "zoom in", () => zoom(1.4));
   btn("−", "zoom out", () => zoom(1 / 1.4));
-  btn("⤢", "fit the whole lineage", () => { vb = { ...fit }; draw(); });
+  btn("fit", "fit the whole lineage", () => { vb = { ...fit }; draw(); });
 
   let hintT;
   svg.addEventListener("wheel", (e) => {
@@ -246,7 +246,8 @@ export function lineageMap(reg, stats = { individuals: {} }, opts = {}) {
   }
   card.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") hide(); });
   svg.addEventListener("pointerdown", (e) => { if (!e.target.closest("a")) hide(); });
-  const wrap = el("div", { class: "map-wrap" }, box, legend(reg));
+  // under the map, one row: the legend on the left, the zoom controls on the right
+  const wrap = el("div", { class: "map-wrap" }, box, el("div", { class: "map-foot" }, legend(reg), ui));
   // rings around the individuals that said something, thicker for more (counts by serial)
   wrap.highlight = (counts, label = "") => {
     for (const r of svg.querySelectorAll(".hl")) r.remove();

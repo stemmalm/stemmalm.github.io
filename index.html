@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>StemmaLM</title>
 <meta name="description" content="A lineage of small language models, each raised from scratch on what adults say to children.">
-<link rel="stylesheet" href="style.css?v=20261029104703">
+<link rel="stylesheet" href="style.css?v=20261029105043">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 </head>
 <body>
@@ -17,7 +17,7 @@
       <h1>StemmaLM</h1>
       <p class="sub">A lineage of small language models, each raised from scratch on what adults say to children.</p>
       <p class="lede">Every individual hears real family conversations in order of the child's age, month by month, and can be asked to speak at every month of its life. Grown individuals can teach the next generation with their own speech, and the numbers join into a family tree.</p>
-      <p class="links"><a href="lineage.html">lineage →</a><a href="log.html">log →</a><a href="about.html">about →</a></p>
+      <p class="links"><a href="lineage.html">lineage →</a><a href="log.html">log →</a><a href="#about">about →</a></p>
     </div>
     <div class="fig hero-fig">
       <p class="fig-cap">fig. 0 — the lineage so far</p>
@@ -53,6 +53,21 @@
     </div>
   </section>
 
+  <section id="about" class="cols3">
+    <div>
+      <h2>An individual</h2>
+      <p>Each individual begins as a model that knows nothing. It hears what adults said to real children, taken from recorded family conversations and fed in order of the child's age, month by month, up to six years. It never hears the children themselves, and it never sees the world they talk about: it is a child with only words. A snapshot is kept for every month of its life, and at every month it can be asked to speak.</p>
+    </div>
+    <div>
+      <h2>A lineage</h2>
+      <p>Every individual has a number and a full name that records how it came to be: its strain (the learner it was born as), its upbringing (what was changed in what it heard), its generation (who taught it), any lesion it received in adulthood, and a seed that tells siblings apart. Grown individuals can teach the next generation with their own speech, and the numbers join into a family tree.</p>
+    </div>
+    <div>
+      <h2>Why</h2>
+      <p>A <em>stemma</em> is the family tree of a text copied by hand: each copy inherits the errors of its source and adds its own, and the tree is read back from the variants. Language is passed on the same way, from what one generation says to what the next one learns. Raising the copies ourselves makes it possible to watch what is kept, what is lost and what is new.</p>
+    </div>
+  </section>
+
   <footer class="prov">
     <span>data: CHILDES via AO-CHILDES (CC BY-NC-SA 4.0)</span>
     <span>weights: <a href="https://huggingface.co/xchuanli/stemmalm-weights">xchuanli/stemmalm-weights</a></span>
@@ -62,7 +77,7 @@
 </div>
 
 <script type="module">
-import { header, registry, lineageMap, fullId, el, sparkline } from "./site.js?v=20261029104703";
+import { header, registry, lineageMap, fullId, el, sparkline } from "./site.js?v=20261029105043";
 header("overview");
 const [reg, stats, log] = await Promise.all([
   registry(), fetch("stats.json?v=" + Date.now()).then((r) => r.json()), fetch("log.json?v=" + Date.now()).then((r) => r.json())]);
