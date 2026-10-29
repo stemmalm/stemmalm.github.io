@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Variants · StemmaLM</title>
-<link rel="stylesheet" href="style.css?v=20261029123653">
+<link rel="stylesheet" href="style.css?v=20261029125704">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 </head>
 <body>
@@ -50,8 +50,8 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script type="module">
-import { lineageNetwork, laidOut } from "./network.js?v=20261029123653";
-import { header, registry, el } from "./site.js?v=20261029123653";
+import { lineageNetwork, laidOut } from "./network.js?v=20261029125704";
+import { header, registry, el } from "./site.js?v=20261029125704";
 header("variants");
 const [reg, stats, V] = await Promise.all([registry(),
   fetch("stats.json?v=" + Date.now()).then((r) => r.json()), fetch("variants.json?v=" + Date.now()).then((r) => r.json())]);

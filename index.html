@@ -23,7 +23,7 @@ a:hover { text-decoration: underline; }
 .hero { text-align: center; padding: 56px 0 28px; }
 .hero h1 { font: 600 52px/1.05 var(--sans); letter-spacing: -0.03em; margin: 0 0 12px; }
 .hero p { font-size: 19px; color: var(--muted); margin: 0 auto; max-width: 34em; }
-.shot { display: block; border: 1px solid var(--faint); border-radius: 6px; overflow: hidden; height: 440px; margin: 18px 0 8px; }
+.shot { display: block; border: 1px solid var(--faint); border-radius: 6px; overflow: hidden; height: 560px; margin: 18px 0 8px; }
 .shot iframe { width: 100%; height: 100%; border: 0; }
 .cap { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 44px; }
 .doors { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px 40px; margin-bottom: 56px; }
@@ -58,7 +58,7 @@ h2 { font: 600 20px var(--sans); margin: 0 0 14px; }
   <div class="cap" id="cap"></div>
 
   <section class="doors">
-    <div><h3><a href="lineage.html">Lineage</a></h3><p>Every individual and every text in one network, coloured by how it was raised or by how it does on the check-up.</p></div>
+    <div><h3><a href="lineage.html">Lineage</a></h3><p>Every life on one time line, from Ω to the copies and the children, coloured month by month by the check-up.</p></div>
     <div><h3><a href="variants.html">Variants</a></h3><p>Word pairs that copying lapses brought in, and whether the children say them.</p></div>
     <div><h3><a href="checkup.html">Check-up</a></h3><p>Agreement, past tense and plural, tested at every month of every life.</p></div>
   </section>
@@ -86,7 +86,7 @@ h2 { font: 600 20px var(--sans); margin: 0 0 14px; }
 <script type="module">
 const [reg, log] = await Promise.all([fetch("registry.json?v=" + Date.now()).then((r) => r.json()), fetch("log.json?v=" + Date.now()).then((r) => r.json())]);
 const n = reg.individuals.filter((i) => i.status === "trained").length;
-document.getElementById("cap").innerHTML = `${n} individuals, growing up: coloured by agreement in questions · <a href="lineage.html">open the lineage →</a>`;
+document.getElementById("cap").innerHTML = `${n} individuals over time · lives coloured by agreement in questions · bands: variants passed from each copy to the children · <a href="lineage.html">open the lineage →</a>`;
 const L = document.getElementById("log");
 for (const e of [...log].sort((a, b) => b.id.localeCompare(a.id)).slice(0, 5)) {
   const a = document.createElement("a"); a.href = "log.html#" + e.id;

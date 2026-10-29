@@ -24,9 +24,9 @@ export function lineageNetwork(main, reg, { zoomable = true, flat = 0.06, onPick
   main.classList.add("net");
   const ind = reg.individuals.filter((i) => i.status === "trained");
   // texts by kind, each its own shape: real speech, a copy made by an individual, books
-  const nodes = [{ id: "care", kind: "source", label: "caregivers", shape: "circle" }, { id: "Ω", kind: "text", label: "Ω", shape: "square" },
+  const nodes = [{ id: "Ω", kind: "text", label: "Ω, family speech", shape: "square" },
     { id: "WT2", kind: "text", label: "children's books", shape: "triangle" }];
-  const links = [{ source: "care", target: "Ω" }];
+  const links = [];
   for (const i of ind) nodes.push({ id: "#" + i.serial, kind: "ind", label: "#" + i.serial, i });
   for (const code of Object.keys(reg.corpora || {})) {
     if (code === "Ω") continue;
@@ -96,7 +96,7 @@ export function lineageNetwork(main, reg, { zoomable = true, flat = 0.06, onPick
 // the legend for the texts, as small inline SVGs
 export function textLegend() {
   const one = (sym, name) => `<div class="kind"><svg width="14" height="14" viewBox="-7 -7 14 14"><path d="${d3.symbol(sym, 60)()}" fill="#fff" stroke="#8a897f" stroke-width="1.4"/></svg>${name}</div>`;
-  return one(d3.symbolSquare, "real family speech (Ω)") + one(d3.symbolDiamond, "a copy written by an individual") + one(d3.symbolTriangle, "children's books") + one(d3.symbolCircle, "the real caregivers");
+  return one(d3.symbolSquare, "real family speech (Ω)") + one(d3.symbolDiamond, "a copy written by an individual") + one(d3.symbolTriangle, "children's books");
 }
 
 // inside a frame the page may not be laid out yet: wait until the element has a size
