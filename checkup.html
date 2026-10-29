@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Check-up · StemmaLM</title>
-<link rel="stylesheet" href="style.css?v=20261029130441">
+<link rel="stylesheet" href="style.css?v=20261029131443">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 </head>
 <body>
@@ -20,7 +20,7 @@
 </div>
 
 <script type="module">
-import { header, el } from "./site.js?v=20261029130441";
+import { header, el } from "./site.js?v=20261029131443";
 header("check-up");
 const D = await fetch("checkup.json?v=" + Date.now()).then((r) => r.json());
 const NS = "http://www.w3.org/2000/svg";
@@ -67,16 +67,23 @@ function chart(key) {
   }
   return g;
 }
+// an example pair: the two lines one above the other, the word where they differ marked
+function pair([context, good, bad]) {
+  const g = good.split(" "), b = bad.split(" ");
+  const line = (words, other, mark, cls) => el("div", { class: "ck-line " + cls }, el("span", { class: "ck-mark", text: mark }),
+    ...words.flatMap((w, k) => [k ? " " : "", w === other[k] ? w : el("b", { text: w })]));
+  return el("div", { class: "ck-ex" },
+    ...(context ? [el("div", { class: "ck-ctx", text: context })] : []),
+    line(g, b, "✓", "good"), line(b, g, "✗", "bad"));
+}
 function draw() {
   const grid = document.getElementById("grid");
   grid.replaceChildren(...PANELS.map(([key, title]) => {
     const ex = (D.examples[key] || [])[0];
     return el("div", { class: "ck-panel" },
       el("h3", { text: title }),
-      el("p", { class: "ck-ex" }, ...(ex ? [
-        ...(ex[0] ? [el("span", { class: "muted", text: ex[0] + " / " })] : []),
-        el("span", { text: ex[1] }), el("span", { class: "muted", text: "  vs  " }), el("s", { text: ex[2] })] : []),
-        el("span", { class: "muted", text: `   · ${D.n_items[key]} pairs` })),
+      ex ? pair(ex) : el("p", { class: "ck-ex" }),
+      el("p", { class: "ck-n", text: `${D.n_items[key]} pairs` }),
       chart(key));
   }));
 }

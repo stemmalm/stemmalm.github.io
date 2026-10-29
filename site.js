@@ -27,7 +27,7 @@ export function header(active) {
   const bar = document.querySelector(".bar");
   const link = (href, name) => `<a href="${href}"${name.toLowerCase() === active ? ' aria-current="page"' : ""}>${name}</a>`;
   bar.innerHTML = `<a class="home" href="./">${LOGO}<span>StemmaLM</span></a>`
-    + `<nav>${link("./", "Overview")}${link("lineage.html", "Lineage")}${link("variants.html", "Variants")}${link("checkup.html", "Check-up")}${link("log.html", "Log")}</nav>`;
+    + `<nav>${link("./", "Collection")}${link("variants.html", "Variants")}${link("checkup.html", "Check-up")}${link("log.html", "Log")}${link("about.html", "About")}</nav>`;
 }
 
 // The lineage as a right-angled tree: the real caregivers at the root, each generation one column

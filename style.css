@@ -226,7 +226,14 @@ table.reg { border-collapse: collapse; width: 100%; min-width: 760px; font-size:
 @media (max-width: 960px) { .ck-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) { .ck-grid { grid-template-columns: minmax(0, 1fr); } }
 .ck-panel h3 { font: 500 14px var(--font-id); margin: 0 0 2px; }
-.ck-ex { font-size: 12.5px; margin: 0 0 4px; min-height: 2.6em; }
+.ck-ex { font: 12.5px/1.5 var(--font-id); margin: 2px 0 2px; min-height: 3.2em; }
+.ck-ex .ck-ctx { color: var(--muted); }
+.ck-ex .ck-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ck-ex .ck-mark { display: inline-block; width: 1.4em; color: var(--muted); }
+.ck-ex .good b { background: #dfeadb; font-weight: 500; padding: 0 2px; }
+.ck-ex .bad { color: var(--muted); }
+.ck-ex .bad b { background: #f3dcd3; color: var(--ink); font-weight: 500; padding: 0 2px; }
+.ck-n { font-size: 11.5px; color: var(--muted); margin: 0 0 4px; }
 .ck-panel svg { width: 100%; height: auto; display: block; }
 .ck-panel .ax { font: 10px var(--font-id); fill: var(--muted); }
 .ck-line:hover { stroke-width: 2.4; opacity: 1; }
