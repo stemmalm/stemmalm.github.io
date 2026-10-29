@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Collation · StemmaLM</title>
-<link rel="stylesheet" href="style.css?v=20261029132453">
-<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css?v=20261029142959">
+<link rel="icon" href="logo.svg?v=20261029142959" type="image/svg+xml">
 <style>
 .co { display: grid; grid-template-columns: 270px minmax(0, 1fr); gap: 0; border-top: 1px solid var(--faint); margin-top: 18px; }
 .co-idx { border-right: 1px solid var(--faint); max-height: calc(100vh - 170px); overflow: auto; position: sticky; top: 0; }
@@ -66,7 +66,7 @@
 </div>
 
 <script type="module">
-import { header, el } from "./site.js?v=20261029132453";
+import { header, el } from "./site.js?v=20261029142959";
 header("collation");
 const [C, V, reg] = await Promise.all(["collate.json", "variants.json", "registry.json"].map((u) => fetch(u + "?v=" + Date.now()).then((r) => r.json())));
 const COPY = { 1: "#d17a22", 2: "#7b5bb8", 3: "#3f8f8a" };

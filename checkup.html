@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Check-up · StemmaLM</title>
-<link rel="stylesheet" href="style.css?v=20261029132453">
-<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css?v=20261029142959">
+<link rel="icon" href="logo.svg?v=20261029142959" type="image/svg+xml">
 </head>
 <body>
 <div class="wrap wide">
@@ -20,7 +20,7 @@
 </div>
 
 <script type="module">
-import { header, el } from "./site.js?v=20261029132453";
+import { header, el } from "./site.js?v=20261029142959";
 header("check-up");
 const D = await fetch("checkup.json?v=" + Date.now()).then((r) => r.json());
 const NS = "http://www.w3.org/2000/svg";

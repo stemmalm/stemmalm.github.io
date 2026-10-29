@@ -6,8 +6,8 @@
 <title>Log · StemmaLM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="style.css?v=20261029132453">
-<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css?v=20261029142959">
+<link rel="icon" href="logo.svg?v=20261029142959" type="image/svg+xml">
 <style>
   .log-list { margin-top: 26px; border-top: 1px solid var(--rule); }
   .log-item { border-bottom: 1px solid var(--faint); }
@@ -44,7 +44,7 @@
 </div>
 
 <script type="module">
-import { el, header } from "./site.js?v=20261029132453";
+import { el, header } from "./site.js?v=20261029142959";
 header("log");
 
 const entries = await fetch("log.json?v=" + Date.now()).then((r) => r.json());
