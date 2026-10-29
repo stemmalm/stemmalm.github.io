@@ -86,6 +86,48 @@
       "born": "2026-10-28T21:12:48+01:00",
       "grown": "2026-10-28T21:33:42+01:00",
       "heard": "Ω>#1@72m·c5"
+    },
+    {
+      "serial": 7,
+      "strain": "EN1",
+      "env": "WT1",
+      "gen": 1,
+      "lesion": null,
+      "seed": 1,
+      "parent": 2,
+      "status": "trained",
+      "input": "#2's word-by-word copy of what it heard, 5% lapses per word",
+      "born": "2026-10-28T22:58:48+01:00",
+      "grown": "2026-10-28T23:20:49+01:00",
+      "heard": "Ω>#2@72m·c5"
+    },
+    {
+      "serial": 8,
+      "strain": "EN1",
+      "env": "WT1",
+      "gen": 1,
+      "lesion": null,
+      "seed": 2,
+      "parent": 2,
+      "status": "trained",
+      "input": "#2's word-by-word copy of what it heard, 5% lapses per word",
+      "born": "2026-10-28T23:02:46+01:00",
+      "grown": "2026-10-28T23:23:51+01:00",
+      "heard": "Ω>#2@72m·c5"
+    },
+    {
+      "serial": 9,
+      "strain": "EN1",
+      "env": "WT1",
+      "gen": 1,
+      "lesion": null,
+      "seed": 3,
+      "parent": 2,
+      "status": "trained",
+      "input": "#2's word-by-word copy of what it heard, 5% lapses per word",
+      "born": "2026-10-28T23:03:46+01:00",
+      "grown": "2026-10-28T23:24:23+01:00",
+      "heard": "Ω>#2@72m·c5"
     }
   ],
   "sources": {
@@ -93,6 +135,8 @@
   },
   "corpora": {
     "Ω": "AO-CHILDES: what adults said to children in recorded North American families, 0–72 months (the original)",
-    "Ω>#1@72m·c5": "#1's word-by-word copy of Ω, made when #1 was 72 months old; 5% of words written its own way (c = copying)"
+    "Ω>#1@72m·c5": "#1's word-by-word copy of Ω, made when #1 was 72 months old; 5% of words written its own way (c = copying)",
+    "Ω>#2@72m·c5": "#2's word-by-word copy of Ω, made when #2 was 72 months old; 5% of words written its own way (c = copying)",
+    "Ω>#3@72m·c5": "#3's word-by-word copy of Ω, made when #3 was 72 months old; 5% of words written its own way (c = copying); no children yet"
   }
 }
