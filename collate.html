@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Collation · StemmaLM</title>
+<link rel="stylesheet" href="style.css?v=20261029132453">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<style>
+.co { display: grid; grid-template-columns: 270px minmax(0, 1fr); gap: 0; border-top: 1px solid var(--faint); margin-top: 18px; }
+.co-idx { border-right: 1px solid var(--faint); max-height: calc(100vh - 170px); overflow: auto; position: sticky; top: 0; }
+.co-tools { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 10px 8px; border-bottom: 1px solid var(--faint); background: var(--head); position: sticky; top: 0; z-index: 1; }
+.co-tools button { font: 12px var(--font-body); border: 1px solid var(--rule); background: #fff; border-radius: 12px; padding: 1px 9px; cursor: pointer; color: var(--muted); }
+.co-tools button.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+.co-tools input { width: 100%; font: 12.5px var(--font-id); padding: 4px 7px; border: 1px solid var(--rule); border-radius: 4px; }
+.co-it { display: grid; grid-template-columns: 1fr auto; gap: 6px; padding: 6px 10px; border-bottom: 1px solid var(--faint); cursor: pointer; font-size: 13px; }
+.co-it:hover { background: var(--head); }
+.co-it.on { background: var(--mark); }
+.co-it .p { font-family: var(--font-id); }
+.co-it .p i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+.co-it .k { font: 12px var(--font-id); color: var(--muted); }
+.co-main { padding: 6px 0 40px 28px; min-width: 0; }
+.lemma { font: 600 24px var(--font-id); margin: 8px 0 0; }
+.lemma-sub { color: var(--muted); font-size: 13.5px; margin: 2px 0 16px; }
+.sec-h { font: 600 11px var(--font-body); letter-spacing: .07em; text-transform: uppercase; color: var(--muted); margin: 22px 0 8px; }
+.ctx { font: 13px var(--font-id); color: var(--muted); margin-bottom: 6px; }
+.ctx span { color: var(--muted); }
+.coll { border-collapse: collapse; font: 14px var(--font-id); }
+.coll td { padding: 5px 9px; border-bottom: 1px solid var(--faint); white-space: nowrap; }
+.coll td.sig { font: 600 12.5px var(--font-body); color: var(--muted); padding-left: 0; width: 1%; }
+.coll td.sig i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+.coll tr.arch td { border-bottom: 1.5px solid var(--ink); }
+.coll td.var { font-weight: 500; }
+.coll td.lemma-cell { outline: 1.5px solid var(--ink); outline-offset: -3px; }
+.coll .pos td { font: 10.5px var(--font-id); color: var(--muted); border: 0; padding-top: 0; }
+.app { font: 13.5px/1.7 var(--font-id); }
+.app b { font-weight: 500; }
+.app .sg { font-family: var(--font-body); font-weight: 600; font-size: 12px; }
+.rx { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.rx h4 { font: 500 13px var(--font-body); margin: 0 0 6px; }
+.rx .row { border-left: 2px solid var(--faint); padding: 2px 0 2px 9px; margin: 0 0 8px; font-size: 13.5px; }
+.rx .meta { font: 11px var(--font-id); color: var(--muted); }
+.rx .adult { color: var(--muted); }
+.rx mark { background: var(--mark); outline: 1px solid #e3c25b; padding: 0 1px; }
+.cnt { display: flex; gap: 12px; flex-wrap: wrap; font: 12.5px var(--font-id); }
+.cnt span { border: 1px solid var(--faint); border-radius: 4px; padding: 2px 8px; }
+.cnt b { font-weight: 500; }
+.legend-co { font-size: 13px; color: var(--muted); max-width: 80ch; }
+@media (max-width: 860px) { .co { grid-template-columns: minmax(0, 1fr); } .co-idx { position: static; max-height: 260px; border-right: 0; border-bottom: 1px solid var(--faint); } .co-main { padding-left: 0; } .rx { grid-template-columns: minmax(0, 1fr); } .coll-wrap { overflow-x: auto; } }
+</style>
+</head>
+<body>
+<div class="wrap wide">
+  <div class="bar"></div>
+  <h1>Collation</h1>
+  <p class="sub">One line of Ω, as the three copyists wrote it, and what the children later said.</p>
+  <p class="legend-co">Read it as an edition reads manuscripts. Ω is the archetype; #1, #2 and #3 are the witnesses, each a copy written by that individual at 72 months. A reading that differs from Ω is a variant. Under the table, the apparatus lists every place where the witnesses disagree. Below it, the reception: the children who grew up on a copy, saying the pair that copy brought in.</p>
+
+  <div class="co">
+    <aside class="co-idx">
+      <div class="co-tools" id="tools"></div>
+      <div id="idx"></div>
+    </aside>
+    <section class="co-main" id="main"></section>
+  </div>
+</div>
+
+<script type="module">
+import { header, el } from "./site.js?v=20261029132453";
+header("collation");
+const [C, V, reg] = await Promise.all(["collate.json", "variants.json", "registry.json"].map((u) => fetch(u + "?v=" + Date.now()).then((r) => r.json())));
+const COPY = { 1: "#d17a22", 2: "#7b5bb8", 3: "#3f8f8a" };
+const byId = new Map(V.variants.map((v) => [v.id, v]));
+const kids = (c) => reg.individuals.filter((i) => i.parent === c).map((i) => String(i.serial));
+const others = (c) => reg.individuals.filter((i) => i.parent && i.parent !== c).map((i) => String(i.serial));
+const sum = (o, ks) => ks.reduce((a, k) => a + (o[k] || 0), 0);
+for (const e of C) { const v = byId.get(e.id); e.pair = v.pair; e.own = sum(v.speech, kids(e.copy)); e.oth = sum(v.speech, others(e.copy)); e.v = v; }
+
+const S = { copy: "all", q: "", sel: null };
+const tools = document.getElementById("tools");
+function drawTools() {
+  tools.replaceChildren(
+    ...[["all", "all"], ["1", "#1's copy"], ["2", "#2's copy"]].map(([k, name]) => {
+      const b = el("button", { type: "button", text: `${name} ${k === "all" ? C.length : C.filter((e) => String(e.copy) === k).length}` });
+      if (S.copy === k) b.classList.add("on");
+      b.onclick = () => { S.copy = k; render(); };
+      return b;
+    }),
+    Object.assign(el("input", { type: "search", placeholder: "find a pair, e.g. the singing" }), { value: S.q, oninput: (ev) => { S.q = ev.target.value; drawIdx(); } }));
+}
+const list = () => C.filter((e) => (S.copy === "all" || String(e.copy) === S.copy) && (!S.q || e.pair.includes(S.q.trim())))
+  .sort((a, b) => (b.own - b.oth) - (a.own - a.oth) || b.own - a.own);
+function drawIdx() {
+  const box = document.getElementById("idx"), L = list();
+  box.replaceChildren(...L.map((e) => {
+    const d = el("div", { class: "co-it" + (S.sel === e ? " on" : "") },
+      el("span", { class: "p" }, el("i", { style: `background:${COPY[e.copy]}` }), document.createTextNode(e.pair)),
+      el("span", { class: "k", text: `${e.own} · ${e.oth}` }));
+    d.title = `said ${e.own} times by #${e.copy}'s children, ${e.oth} by the others`;
+    d.onclick = () => { S.sel = e; drawIdx(); drawMain(); };
+    return d;
+  }));
+  if (!S.sel && L.length) { S.sel = L[0]; drawIdx(); drawMain(); }
+}
+
+let EX = null;
+const getEx = () => EX || (EX = fetch("excerpts.json?v=" + Date.now()).then((r) => r.json()));
+function marked(text, pair) {
+  const w = text.split(" "), p = pair.split(" "), out = el("span");
+  const hit = new Set(); for (let i = 0; i + 1 < w.length; i++) if (w[i] === p[0] && w[i + 1] === p[1]) { hit.add(i); hit.add(i + 1); }
+  w.forEach((x, i) => { if (i) out.append(" "); out.append(hit.has(i) ? el("mark", { text: x }) : document.createTextNode(x)); });
+  return out;
+}
+async function drawMain() {
+  const e = S.sel, M = document.getElementById("main");
+  if (!e) { M.replaceChildren(el("p", { class: "muted", text: "No line matches." })); return; }
+  const W = e.witnesses, n = W["Ω"].length, p = e.pair.split(" ");
+  // where the lemma (the pair) sits in the copy that brought it in
+  const w0 = W[String(e.copy)]; let at = -1; for (let i = 0; i + 1 < n; i++) if (w0[i] === p[0] && w0[i + 1] === p[1]) { at = i; break; }
+  const table = el("table", { class: "coll" });
+  const pos = el("tr", { class: "pos" }, el("td"), ...Array.from({ length: n }, (_, i) => el("td", { text: i + 1 })));
+  table.append(pos);
+  for (const s of ["Ω", "1", "2", "3"]) {
+    const tr = el("tr", { class: s === "Ω" ? "arch" : "" });
+    tr.append(el("td", { class: "sig" }, el("i", { style: `background:${s === "Ω" ? "#8d8b82" : COPY[s]}` }), document.createTextNode(s === "Ω" ? "Ω" : "#" + s)));
+    W[s].forEach((w, i) => {
+      const td = el("td", { text: w });
+      if (s !== "Ω" && w !== W["Ω"][i]) { td.classList.add("var"); td.style.background = COPY[s] + "26"; td.style.color = COPY[s]; }
+      if (s === String(e.copy) && (i === at || i === at + 1)) td.classList.add("lemma-cell");
+      tr.append(td);
+    });
+    table.append(tr);
+  }
+  // apparatus: at each place where the witnesses disagree, the reading of Ω and which witnesses share each reading
+  const app = el("div", { class: "app" });
+  for (let i = 0; i < n; i++) {
+    const readings = new Map();
+    for (const s of ["Ω", "1", "2", "3"]) { const w = W[s][i]; if (!readings.has(w)) readings.set(w, []); readings.get(w).push(s); }
+    if (readings.size < 2) continue;
+    const [lem, ...rest] = [...readings.entries()].sort((a, b) => (b[1].includes("Ω") ? 1 : 0) - (a[1].includes("Ω") ? 1 : 0));
+    const sig = (ss) => el("span", { class: "sg", text: " " + ss.map((s) => (s === "Ω" ? "Ω" : "#" + s)).join(" ") });
+    const line = el("div", {}, el("span", { class: "muted", text: `${i + 1} ` }), el("b", { text: lem[0] }), document.createTextNode("]"), sig(lem[1]));
+    for (const [w, ss] of rest) line.append(document.createTextNode("; "), el("span", { text: w }), sig(ss));
+    app.append(line);
+  }
+  // reception: what the children said
+  const ex = (await getEx())[e.id];
+  const said = (ns) => ns.flatMap((k) => (ex.speech[k] || []).map((o) => el("div", { class: "row" },
+    el("div", { class: "meta", text: `#${k} @${o.month}m` }), el("div", { class: "adult", text: "adult: " + o.adult }), el("div", {}, el("span", { class: "muted", text: `#${k}: ` }), marked(o.said, e.pair)))));
+  const ownK = kids(e.copy), othK = others(e.copy), g0 = ["1", "2", "3"];
+  const counts = el("div", { class: "cnt" },
+    el("span", {}, document.createTextNode("Ω "), el("b", { text: e.v.omega })),
+    ...["1", "2", "3"].map((s) => el("span", {}, document.createTextNode(`#${s}'s copy `), el("b", { text: e.v.copies[s] }))),
+    el("span", {}, document.createTextNode("G0 said "), el("b", { text: sum(e.v.speech, g0) })),
+    el("span", {}, document.createTextNode(`#${ownK.join(", #")} said `), el("b", { text: e.own })),
+    el("span", {}, document.createTextNode(`#${othK.join(", #")} said `), el("b", { text: e.oth })));
+  M.replaceChildren(
+    el("div", { class: "lemma", text: e.pair }),
+    el("div", { class: "lemma-sub", text: `brought in by #${e.copy}'s copy · Ω, ${e.month} months` }),
+    counts,
+    el("div", { class: "sec-h", text: "Witnesses" }),
+    ...(e.before ? [el("div", { class: "ctx" }, el("span", { text: "line before, Ω:  " }), document.createTextNode(e.before))] : []),
+    el("div", { class: "coll-wrap" }, table),
+    el("div", { class: "sec-h", text: "Apparatus" }),
+    app,
+    el("div", { class: "sec-h", text: "Reception" }),
+    el("div", { class: "rx" },
+      el("div", {}, el("h4", { text: `#${ownK.join(", #")}, raised on #${e.copy}'s copy` }), ...(said(ownK).length ? said(ownK) : [el("p", { class: "muted small", text: "—" })])),
+      el("div", {}, el("h4", { text: `#${othK.join(", #")}, raised on another copy` }), ...(said(othK).length ? said(othK) : [el("p", { class: "muted small", text: "—" })]))),
+    el("p", { class: "muted small", style: "margin-top:18px", text: "Counts: times in the copy, and in what each group said at 24–72 months. At most three sentences per group, one per month. Lines from CHILDES via AO-CHILDES (CC BY-NC-SA 4.0); names shown as (name). Only lines where all witnesses have the same length are collated." }));
+}
+function render() { drawTools(); drawIdx(); drawMain(); }
+render();
+</script>
+</body>
+</html>
