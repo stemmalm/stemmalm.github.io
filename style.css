@@ -234,3 +234,5 @@ table.reg { border-collapse: collapse; width: 100%; min-width: 760px; font-size:
 .cols3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
 .cols3 p { font-size: 15.5px; }
 @media (max-width: 860px) { .cols3 { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
+
+.var-net { height: 420px; border: 1px solid var(--faint); border-radius: 6px; }

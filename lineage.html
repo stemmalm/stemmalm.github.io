@@ -39,7 +39,7 @@ a:hover { text-decoration: underline; }
 .legend .sw { width: 11px; height: 11px; border-radius: 50%; flex: none; }
 .legend .ramp { height: 8px; border-radius: 4px; margin: 4px 0 2px; }
 .legend .ends { display: flex; justify-content: space-between; font: 11.5px var(--mono); color: var(--muted); }
-.legend .kind { font-size: 12.5px; color: var(--muted); }
+.legend .kind { font-size: 12.5px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
 .picked { border-top: 1px solid var(--faint); padding-top: 14px; }
 .picked .n { font: 600 22px var(--sans); }
 .picked .id { font: 12.5px var(--mono); color: var(--muted); margin-bottom: 8px; }
@@ -47,17 +47,7 @@ a:hover { text-decoration: underline; }
 .picked dt { color: var(--muted); }
 .picked dd { margin: 0; }
 .main { position: relative; overflow: hidden; }
-.main svg { width: 100%; height: 100%; display: block; cursor: grab; }
 .hint { position: absolute; left: 16px; bottom: 12px; font-size: 12px; color: var(--muted); }
-.link { stroke: #c4c3bc; stroke-width: 1.2; transition: opacity .15s; }
-.link.clone { stroke-dasharray: 5 4; }
-.link.hot { stroke: #55554f; stroke-width: 1.8; }
-.node text { font: 12px var(--mono); fill: var(--ink); pointer-events: none; paint-order: stroke; stroke: #fff; stroke-width: 3px; }
-.node.text text, .node.source text { font: italic 12px var(--sans); fill: var(--muted); }
-.node { cursor: pointer; transition: opacity .15s; }
-.node circle { transition: fill .25s; }
-.dim { opacity: 0.12; }
-.unborn { opacity: 0.18; }
 @media (max-width: 760px) {
   .top { height: auto; flex-wrap: wrap; padding: 10px 16px; row-gap: 6px; } .top nav { margin-left: 0; width: 100%; gap: 14px; font-size: 13px; white-space: nowrap; }
   .bench { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 70vh; height: auto; }
@@ -103,26 +93,13 @@ body.embed .bench { grid-template-columns: 1fr; grid-template-rows: 1fr; height:
 </div>
 
 <script type="module">
+import { lineageNetwork, laidOut, textLegend } from "./network.js?v=20261029123653";
 const EMBED = new URLSearchParams(location.search).has("embed");
 if (EMBED) document.body.classList.add("embed");
 const [reg, ck] = await Promise.all([fetch("registry.json?v=" + Date.now()).then((r) => r.json()), fetch("checkup.json?v=" + Date.now()).then((r) => r.json())]);
 const ind = reg.individuals.filter((i) => i.status === "trained");
 document.getElementById("count").textContent = `${ind.length} individuals · ${new Set(ind.map((i) => i.gen)).size} generations`;
 
-// Two kinds of node, as in a stemma: individuals, and the texts they heard or wrote.
-const nodes = [{ id: "care", kind: "source", label: "caregivers" }, { id: "Ω", kind: "text", label: "Ω" }, { id: "WT2", kind: "text", label: "children's books" }];
-const links = [{ source: "care", target: "Ω" }];
-for (const i of ind) nodes.push({ id: "#" + i.serial, kind: "ind", label: "#" + i.serial, i });
-for (const code of Object.keys(reg.corpora || {})) {
-  if (code === "Ω") continue;
-  const w = /#(\d+)/.exec(code)[1];
-  nodes.push({ id: code, kind: "text", label: `#${w}'s copy` });
-  links.push({ source: "#" + w, target: code });
-}
-for (const i of ind) {
-  links.push(i.clone_of ? { source: "#" + i.clone_of, target: "#" + i.serial, clone: true } : { source: i.heard, target: "#" + i.serial });
-  if (i.extended?.length) links.push({ source: "WT2", target: "#" + i.serial });
-}
 const born = (i) => (i.parent ? 72 : i.clone_of ? i.clone_at : 0);
 const ageOf = (i, t) => (i.parent ? t - 72 : t);
 const lastMonth = (i) => (i.parent ? 144 : Math.max(72, ...(i.extended || []).map((x) => x.months[1])));
@@ -151,59 +128,14 @@ function score(i, key, age) {
 }
 
 const main = document.getElementById("main");
-// inside the homepage frame the page may not be laid out yet: wait until it has a size
-while (main.clientHeight < 50 || main.clientWidth < 50) await new Promise((r) => requestAnimationFrame(r));
-const W = () => main.clientWidth, H = () => main.clientHeight;
-const svg = d3.select(main).append("svg");
-const g = svg.append("g");
-const zoom = d3.zoom().scaleExtent([0.3, 4]).on("zoom", (e) => g.attr("transform", e.transform));
-if (!EMBED) svg.call(zoom);  // embedded, scrolling stays with the page
-// once the layout has settled the first time, frame the whole graph
-function fit() {
-  const xs = nodes.map((n) => n.x), ys = nodes.map((n) => n.y), pad = 60;
-  const [x0, x1, y0, y1] = [Math.min(...xs) - pad, Math.max(...xs) + pad * 2, Math.min(...ys) - pad, Math.max(...ys) + pad];
-  const k = Math.min(1.6, W() / (x1 - x0), H() / (y1 - y0));
-  const tr = d3.zoomIdentity.translate(W() / 2 - k * (x0 + x1) / 2, H() / 2 - k * (y0 + y1) / 2).scale(k);
-  svg.transition().duration(500).call(zoom.transform, tr);
-}
-const linkSel = g.append("g").selectAll("line").data(links).join("line").attr("class", (d) => "link" + (d.clone ? " clone" : ""));
-const nodeSel = g.append("g").selectAll("g").data(nodes).join("g").attr("class", (d) => "node " + d.kind);
-nodeSel.append("circle").attr("r", (d) => (d.kind === "ind" ? 9 : d.kind === "source" ? 7 : 5))
-  .attr("fill", (d) => (d.kind === "ind" ? "#3d3d3a" : "#fff")).attr("stroke", (d) => (d.kind === "ind" ? "#fff" : "#8a897f")).attr("stroke-width", 1.5);
-nodeSel.append("text").attr("x", (d) => (d.kind === "ind" ? 13 : 9)).attr("y", 4).text((d) => d.label);
-
-const sim = d3.forceSimulation(nodes)
-  .force("link", d3.forceLink(links).id((d) => d.id).distance((d) => (d.clone ? 90 : 70)).strength(0.7))
-  .force("charge", d3.forceManyBody().strength(-480))
-  .force("center", d3.forceCenter(W() / 2, H() / 2))
-  .force("collide", d3.forceCollide(26))
-  .force("flat", d3.forceY(H() / 2).strength(EMBED ? 0.18 : 0.06))  // a little flatter, to fill a wide frame
-  .alphaDecay(0.045);
-let framed = false;
-sim.on("end", () => { if (!framed) { framed = true; fit(); } });
-sim.on("tick", () => {
-  linkSel.attr("x1", (d) => d.source.x).attr("y1", (d) => d.source.y).attr("x2", (d) => d.target.x).attr("y2", (d) => d.target.y);
-  nodeSel.attr("transform", (d) => `translate(${d.x},${d.y})`);
-});
-nodeSel.call(d3.drag()
-  .on("start", (e, d) => { if (!e.active) sim.alphaTarget(0.25).restart(); d.fx = d.x; d.fy = d.y; })
-  .on("drag", (e, d) => { d.fx = e.x; d.fy = e.y; })
-  .on("end", (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }));
-
-// hover: the node, its neighbours and their links stay; the rest fades
-const nb = new Map(nodes.map((n) => [n.id, new Set([n.id])]));
-for (const l of links) { nb.get(l.source.id).add(l.target.id); nb.get(l.target.id).add(l.source.id); }
-nodeSel.on("mouseenter", (e, d) => {
-  nodeSel.classed("dim", (n) => !nb.get(d.id).has(n.id));
-  linkSel.classed("dim", (l) => l.source.id !== d.id && l.target.id !== d.id).classed("hot", (l) => l.source.id === d.id || l.target.id === d.id);
-}).on("mouseleave", () => { nodeSel.classed("dim", false); linkSel.classed("dim", false).classed("hot", false); })
-  .on("click", (e, d) => { if (d.i) { picked = d.i; showPicked(); } });
+await laidOut(main);
+const { individuals } = lineageNetwork(main, reg, { zoomable: !EMBED, flat: EMBED ? 0.18 : 0.06, onPick: (i) => { picked = i; showPicked(); } });
 
 let t = 144, picked = ind[0];
 function paint() {
   const mode = document.getElementById("color").value;
   document.getElementById("agev").textContent = t + " m";
-  nodeSel.filter((d) => d.kind === "ind")
+  individuals
     .classed("unborn", (d) => t < born(d.i) || t > lastMonth(d.i))
     .select("circle").attr("fill", (d) => {
       if (CAT[mode]) return CAT[mode].colors[CAT[mode].of(d.i)] || "#999";
@@ -221,7 +153,7 @@ function legend(mode) {
   } else {
     L.insertAdjacentHTML("beforeend", `<div class="ramp" style="background:linear-gradient(to right,${[0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(ramp).join(",")})"></div><div class="ends"><span>30%</span><span>chance</span><span>100%</span></div>`);
   }
-  L.insertAdjacentHTML("beforeend", `<div class="kind"><span class="sw" style="background:#fff;border:1.5px solid #8a897f"></span>a text: what was heard or copied</div><div class="kind">faded: not born yet, or past its last month</div>`);
+  L.insertAdjacentHTML("beforeend", `<div class="kind" style="margin-top:10px">size of a circle: model size (all EN1 so far)</div>${textLegend()}<div class="kind">faded: not born yet, or past its last month</div>`);
 }
 function showPicked() {
   const i = picked;
@@ -243,8 +175,6 @@ play.addEventListener("click", () => {
 });
 // on the homepage: no controls; the lineage grows up once, coloured by agreement in questions
 if (EMBED) { document.getElementById("color").value = "agreement/question"; t = 0; age.value = 0; setTimeout(() => play.click(), 900); }
-// when the frame changes size, re-centre and frame the graph again
-new ResizeObserver(() => { sim.force("center", d3.forceCenter(W() / 2, H() / 2)); if (framed) fit(); }).observe(main);
 paint(); showPicked();
 </script>
 </body>
