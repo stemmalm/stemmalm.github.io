@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Variants · StemmaLM</title>
-<link rel="stylesheet" href="style.css?v=20261029092525">
+<link rel="stylesheet" href="style.css?v=20261029104703">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 </head>
 <body>
@@ -49,7 +49,7 @@
 </div>
 
 <script type="module">
-import { header, registry, lineageMap, el } from "./site.js?v=20261029092525";
+import { header, registry, lineageMap, el } from "./site.js?v=20261029104703";
 header("variants");
 const [reg, stats, V] = await Promise.all([registry(),
   fetch("stats.json?v=" + Date.now()).then((r) => r.json()), fetch("variants.json?v=" + Date.now()).then((r) => r.json())]);

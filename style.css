@@ -212,3 +212,19 @@ table.reg { border-collapse: collapse; width: 100%; min-width: 760px; font-size:
 .cmp-cell { border-left: 2px solid var(--faint); padding-left: 8px; font-size: 14.5px; line-height: 1.45; }
 .ind-top, .ind-talk { align-items: start; }
 .ind-talk .chat, .ind-talk .age { max-width: none; }
+
+/* check-up */
+.ck-lede { max-width: 74ch; }
+.ck-tools { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 10px; }
+.ck-tools button { display: inline-flex; align-items: center; gap: 6px; font: 12.5px var(--font-id); padding: 3px 9px; border: 1px solid var(--rule); background: var(--bg); color: var(--muted); cursor: pointer; }
+.ck-tools button.on { color: var(--ink); border-color: var(--ink); }
+.ck-tools .sw { width: 14px; height: 3px; display: inline-block; }
+.ck-tools button:not(.on) .sw { opacity: 0.25; }
+.ck-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px 26px; }
+@media (max-width: 960px) { .ck-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .ck-grid { grid-template-columns: minmax(0, 1fr); } }
+.ck-panel h3 { font: 500 14px var(--font-id); margin: 0 0 2px; }
+.ck-ex { font-size: 12.5px; margin: 0 0 4px; min-height: 2.6em; }
+.ck-panel svg { width: 100%; height: auto; display: block; }
+.ck-panel .ax { font: 10px var(--font-id); fill: var(--muted); }
+.ck-line:hover { stroke-width: 2.4; opacity: 1; }

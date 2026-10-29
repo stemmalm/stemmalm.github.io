@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>StemmaLM</title>
 <meta name="description" content="A lineage of small language models, each raised from scratch on what adults say to children.">
-<link rel="stylesheet" href="style.css?v=20261029092525">
+<link rel="stylesheet" href="style.css?v=20261029104703">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 </head>
 <body>
@@ -62,7 +62,7 @@
 </div>
 
 <script type="module">
-import { header, registry, lineageMap, fullId, el, sparkline } from "./site.js?v=20261029092525";
+import { header, registry, lineageMap, fullId, el, sparkline } from "./site.js?v=20261029104703";
 header("overview");
 const [reg, stats, log] = await Promise.all([
   registry(), fetch("stats.json?v=" + Date.now()).then((r) => r.json()), fetch("log.json?v=" + Date.now()).then((r) => r.json())]);

@@ -6,7 +6,7 @@
 <title>Lineage · StemmaLM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="style.css?v=20261029092525">
+<link rel="stylesheet" href="style.css?v=20261029104703">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 </head>
 <body>
@@ -25,7 +25,7 @@
 </div>
 
 <script type="module">
-import { header, registry, lineageMap } from "./site.js?v=20261029092525";
+import { header, registry, lineageMap } from "./site.js?v=20261029104703";
 header("lineage");
 const [reg, stats] = await Promise.all([registry(), fetch("stats.json?v=" + Date.now()).then((r) => r.json())]);
 const map = lineageMap(reg, stats);
