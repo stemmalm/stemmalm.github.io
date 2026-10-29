@@ -40,12 +40,19 @@ select { width: 100%; font: 13.5px var(--sans); padding: 5px 8px; border: 1px so
 .tip { margin-top: 16px; border-top: 1px solid var(--faint); padding-top: 12px; min-height: 110px; font-size: 12.5px; }
 .tip .t { font: 600 15px var(--sans); }
 .tip .s { font: 12px var(--mono); color: var(--muted); }
-main { position: relative; overflow: hidden; }
-svg { display: block; width: 100%; height: 100%; }
+main { position: relative; overflow: auto; }
+svg { display: block; width: 100%; }
 .axis text { font: 11px var(--mono); fill: var(--muted); }
 .lab { font: 500 12px var(--mono); fill: var(--ink); paint-order: stroke; stroke: #fff; stroke-width: 3px; pointer-events: none; }
 .tlab { font: italic 12px var(--sans); fill: var(--muted); paint-order: stroke; stroke: #fff; stroke-width: 3px; pointer-events: none; }
-.ind { cursor: ns-resize; }
+.ind { cursor: pointer; }
+.sublab { font: 11.5px var(--sans); fill: var(--muted); pointer-events: none; }
+.note circle { fill: #1c1c1a; }
+.note text { font: 600 11px var(--sans); fill: #fff; text-anchor: middle; pointer-events: none; }
+.guide { margin: 0; padding: 0; list-style: none; counter-reset: g; }
+.guide li { display: grid; grid-template-columns: 20px 1fr; gap: 8px; margin: 0 0 9px; font-size: 13px; line-height: 1.45; }
+.guide b { width: 18px; height: 18px; border-radius: 50%; background: #1c1c1a; color: #fff; font: 600 11px/18px var(--sans); text-align: center; }
+body.embed main { overflow: hidden; }
 .dim { opacity: 0.1; }
 .band { fill: none; mix-blend-mode: multiply; }
 .edge { fill: none; stroke: #8a897f; stroke-width: 1.2; }
@@ -61,98 +68,62 @@ svg { display: block; width: 100%; height: 100%; }
 <div class="bench">
 <aside class="side">
   <h1>Lineage</h1>
-  <div class="sub">Left to right is time. Each line is one life; a child starts where its parent copied the book.</div>
+  <div class="sub">Every individual so far, on one clock: months since #1–#3 were born.</div>
+  <label>How to read it</label>
+  <ol class="guide">
+    <li><b>1</b><span>Each bar is one life, left to right. Its colour is the check-up score in that month.</span></li>
+    <li><b>2</b><span>At 72 months a parent copies the book it heard, word by word, with 5% lapses. Its children grow up on that copy and start here.</span></li>
+    <li><b>3</b><span>A band runs from the parent to each child. Its width is how often the child says the parent's own lapses.</span></li>
+    <li><b>4</b><span>The thin line under a bar is what the individual was hearing at that age.</span></li>
+  </ol>
   <label for="color">Colour the lives by</label>
   <select id="color">
-    <optgroup label="Check-up, month by month">
-      <option value="agreement/question">Agreement in questions</option>
-      <option value="past/irregular">Irregular past tense</option>
-      <option value="plural/nonce">Plural of made-up words</option>
-      <option value="plural/singular">Singular of made-up words</option>
-    </optgroup>
-    <optgroup label="How it was raised">
-      <option value="heard">What it heard</option>
-    </optgroup>
+    <option value="agreement/question">Agreement in questions</option>
+    <option value="agreement/statement">Agreement in statements</option>
+    <option value="past/irregular">Irregular past tense</option>
+    <option value="plural/nonce">Plural of made-up words</option>
+    <option value="plural/singular">Singular of made-up words</option>
   </select>
-  <div id="legend"></div>
-  <label>Variants</label>
-  <div class="chk"><input type="checkbox" id="bands" checked><span>show variants flowing from each copy to the children</span></div>
-  <div class="key" id="bandkey"></div>
-  <div class="tip" id="tip"><span class="s">hover a life, a copy or a band</span></div>
+  <div class="ramp" id="ramp"></div><div class="ends"><span>30%</span><span>chance</span><span>100%</span></div>
+  <label>What it heard (thin line)</label>
+  <div class="key" id="envkey"></div>
+  <div class="tip" id="tip"><span class="s">hover a life to see its family</span></div>
 </aside>
-<main id="main"><svg id="svg"></svg><span class="hint">drag a life up or down · hover to follow it</span></main>
+<main id="main"><svg id="svg"></svg></main>
 </div>
+
 <script type="module">
 const EMBED = new URLSearchParams(location.search).has("embed");
 if (EMBED) document.body.classList.add("embed");
 const [reg, ck, V] = await Promise.all(["registry.json", "checkup.json", "variants.json"].map((u) => fetch(u + "?v=" + Date.now()).then((r) => r.json())));
 const ind = reg.individuals.filter((i) => i.status === "trained");
-const COPY_COL = { 1: "#d17a22", 2: "#7b5bb8", 3: "#3f8f8a" };
+const byN = new Map(ind.map((i) => [i.serial, i]));
+const COPY = { 1: "#d17a22", 2: "#7b5bb8", 3: "#3f8f8a" };
+const ENV = { "Ω": "#b8b6ad", WT2: "#2b5fae", WT2m: "#2e9a68" };
 
-// time on the lineage clock: months since #1-#3 were born
-const born = (i) => (i.parent ? 72 : 0);
-const from = (i) => (i.clone_of ? i.clone_at : born(i));
+// the lineage clock: months since #1-#3 were born
+const from = (i) => (i.parent ? 72 : i.clone_of ? i.clone_at : 0);
 const to = (i) => (i.parent ? 144 : Math.max(72, ...(i.extended || []).map((x) => x.months[1])));
-
-// nodes: a life is one node pinned at its start; texts pinned where they were made
-const nodes = [];
-const life = new Map();
-for (const i of ind) { const n = { id: "#" + i.serial, kind: "life", i, t0: from(i), t1: to(i) }; nodes.push(n); life.set(i.serial, n); }
-// Ω is the root: every line starts from what real adults said to real children
-const texts = [{ id: "Ω", label: "Ω, family speech", t: -14, shape: d3.symbolSquare },
-  { id: "WT2", label: "children's books", t: 76, shape: d3.symbolTriangle }];
-for (const code of Object.keys(reg.corpora)) if (code !== "Ω") { const w = +/#(\d+)/.exec(code)[1]; texts.push({ id: code, label: `#${w}'s copy`, t: 72, shape: d3.symbolDiamond, writer: w }); }
-for (const x of texts) nodes.push({ ...x, kind: "text", t0: x.t - 3, t1: x.t + 3 });
-const byId = new Map(nodes.map((n) => [n.id, n]));
-const edges = [];
-for (const i of ind) {
-  if (i.clone_of) edges.push({ a: "#" + i.clone_of, b: "#" + i.serial, at: i.clone_at, clone: true });
-  else edges.push({ a: i.heard, b: "#" + i.serial });
-  if (i.extended) edges.push({ a: "WT2", b: "#" + i.serial, at: 76 });
+const own = (i, t) => (i.parent ? t - 72 : t);  // its own age at lineage time t
+// what it heard, stretch by stretch
+function hearing(i) {
+  const first = i.parent ? COPY[/#(\d+)/.exec(i.heard)[1]] : ENV["Ω"];
+  const s = [{ a: from(i), b: Math.min(to(i), i.parent ? 144 : 72), c: first, name: i.parent ? `#${i.parent}'s copy` : "Ω" }];
+  for (const x of i.extended || []) s.push({ a: 72, b: x.months[1], c: ENV[x.env], name: x.env === "WT2" ? "children's books" : "books + family speech" });
+  return s.filter((x) => x.b > x.a && x.b > from(i));
 }
-for (const x of texts) if (x.writer) edges.push({ a: "#" + x.writer, b: x.id, at: 72 });
 
-// variant bands: for every copy and every child, how often the child said that copy's own variants
-const bands = [];
-for (const c of [1, 2, 3]) for (const n of [4, 5, 6, 7, 8, 9]) {
-  const k = V.variants.filter((v) => v.group === "private_" + c).reduce((a, v) => a + (v.speech[n] || 0), 0);
-  const heard = ind.find((i) => i.serial === n).heard === `Ω>#${c}@72m·c5`;
-  bands.push({ c, n, k, heard });
-}
-const maxK = Math.max(...bands.map((b) => b.k));
-
-const svg = d3.select("#svg"), main = document.getElementById("main");
-// inside the homepage frame the page may not be laid out yet: wait until it has a size
-while (main.clientHeight < 50 || main.clientWidth < 50) await new Promise((r) => requestAnimationFrame(r));
-let W = main.clientWidth, H = main.clientHeight;
-const L = EMBED ? 110 : 150, R = 60, T = 40, B = 46;
-const x = d3.scaleLinear([-24, 144], [L - 90, W - R]);
-
-// vertical layout: start in family order, then let a simulation separate lives that overlap in time
-let row = 0;
-const GAP = EMBED ? 17 : 30;  // the least vertical room between things alive at the same time
-const rowH = Math.max(GAP + 4, (H - T - B - 60) / (ind.length + 2));  // use the whole height
+// rows: each first-generation individual, then its children, then its clone
+const rows = [];
 for (const g0 of ind.filter((i) => !i.parent && !i.clone_of)) {
-  for (const i of [g0, ...ind.filter((c) => c.clone_of === g0.serial), ...ind.filter((c) => c.parent === g0.serial)]) life.get(i.serial).y = T + 40 + rowH * row++;
-  row += 0.6;  // a little air between families
-  const copy = byId.get(`Ω>#${g0.serial}@72m·c5`); if (copy) copy.y = life.get(g0.serial).y + 22;
+  rows.push(g0, ...ind.filter((c) => c.parent === g0.serial), ...ind.filter((c) => c.clone_of === g0.serial));
+  rows.push(null);  // air between families
 }
-byId.get("Ω").y = (life.get(1).y + life.get(3).y) / 2;
-byId.get("WT2").y = T + 10;
-for (const n of nodes) { n.x = x(n.kind === "life" ? n.t0 : n.t); n.fx = n.x; }
-function separate(alpha) {  // things that overlap in time keep at least 26 px apart vertically
-  for (let a = 0; a < nodes.length; a++) for (let b = a + 1; b < nodes.length; b++) {
-    const p = nodes[a], q = nodes[b];
-    if (p.t1 < q.t0 || q.t1 < p.t0) continue;
-    const dy = q.y - p.y, gap = GAP;
-    if (Math.abs(dy) < gap) { const m = (gap - Math.abs(dy)) * 0.5 * (dy < 0 ? -1 : 1) * alpha * 4; if (!p.fy) p.y -= m; if (!q.fy) q.y += m; }
-  }
-}
-const sim = d3.forceSimulation(nodes)
-  .force("link", d3.forceLink(edges.map((e) => ({ source: e.a, target: e.b }))).id((d) => d.id).strength(0.08))
-  .force("sep", separate)
-  .force("keep", d3.forceY((d) => d.y).strength(0.02))
-  .velocityDecay(0.5).alphaDecay(0.04);
+rows.pop();
+
+// variant bands: how often each child said each copy's own variants
+const said = (c, n) => V.variants.filter((v) => v.group === "private_" + c).reduce((a, v) => a + (v.speech[n] || 0), 0);
+const maxSaid = Math.max(...[1, 2, 3].flatMap((c) => [4, 5, 6, 7, 8, 9].map((n) => said(c, n))));
 
 const ramp = (a) => {
   const t = Math.max(0, Math.min(1, (a - 0.3) / 0.7)), st = [[0, [196, 92, 62]], [0.29, [226, 220, 208]], [1, [43, 95, 174]]];
@@ -160,88 +131,102 @@ const ramp = (a) => {
   const [t0, c0] = st[k], [t1, c1] = st[k + 1], u = (t - t0) / (t1 - t0);
   return `rgb(${c0.map((v, j) => Math.round(v + (c1[j] - v) * u)).join(",")})`;
 };
-const HEARD = { "Ω": "#3d3d3a", "Ω>#1@72m·c5": COPY_COL[1], "Ω>#2@72m·c5": COPY_COL[2] };
+document.getElementById("ramp").style.background = `linear-gradient(to right,${[0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(ramp).join(",")})`;
+document.getElementById("envkey").innerHTML = [[ENV["Ω"], "Ω, real family speech"], [COPY[1], "#1's copy"], [COPY[2], "#2's copy"], [ENV.WT2, "children's books only"], [ENV.WT2m, "books + family speech"]].map(([c, s]) => `<div><i style="background:${c};height:4px"></i>${s}</div>`).join("");
 
-// layers
-const gAxis = svg.append("g").attr("class", "axis"), gBand = svg.append("g"), gEdge = svg.append("g"), gLife = svg.append("g"), gText = svg.append("g");
-const defs = svg.append("defs");
-function drawAxis() {
-  gAxis.selectAll("*").remove();
-  for (const m of [0, 24, 48, 72, 96, 120, 144]) {
-    gAxis.append("line").attr("x1", x(m)).attr("x2", x(m)).attr("y1", T - 10).attr("y2", H - B).attr("stroke", m === 72 ? "#d8d7d0" : "#f0efea");
-    gAxis.append("text").attr("x", x(m)).attr("y", H - B + 18).attr("text-anchor", "middle").text(m);
-  }
-  gAxis.append("text").attr("x", x(72)).attr("y", H - 12).attr("text-anchor", "middle").text("months since #1–#3 were born");
-  gAxis.append("text").attr("x", x(36)).attr("y", T - 16).attr("text-anchor", "middle").text("G0 grows up on Ω");
-  gAxis.append("text").attr("x", x(108)).attr("y", T - 16).attr("text-anchor", "middle").text("G1 grows up on copies · G0 lives on");
-}
-const curve = (x0, y0, x1, y1) => `M${x0} ${y0}C${(x0 + x1) / 2} ${y0},${(x0 + x1) / 2} ${y1},${x1} ${y1}`;
+const main = document.getElementById("main");
+while (main.clientHeight < 50 || main.clientWidth < 50) await new Promise((r) => requestAnimationFrame(r));
+const svg = d3.select("#svg");
+const ROW = EMBED ? 34 : 54, BAR = EMBED ? 9 : 12, T = 46, B = 40;
 let hot = null;
+
+function score(i, key, age) {
+  const src = i.clone_of ? [...(ck.curves[i.clone_of]?.[key] || []).filter(([m]) => m < i.clone_at), ...(ck.curves[i.serial]?.[key] || [])] : (ck.curves[i.serial]?.[key] || []);
+  return src.map(([m], j) => { const w = src.slice(Math.max(0, j - 2), j + 3); return [m, w.reduce((s, [, v]) => s + v, 0) / w.length]; });
+}
+
 function draw() {
-  const mode = document.getElementById("color").value;
-  // bands
-  const showBands = document.getElementById("bands").checked;
-  gBand.selectAll("path").data(showBands ? bands : []).join("path").attr("class", "band")
-    .attr("d", (b) => { const s = byId.get(`Ω>#${b.c}@72m·c5`), t = life.get(b.n); return curve(s.x, s.y, x(96), t.y); })
-    .attr("stroke", (b) => COPY_COL[b.c]).attr("stroke-width", (b) => 1 + 13 * b.k / maxK)
-    .attr("stroke-opacity", (b) => (hot ? (hot === "c" + b.c || hot === "#" + b.n ? 0.75 : 0.04) : b.heard ? 0.45 : 0.13))
-    .on("mouseenter", (e, b) => tip(`<div class="t">#${b.c}'s copy → #${b.n}</div><div class="s">#${b.n} said #${b.c}'s own variants ${b.k} times</div><div class="s">${b.heard ? "#" + b.n + " heard this copy" : "#" + b.n + " never heard this copy"}</div>`));
-  // edges
-  gEdge.selectAll("path").data(edges).join("path").attr("class", (e) => "edge" + (e.clone ? " clone" : ""))
-    .attr("d", (e) => { const a = byId.get(e.a), b = byId.get(e.b); const ax = e.at != null ? x(e.at) : a.x; return curve(ax, a.y, b.x, b.y); })
-    .classed("dim", (e) => hot && hot !== e.a && hot !== e.b && hot !== "c" + (byId.get(e.b).writer || byId.get(e.a).writer));
-  // lives: a bar from start to end, coloured month by month
-  const lives = gLife.selectAll("g.ind").data(nodes.filter((n) => n.kind === "life"), (d) => d.id).join((en) => {
-    const g = en.append("g").attr("class", "ind");
-    g.append("clipPath").attr("id", (d) => "cp" + d.i.serial).append("rect");
-    g.append("g").attr("class", "segs").attr("clip-path", (d) => `url(#cp${d.i.serial})`);
-    g.append("circle").attr("r", 6).attr("fill", "#2a2a27").attr("stroke", "#fff").attr("stroke-width", 1.5);
-    g.append("text").attr("class", "lab");
-    return g;
-  });
-  lives.classed("dim", (d) => hot && hot !== d.id && !edges.some((e) => (e.a === hot && e.b === d.id) || (e.b === hot && e.a === d.id)) && hot !== "#" + d.i.clone_of && !(hot?.startsWith("c")));
-  lives.select("clipPath rect").attr("x", (d) => x(d.t0)).attr("y", (d) => d.y - 5).attr("width", (d) => x(d.t1) - x(d.t0)).attr("height", 10).attr("rx", 5);
-  lives.select("circle").attr("cx", (d) => x(d.t0)).attr("cy", (d) => d.y);
-  lives.select("text").attr("x", (d) => x(d.t1) + 8).attr("y", (d) => d.y + 4).text((d) => "#" + d.i.serial);
-  lives.select("g.segs").each(function (d) {
-    const g = d3.select(this);
-    let segs;
-    if (mode === "heard") segs = [{ a: d.t0, b: d.t1, c: HEARD[d.i.heard] || "#3d3d3a" }];
-    else {
-      const src = d.i.clone_of ? [...(ck.curves[d.i.clone_of]?.[mode] || []).filter(([m]) => m < d.i.clone_at), ...(ck.curves[d.i.serial]?.[mode] || [])] : (ck.curves[d.i.serial]?.[mode] || []);
-      const pts = src.map(([m], j) => { const w = src.slice(Math.max(0, j - 2), j + 3); return [born(d.i) + m, w.reduce((s, [, v]) => s + v, 0) / w.length]; }).filter(([m]) => m >= d.t0);
-      segs = pts.map(([m, v], j) => ({ a: m, b: j + 1 < pts.length ? pts[j + 1][0] : d.t1, c: ramp(v) }));
+  const W = main.clientWidth, H = Math.max(main.clientHeight, T + B + ROW * rows.length);
+  svg.attr("height", H).attr("viewBox", `0 0 ${W} ${H}`).selectAll("*").remove();
+  const x = d3.scaleLinear([-22, 144], [EMBED ? 20 : 36, W - (EMBED ? 120 : 190)]);
+  const y = new Map();
+  rows.forEach((i, k) => { if (i) y.set(i.serial, T + ROW * k + ROW / 2 + (main.clientHeight > T + B + ROW * rows.length ? (main.clientHeight - T - B - ROW * rows.length) / 2 : 0)); });
+  const key = document.getElementById("color").value;
+  const fam = (i) => new Set([i.serial, i.parent, i.clone_of, ...ind.filter((c) => c.parent === i.serial || c.clone_of === i.serial).map((c) => c.serial)].filter(Boolean));
+  const lit = hot ? fam(byN.get(hot)) : null;
+  const dimmed = (n) => lit && !lit.has(n);
+
+  // time axis
+  const ax = svg.append("g").attr("class", "axis");
+  for (const m of [0, 24, 48, 72, 96, 120, 144]) {
+    ax.append("line").attr("x1", x(m)).attr("x2", x(m)).attr("y1", T - 12).attr("y2", H - B + 4).attr("stroke", m === 72 ? "#dcdbd4" : "#f1f0ec");
+    ax.append("text").attr("x", x(m)).attr("y", H - B + 20).attr("text-anchor", "middle").text(m);
+  }
+  ax.append("text").attr("x", x(72)).attr("y", H - 6).attr("text-anchor", "middle").text("months since #1–#3 were born");
+  ax.append("text").attr("x", x(36)).attr("y", T - 20).attr("text-anchor", "middle").text("first generation, on Ω");
+  ax.append("text").attr("x", x(108)).attr("y", T - 20).attr("text-anchor", "middle").text("children on copies · parents keep living");
+
+  // Ω: the root, a word at the left; elbows to the first generation
+  const g0 = ind.filter((i) => !i.parent && !i.clone_of), ys = g0.map((i) => y.get(i.serial));
+  const rx = x(-14), ry = (Math.min(...ys) + Math.max(...ys)) / 2;
+  svg.append("text").attr("class", "tlab").attr("x", rx - 4).attr("y", ry + 4).attr("text-anchor", "end").text("Ω");
+  for (const i of g0) svg.append("path").attr("class", "edge").attr("opacity", dimmed(i.serial) ? 0.1 : 1).attr("d", `M${rx} ${ry}C${(rx + x(0)) / 2} ${ry},${(rx + x(0)) / 2} ${y.get(i.serial)},${x(0)} ${y.get(i.serial)}`);
+
+  // bands, then elbows from parent at 72 to its children and clone
+  for (const c of ind.filter((i) => i.parent || i.clone_of)) {
+    const p = c.parent || c.clone_of, py = y.get(p), cy = y.get(c.serial), ax0 = x(72);
+    if (c.parent) {
+      const k = said(c.parent, c.serial);
+      svg.append("path").attr("class", "band").attr("d", `M${ax0} ${py}C${ax0 + 30} ${py},${ax0 + 30} ${cy},${x(86)} ${cy}`)
+        .attr("stroke", COPY[c.parent]).attr("stroke-width", 1 + 14 * k / maxSaid).attr("stroke-opacity", dimmed(c.serial) ? 0.05 : 0.35);
     }
-    g.selectAll("rect").data(segs).join("rect").attr("x", (s) => x(s.a)).attr("width", (s) => Math.max(1, x(s.b) - x(s.a) + 0.6)).attr("y", d.y - 5).attr("height", 10).attr("fill", (s) => s.c);
-  });
-  lives.on("mouseenter", (e, d) => { hot = d.id; draw(); tip(`<div class="t">#${d.i.serial}</div><div class="s">heard ${d.i.heard}${d.i.clone_of ? " · clone of #" + d.i.clone_of : ""}</div><div class="s">lives ${d.t0}–${d.t1} on the lineage clock</div><div class="s"><a href="individual.html?n=${d.i.serial}">talk to it →</a></div>`); })
-    .on("mouseleave", () => { hot = null; draw(); });
-  lives.call(d3.drag().on("start", (e, d) => { sim.alphaTarget(0.2).restart(); d.fy = d.y; }).on("drag", (e, d) => { d.fy = e.y; d.y = e.y; draw(); }).on("end", (e, d) => { sim.alphaTarget(0); d.fy = null; }));
-  // texts
-  const tx = gText.selectAll("g").data(nodes.filter((n) => n.kind === "text"), (d) => d.id).join((en) => {
-    const g = en.append("g");
-    g.append("path").attr("d", (d) => d3.symbol(d.shape, d.id === "Ω" ? 150 : 110)()).attr("fill", "#fff").attr("stroke", "#8a897f").attr("stroke-width", 1.5);
-    g.append("text").attr("class", "tlab").attr("x", 10).attr("y", -8);
-    return g;
-  });
-  tx.attr("transform", (d) => `translate(${d.x},${d.y})`).select("text").text((d) => d.label);
-  tx.classed("dim", (d) => hot && hot !== d.id && hot !== "c" + d.writer && !edges.some((e) => (e.a === d.id && e.b === hot) || (e.b === d.id && e.a === hot)));
-  tx.on("mouseenter", (e, d) => { hot = d.writer ? "c" + d.writer : d.id; draw(); tip(`<div class="t">${d.label}</div><div class="s">${d.writer ? "written at 72 months by #" + d.writer : ""}</div>`); })
-    .on("mouseleave", () => { hot = null; draw(); });
-  legend(mode);
+    svg.append("path").attr("class", "edge" + (c.clone_of ? " clone" : "")).attr("opacity", dimmed(c.serial) ? 0.1 : 1)
+      .attr("d", `M${ax0} ${py}V${cy}H${x(from(c))}`);
+  }
+  // when a child is hovered: the bands it would have from the other copies (it never heard them)
+  if (hot && byN.get(hot).parent) {
+    const c = byN.get(hot), cy = y.get(c.serial);
+    for (const o of [1, 2, 3].filter((o) => o !== c.parent)) {
+      const oy = y.get(o), k = said(o, c.serial);
+      svg.append("path").attr("class", "band").attr("d", `M${x(72)} ${oy}C${x(72) + 60} ${oy},${x(72) + 40} ${cy},${x(86)} ${cy}`)
+        .attr("stroke", COPY[o]).attr("stroke-width", 1 + 14 * k / maxSaid).attr("stroke-opacity", 0.25).attr("stroke-dasharray", "4 3");
+    }
+  }
+
+  // lives
+  for (const i of rows.filter(Boolean)) {
+    const g = svg.append("g").attr("class", "ind").attr("opacity", dimmed(i.serial) ? 0.15 : 1), yy = y.get(i.serial);
+    const pts = score(i, key).map(([m, v]) => [i.parent ? 72 + m : m, v]).filter(([m]) => m >= from(i));
+    const clip = "cp" + i.serial;
+    g.append("clipPath").attr("id", clip).append("rect").attr("x", x(from(i))).attr("y", yy - BAR / 2).attr("width", x(to(i)) - x(from(i))).attr("height", BAR).attr("rx", BAR / 2);
+    const sg = g.append("g").attr("clip-path", `url(#${clip})`);
+    pts.forEach(([m, v], j) => sg.append("rect").attr("x", x(m)).attr("y", yy - BAR / 2).attr("width", Math.max(1, x(j + 1 < pts.length ? pts[j + 1][0] : to(i)) - x(m) + 0.6)).attr("height", BAR).attr("fill", ramp(v)));
+    for (const h of hearing(i)) g.append("rect").attr("x", x(h.a)).attr("y", yy + BAR / 2 + 2).attr("width", Math.max(1, x(h.b) - x(h.a))).attr("height", 3).attr("rx", 1.5).attr("fill", h.c);
+    g.append("text").attr("class", "lab").attr("x", x(to(i)) + 8).attr("y", yy + 4).text("#" + i.serial);
+    if (!EMBED) g.append("text").attr("class", "sublab").attr("x", x(to(i)) + 36).attr("y", yy + 4)
+      .text(i.parent ? `G1 · #${i.parent}'s copy` : i.clone_of ? `clone of #${i.clone_of}` : "G0 · Ω");
+    g.on("mouseenter", () => { hot = i.serial; draw(); tip(i); }).on("mouseleave", () => { hot = null; draw(); })
+      .on("click", () => { if (!EMBED) location.href = "individual.html?n=" + i.serial; });
+  }
+
+  // numbered notes that match "How to read it"
+  if (!EMBED && !hot) {
+    const r1 = rows[0], c1 = ind.find((c) => c.parent === r1.serial);
+    const notes = [[x(30), y.get(r1.serial) - BAR / 2 - 11, 1], [x(72) - 12, (y.get(r1.serial) + y.get(c1.serial)) / 2, 2],
+      [x(80), y.get(c1.serial) - 14, 3], [x(30), y.get(r1.serial) + BAR / 2 + 14, 4]];
+    for (const [nx, ny, n] of notes) { const g = svg.append("g").attr("class", "note"); g.append("circle").attr("cx", nx).attr("cy", ny).attr("r", 8); g.append("text").attr("x", nx).attr("y", ny + 3.5).text(n); }
+  }
 }
-function tip(h) { document.getElementById("tip").innerHTML = h; }
-function legend(mode) {
-  const L = document.getElementById("legend");
-  if (mode === "heard") L.innerHTML = `<div class="key">${[["#3d3d3a", "Ω, real family speech"], [COPY_COL[1], "#1's copy"], [COPY_COL[2], "#2's copy"]].map(([c, s]) => `<div><i style="background:${c}"></i>${s}</div>`).join("")}</div>`;
-  else L.innerHTML = `<div class="ramp" style="background:linear-gradient(to right,${[0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(ramp).join(",")})"></div><div class="ends"><span>30%</span><span>chance</span><span>100%</span></div>`;
-  document.getElementById("bandkey").innerHTML = [1, 2, 3].map((c) => `<div><i style="background:${COPY_COL[c]}"></i>#${c}'s own variants</div>`).join("") + `<div style="color:#6f6f6a">width: how often the child said them; strong: the child heard that copy</div>`;
+function tip(i) {
+  const lines = [`<div class="t">#${i.serial}</div>`, `<div class="s">${[i.strain, i.env, "G" + i.gen, i.lesion || "—", "s" + i.seed].join("·")}</div>`,
+    `<div class="s">heard ${i.heard}${i.clone_of ? " · clone of #" + i.clone_of + " at " + i.clone_at + " m" : ""}</div>`];
+  if (i.parent) lines.push(`<div class="s">said #${i.parent}'s own lapses ${said(i.parent, i.serial)} times; the other copies' ${[1, 2, 3].filter((o) => o !== i.parent).map((o) => said(o, i.serial)).join(" and ")}</div>`);
+  lines.push(`<div class="s">click to talk to it</div>`);
+  document.getElementById("tip").innerHTML = lines.join("");
 }
-sim.on("tick", draw);
 document.getElementById("color").addEventListener("change", draw);
-document.getElementById("bands").addEventListener("change", draw);
-addEventListener("resize", () => { W = main.clientWidth; H = main.clientHeight; x.range([L - 90, W - R]); for (const n of nodes) { n.x = x(n.kind === "life" ? n.t0 : n.t); n.fx = n.x; } drawAxis(); draw(); });
-drawAxis(); draw();
+new ResizeObserver(draw).observe(main);
+draw();
 </script>
 </body>
 </html>
