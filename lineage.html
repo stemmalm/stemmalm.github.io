@@ -4,33 +4,245 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Lineage · StemmaLM</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="style.css?v=20261029105043">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff; --ink: #1c1c1a; --muted: #6f6f6a; --faint: #e7e6e1; --line: #c9c8c2; --panel: #f6f5f1; --accent: #2b5fae;
+  --sans: "IBM Plex Sans", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 var(--sans); }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.top { height: 48px; display: flex; align-items: center; padding: 0 20px; border-bottom: 1px solid var(--faint); }
+.brand { display: flex; align-items: center; gap: 8px; color: var(--ink); font: 600 16px var(--sans); }
+.brand svg { width: 22px; height: 18px; }
+.top nav { display: flex; gap: 20px; margin-left: auto; font-size: 13.5px; }
+.top nav a { color: var(--muted); }
+.top nav a.on { color: var(--ink); font-weight: 500; }
+.bench { display: grid; grid-template-columns: 272px minmax(0, 1fr); height: calc(100% - 48px); }
+.side { border-right: 1px solid var(--faint); padding: 18px 20px; overflow: auto; background: var(--panel); }
+.side h1 { font: 600 17px var(--sans); margin: 0 0 2px; }
+.side .count { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+.ctl { margin: 0 0 18px; }
+.ctl label { display: block; font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+.ctl select { width: 100%; font: 14px var(--sans); padding: 6px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); }
+.age { display: flex; align-items: center; gap: 8px; }
+.age input { flex: 1; min-width: 0; }
+.age button { font: 13px var(--sans); border: 1px solid var(--line); background: var(--bg); border-radius: 4px; padding: 3px 9px; cursor: pointer; white-space: nowrap; }
+.age .v { font: 13px var(--mono); min-width: 3.4em; text-align: right; }
+.legend div { display: flex; align-items: center; gap: 8px; font-size: 13px; margin: 3px 0; }
+.legend .sw { width: 11px; height: 11px; border-radius: 50%; flex: none; }
+.legend .ramp { height: 8px; border-radius: 4px; margin: 4px 0 2px; }
+.legend .ends { display: flex; justify-content: space-between; font: 11.5px var(--mono); color: var(--muted); }
+.legend .kind { font-size: 12.5px; color: var(--muted); }
+.picked { border-top: 1px solid var(--faint); padding-top: 14px; }
+.picked .n { font: 600 22px var(--sans); }
+.picked .id { font: 12.5px var(--mono); color: var(--muted); margin-bottom: 8px; }
+.picked dl { display: grid; grid-template-columns: 84px 1fr; gap: 3px 10px; margin: 0 0 10px; font-size: 13px; }
+.picked dt { color: var(--muted); }
+.picked dd { margin: 0; }
+.main { position: relative; overflow: hidden; }
+.main svg { width: 100%; height: 100%; display: block; cursor: grab; }
+.hint { position: absolute; left: 16px; bottom: 12px; font-size: 12px; color: var(--muted); }
+.link { stroke: #c4c3bc; stroke-width: 1.2; transition: opacity .15s; }
+.link.clone { stroke-dasharray: 5 4; }
+.link.hot { stroke: #55554f; stroke-width: 1.8; }
+.node text { font: 12px var(--mono); fill: var(--ink); pointer-events: none; paint-order: stroke; stroke: #fff; stroke-width: 3px; }
+.node.text text, .node.source text { font: italic 12px var(--sans); fill: var(--muted); }
+.node { cursor: pointer; transition: opacity .15s; }
+.node circle { transition: fill .25s; }
+.dim { opacity: 0.12; }
+.unborn { opacity: 0.18; }
+@media (max-width: 760px) {
+  .top nav { gap: 12px; font-size: 12.5px; }
+  .bench { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 70vh; height: auto; }
+  .side { border-right: 0; border-bottom: 1px solid var(--faint); }
+}
+body.embed .top, body.embed .side, body.embed .hint { display: none; }
+body.embed .bench { grid-template-columns: 1fr; height: 100%; }
+</style>
 </head>
 <body>
-<div class="wrap wide">
-  <div class="bar"></div>
-
-  <h1>Lineage</h1>
-  <div class="sub">Choose an individual to meet it.</div>
-
-  <div class="fig" style="margin-top:22px">
-    <p class="fig-cap">fig. 1 — every individual, by generation</p>
-    <div id="tree"></div>
-  </div>
-
-  <footer>Data: CHILDES (CC BY-NC-SA 4.0), via AO-CHILDES.</footer>
+<header class="top">
+  <a class="brand" href="./"><svg viewBox="0 0 34 28" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"><path d="M3 14H11M11 5V23M11 5H23M11 14H23M11 23H23"/></g><g fill="currentColor"><circle cx="3" cy="14" r="2.6"/><circle cx="25" cy="5" r="2.6"/><circle cx="25" cy="14" r="2.6"/><circle cx="25" cy="23" r="2.6"/></g></svg>StemmaLM</a>
+  <nav><a href="./">Overview</a><a class="on" href="lineage.html">Lineage</a><a href="variants.html">Variants</a><a href="checkup.html">Check-up</a><a href="log.html">Log</a></nav>
+</header>
+<div class="bench">
+  <aside class="side">
+    <h1>Lineage</h1>
+    <div class="count" id="count"></div>
+    <div class="ctl">
+      <label for="color">Colour by</label>
+      <select id="color">
+        <optgroup label="How it was raised">
+          <option value="heard">What it heard</option>
+          <option value="later">Life after 72 months</option>
+          <option value="gen">Generation</option>
+        </optgroup>
+        <optgroup label="Check-up, at the age below">
+          <option value="agreement/question">Agreement in questions</option>
+          <option value="past/irregular">Irregular past tense</option>
+          <option value="plural/nonce">Plural of made-up words</option>
+          <option value="plural/singular">Singular of made-up words</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="ctl">
+      <label>Age of the lineage</label>
+      <div class="age"><button id="play" type="button">▶ play</button><input id="age" type="range" min="0" max="144" value="144"><span class="v" id="agev">144 m</span></div>
+    </div>
+    <div class="ctl legend" id="legend"></div>
+    <div class="picked" id="picked"></div>
+  </aside>
+  <main class="main" id="main"><span class="hint">drag a node · scroll to zoom · hover to see its family</span></main>
 </div>
 
 <script type="module">
-import { header, registry, lineageMap } from "./site.js?v=20261029105043";
-header("lineage");
-const [reg, stats] = await Promise.all([registry(), fetch("stats.json?v=" + Date.now()).then((r) => r.json())]);
-const map = lineageMap(reg, stats);
-map.style.setProperty("--map-h", "520px");
-document.getElementById("tree").append(map);
+const EMBED = new URLSearchParams(location.search).has("embed");
+if (EMBED) document.body.classList.add("embed");
+const [reg, ck] = await Promise.all([fetch("registry.json?v=" + Date.now()).then((r) => r.json()), fetch("checkup.json?v=" + Date.now()).then((r) => r.json())]);
+const ind = reg.individuals.filter((i) => i.status === "trained");
+document.getElementById("count").textContent = `${ind.length} individuals · ${new Set(ind.map((i) => i.gen)).size} generations`;
+
+// Two kinds of node, as in a stemma: individuals, and the texts they heard or wrote.
+const nodes = [{ id: "care", kind: "source", label: "caregivers" }, { id: "Ω", kind: "text", label: "Ω" }, { id: "WT2", kind: "text", label: "children's books" }];
+const links = [{ source: "care", target: "Ω" }];
+for (const i of ind) nodes.push({ id: "#" + i.serial, kind: "ind", label: "#" + i.serial, i });
+for (const code of Object.keys(reg.corpora || {})) {
+  if (code === "Ω") continue;
+  const w = /#(\d+)/.exec(code)[1];
+  nodes.push({ id: code, kind: "text", label: `#${w}'s copy` });
+  links.push({ source: "#" + w, target: code });
+}
+for (const i of ind) {
+  links.push(i.clone_of ? { source: "#" + i.clone_of, target: "#" + i.serial, clone: true } : { source: i.heard, target: "#" + i.serial });
+  if (i.extended?.length) links.push({ source: "WT2", target: "#" + i.serial });
+}
+const born = (i) => (i.parent ? 72 : i.clone_of ? i.clone_at : 0);
+const ageOf = (i, t) => (i.parent ? t - 72 : t);
+const lastMonth = (i) => (i.parent ? 144 : Math.max(72, ...(i.extended || []).map((x) => x.months[1])));
+
+const CAT = {
+  heard: { of: (i) => i.heard, colors: { "Ω": "#3d3d3a", "Ω>#1@72m·c5": "#d17a22", "Ω>#2@72m·c5": "#7b5bb8" },
+    names: { "Ω": "Ω, real family speech", "Ω>#1@72m·c5": "#1's copy", "Ω>#2@72m·c5": "#2's copy" } },
+  later: { of: (i) => i.extended?.[0]?.env || "none", colors: { none: "#c9c8c2", WT2: "#2b5fae", WT2m: "#2e9a68" },
+    names: { none: "lives to 72 months", WT2: "children's books only", WT2m: "books + 30% family speech" } },
+  gen: { of: (i) => "G" + i.gen, colors: { G0: "#3d3d3a", G1: "#d17a22" }, names: { G0: "G0", G1: "G1" } },
+};
+const ramp = (a) => {
+  const t = Math.max(0, Math.min(1, (a - 0.3) / 0.7));
+  const stops = [[0, [196, 92, 62]], [0.29, [226, 220, 208]], [1, [43, 95, 174]]];
+  let k = 0; while (k < stops.length - 2 && t > stops[k + 1][0]) k++;
+  const [t0, c0] = stops[k], [t1, c1] = stops[k + 1], u = (t - t0) / (t1 - t0);
+  return `rgb(${c0.map((v, j) => Math.round(v + (c1[j] - v) * u)).join(",")})`;
+};
+// check-up score at its own age (a clone uses the original before branching), mean of 5 snapshots
+function score(i, key, age) {
+  const src = i.clone_of ? [...(ck.curves[i.clone_of]?.[key] || []).filter(([m]) => m < i.clone_at), ...(ck.curves[i.serial]?.[key] || [])] : (ck.curves[i.serial]?.[key] || []);
+  if (!src.length || age < 0) return null;
+  let k = src.findIndex(([m]) => m > age); k = k < 0 ? src.length - 1 : Math.max(0, k - 1);
+  const w = src.slice(Math.max(0, k - 2), k + 3);
+  return w.reduce((a, [, v]) => a + v, 0) / w.length;
+}
+
+const main = document.getElementById("main");
+const W = () => main.clientWidth, H = () => main.clientHeight;
+const svg = d3.select(main).append("svg");
+const g = svg.append("g");
+const zoom = d3.zoom().scaleExtent([0.3, 4]).on("zoom", (e) => g.attr("transform", e.transform));
+if (!EMBED) svg.call(zoom);  // embedded, scrolling stays with the page
+// once the layout has settled the first time, frame the whole graph
+function fit() {
+  const xs = nodes.map((n) => n.x), ys = nodes.map((n) => n.y), pad = 60;
+  const [x0, x1, y0, y1] = [Math.min(...xs) - pad, Math.max(...xs) + pad * 2, Math.min(...ys) - pad, Math.max(...ys) + pad];
+  const k = Math.min(1.6, W() / (x1 - x0), H() / (y1 - y0));
+  const tr = d3.zoomIdentity.translate(W() / 2 - k * (x0 + x1) / 2, H() / 2 - k * (y0 + y1) / 2).scale(k);
+  svg.transition().duration(500).call(zoom.transform, tr);
+}
+const linkSel = g.append("g").selectAll("line").data(links).join("line").attr("class", (d) => "link" + (d.clone ? " clone" : ""));
+const nodeSel = g.append("g").selectAll("g").data(nodes).join("g").attr("class", (d) => "node " + d.kind);
+nodeSel.append("circle").attr("r", (d) => (d.kind === "ind" ? 9 : d.kind === "source" ? 7 : 5))
+  .attr("fill", (d) => (d.kind === "ind" ? "#3d3d3a" : "#fff")).attr("stroke", (d) => (d.kind === "ind" ? "#fff" : "#8a897f")).attr("stroke-width", 1.5);
+nodeSel.append("text").attr("x", (d) => (d.kind === "ind" ? 13 : 9)).attr("y", 4).text((d) => d.label);
+
+const sim = d3.forceSimulation(nodes)
+  .force("link", d3.forceLink(links).id((d) => d.id).distance((d) => (d.clone ? 90 : 70)).strength(0.7))
+  .force("charge", d3.forceManyBody().strength(-480))
+  .force("center", d3.forceCenter(W() / 2, H() / 2))
+  .force("collide", d3.forceCollide(26))
+  .force("flat", d3.forceY(H() / 2).strength(EMBED ? 0.18 : 0.06))  // a little flatter, to fill a wide frame
+  .alphaDecay(0.045);
+let framed = false;
+sim.on("end", () => { if (!framed) { framed = true; fit(); } });
+sim.on("tick", () => {
+  linkSel.attr("x1", (d) => d.source.x).attr("y1", (d) => d.source.y).attr("x2", (d) => d.target.x).attr("y2", (d) => d.target.y);
+  nodeSel.attr("transform", (d) => `translate(${d.x},${d.y})`);
+});
+nodeSel.call(d3.drag()
+  .on("start", (e, d) => { if (!e.active) sim.alphaTarget(0.25).restart(); d.fx = d.x; d.fy = d.y; })
+  .on("drag", (e, d) => { d.fx = e.x; d.fy = e.y; })
+  .on("end", (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }));
+
+// hover: the node, its neighbours and their links stay; the rest fades
+const nb = new Map(nodes.map((n) => [n.id, new Set([n.id])]));
+for (const l of links) { nb.get(l.source.id).add(l.target.id); nb.get(l.target.id).add(l.source.id); }
+nodeSel.on("mouseenter", (e, d) => {
+  nodeSel.classed("dim", (n) => !nb.get(d.id).has(n.id));
+  linkSel.classed("dim", (l) => l.source.id !== d.id && l.target.id !== d.id).classed("hot", (l) => l.source.id === d.id || l.target.id === d.id);
+}).on("mouseleave", () => { nodeSel.classed("dim", false); linkSel.classed("dim", false).classed("hot", false); })
+  .on("click", (e, d) => { if (d.i) { picked = d.i; showPicked(); } });
+
+let t = 144, picked = ind[0];
+function paint() {
+  const mode = document.getElementById("color").value;
+  document.getElementById("agev").textContent = t + " m";
+  nodeSel.filter((d) => d.kind === "ind")
+    .classed("unborn", (d) => t < born(d.i) || t > lastMonth(d.i))
+    .select("circle").attr("fill", (d) => {
+      if (CAT[mode]) return CAT[mode].colors[CAT[mode].of(d.i)] || "#999";
+      const v = score(d.i, mode, ageOf(d.i, t));
+      return v == null ? "#ddd" : ramp(v);
+    });
+  legend(mode);
+}
+function legend(mode) {
+  const L = document.getElementById("legend");
+  L.innerHTML = "";
+  if (CAT[mode]) {
+    const seen = new Set(ind.map(CAT[mode].of));
+    for (const [k, c] of Object.entries(CAT[mode].colors)) if (seen.has(k)) L.insertAdjacentHTML("beforeend", `<div><span class="sw" style="background:${c}"></span>${CAT[mode].names[k]}</div>`);
+  } else {
+    L.insertAdjacentHTML("beforeend", `<div class="ramp" style="background:linear-gradient(to right,${[0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(ramp).join(",")})"></div><div class="ends"><span>30%</span><span>chance</span><span>100%</span></div>`);
+  }
+  L.insertAdjacentHTML("beforeend", `<div class="kind"><span class="sw" style="background:#fff;border:1.5px solid #8a897f"></span>a text: what was heard or copied</div><div class="kind">faded: not born yet, or past its last month</div>`);
+}
+function showPicked() {
+  const i = picked;
+  document.getElementById("picked").innerHTML = `<div class="n">#${i.serial}</div><div class="id">${[i.strain, i.env, "G" + i.gen, i.lesion || "—", "s" + i.seed].join("·")}</div>
+  <dl><dt>Heard</dt><dd>${i.heard}</dd><dt>From</dt><dd>${i.parent ? "#" + i.parent + "'s copy" : i.clone_of ? "clone of #" + i.clone_of + " at " + i.clone_at + " m" : "caregivers"}</dd>
+  <dt>Lives to</dt><dd>${lastMonth(i) - (i.parent ? 72 : 0)} months</dd>${i.extended?.[0] ? `<dt>After 72 m</dt><dd>${i.extended[0].env}</dd>` : ""}</dl>
+  <a href="individual.html?n=${i.serial}">Talk to #${i.serial} →</a>`;
+}
+document.getElementById("color").addEventListener("change", paint);
+const age = document.getElementById("age");
+age.addEventListener("input", () => { t = +age.value; paint(); });
+let timer = null;
+const play = document.getElementById("play");
+play.addEventListener("click", () => {
+  if (timer) { clearInterval(timer); timer = null; play.textContent = "▶ play"; return; }
+  if (t >= 144) t = 0;
+  play.textContent = "❚❚ pause";
+  timer = setInterval(() => { t = Math.min(144, t + 2); age.value = t; paint(); if (t >= 144) { clearInterval(timer); timer = null; play.textContent = "▶ play"; } }, 70);
+});
+// on the homepage: no controls; the lineage grows up once, coloured by agreement in questions
+if (EMBED) { document.getElementById("color").value = "agreement/question"; t = 0; age.value = 0; setTimeout(() => play.click(), 900); }
+addEventListener("resize", () => sim.force("center", d3.forceCenter(W() / 2, H() / 2)).alpha(0.3).restart());
+paint(); showPicked();
 </script>
 </body>
 </html>

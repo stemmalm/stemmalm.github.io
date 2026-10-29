@@ -25,9 +25,9 @@ export const LOGO = `<svg viewBox="0 0 34 28" aria-hidden="true"><g fill="none" 
 
 export function header(active) {
   const bar = document.querySelector(".bar");
-  const link = (href, name) => `<a href="${href}"${name === active ? ' aria-current="page"' : ""}>${name}</a>`;
-  bar.innerHTML = `<a class="home" href="./">${LOGO}<span>stemma.lm</span></a>`
-    + `<nav>${link("./", "overview")}${link("lineage.html", "lineage")}${link("variants.html", "variants")}${link("checkup.html", "check-up")}${link("log.html", "log")}</nav>`;
+  const link = (href, name) => `<a href="${href}"${name.toLowerCase() === active ? ' aria-current="page"' : ""}>${name}</a>`;
+  bar.innerHTML = `<a class="home" href="./">${LOGO}<span>StemmaLM</span></a>`
+    + `<nav>${link("./", "Overview")}${link("lineage.html", "Lineage")}${link("variants.html", "Variants")}${link("checkup.html", "Check-up")}${link("log.html", "Log")}</nav>`;
 }
 
 // The lineage as a right-angled tree: the real caregivers at the root, each generation one column

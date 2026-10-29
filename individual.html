@@ -6,7 +6,7 @@
 <title>StemmaLM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="style.css?v=20261029105043">
+<link rel="stylesheet" href="style.css?v=20261029122718">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 </head>
 <body>
@@ -60,9 +60,9 @@
 </div>
 
 <script type="module">
-import { registry, fullId, STATUS, el, header } from "./site.js?v=20261029105043";
+import { registry, fullId, STATUS, el, header } from "./site.js?v=20261029122718";
 header("");
-import { decode, makeModel, reply, scrub } from "./stemma.js?v=20261029105043";
+import { decode, makeModel, reply, scrub } from "./stemma.js?v=20261029122718";
 
 // weights: the public model repo on Hugging Face; a local folder when previewing on this machine
 const LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && !new URLSearchParams(location.search).has("hf");  // ?hf: use the public weights while previewing
