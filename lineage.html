@@ -59,12 +59,12 @@ a:hover { text-decoration: underline; }
 .dim { opacity: 0.12; }
 .unborn { opacity: 0.18; }
 @media (max-width: 760px) {
-  .top nav { gap: 12px; font-size: 12.5px; }
+  .top { height: auto; flex-wrap: wrap; padding: 10px 16px; row-gap: 6px; } .top nav { margin-left: 0; width: 100%; gap: 14px; font-size: 13px; white-space: nowrap; }
   .bench { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 70vh; height: auto; }
   .side { border-right: 0; border-bottom: 1px solid var(--faint); }
 }
 body.embed .top, body.embed .side, body.embed .hint { display: none; }
-body.embed .bench { grid-template-columns: 1fr; height: 100%; }
+body.embed .bench { grid-template-columns: 1fr; grid-template-rows: 1fr; height: 100%; }
 </style>
 </head>
 <body>
@@ -151,6 +151,8 @@ function score(i, key, age) {
 }
 
 const main = document.getElementById("main");
+// inside the homepage frame the page may not be laid out yet: wait until it has a size
+while (main.clientHeight < 50 || main.clientWidth < 50) await new Promise((r) => requestAnimationFrame(r));
 const W = () => main.clientWidth, H = () => main.clientHeight;
 const svg = d3.select(main).append("svg");
 const g = svg.append("g");
@@ -241,7 +243,8 @@ play.addEventListener("click", () => {
 });
 // on the homepage: no controls; the lineage grows up once, coloured by agreement in questions
 if (EMBED) { document.getElementById("color").value = "agreement/question"; t = 0; age.value = 0; setTimeout(() => play.click(), 900); }
-addEventListener("resize", () => sim.force("center", d3.forceCenter(W() / 2, H() / 2)).alpha(0.3).restart());
+// when the frame changes size, re-centre and frame the graph again
+new ResizeObserver(() => { sim.force("center", d3.forceCenter(W() / 2, H() / 2)); if (framed) fit(); }).observe(main);
 paint(); showPicked();
 </script>
 </body>
