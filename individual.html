@@ -6,7 +6,7 @@
 <title>StemmaLM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="style.css?v=20261029072941">
+<link rel="stylesheet" href="style.css?v=20261029075208">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 </head>
 <body>
@@ -27,7 +27,8 @@
     <div class="age">
       <label for="age" class="muted" style="font-size:14px">Age in months</label>
       <input type="range" id="age" min="0" max="72" step="1" value="30">
-      <div class="ticks" aria-hidden="true"><span>0</span><span>12</span><span>24</span><span>36</span><span>48</span><span>60</span><span>72</span></div>
+      <div class="ticks" id="ticks" aria-hidden="true"></div>
+      <div class="phases" id="phases" aria-hidden="true"></div>
     </div>
     <div class="chat">
       <div class="chat-head"><span class="chat-avatar" aria-hidden="true"></span><span class="chat-name" id="chat-name"></span><span class="chat-sub" id="chat-sub"></span></div>
@@ -38,18 +39,30 @@
       </form>
     </div>
   </section>
+  <section id="cmp-sec" hidden>
+    <h2>Same line, two ages</h2>
+    <div class="cmp-ages">
+      <label>age <select id="age-a"></select></label>
+      <label>against <select id="age-b"></select></label>
+    </div>
+    <form id="cmp-form" class="chat-compose cmp-compose" autocomplete="off">
+      <input id="cmp-say" type="text" placeholder="say one line to both" aria-label="What you say to both ages">
+      <button type="submit" id="cmp-send" aria-label="Send to both">↑</button>
+    </form>
+    <div id="cmp-log" class="cmp-log" aria-live="polite"></div>
+  </section>
   <p class="muted" id="not-yet" hidden style="margin-top:28px;font-family:var(--font-id);font-size:14px">// not grown yet — you can talk to it once it is grown</p>
 
   <footer>Data: CHILDES (CC BY-NC-SA 4.0), via AO-CHILDES. The model runs in your browser; names in its replies are replaced by “(name)”.</footer>
 </div>
 
 <script type="module">
-import { registry, fullId, STATUS, el, header } from "./site.js?v=20261029072941";
+import { registry, fullId, STATUS, el, header } from "./site.js?v=20261029075208";
 header("");
-import { decode, makeModel, reply, scrub } from "./stemma.js?v=20261029072941";
+import { decode, makeModel, reply, scrub } from "./stemma.js?v=20261029075208";
 
 // weights: the public model repo on Hugging Face; a local folder when previewing on this machine
-const LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+const LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && !new URLSearchParams(location.search).has("hf");  // ?hf: use the public weights while previewing
 const BASE = LOCAL ? "weights/" : "https://huggingface.co/xchuanli/stemmalm-weights/resolve/main/";
 
 const reg = await registry();
@@ -81,6 +94,8 @@ const lifeRows = [
   ["Heard", ind.heard ? `${ind.heard} — ${reg.corpora?.[ind.heard] || ""}` : "—"],
   ["Parent", ind.parent ? `#${ind.parent}` : "none (real caregivers)"],
 ];
+for (const x of ind.extended || [])
+  lifeRows.push(["Extended", `${x.months[0]}–${x.months[1]} months on ${x.env}${x.env === "WT2" ? " (children's books only)" : ""}. On held-out family speech (Ω), bits per character went from ${x.omega_bpc[0].toFixed(2)} at 72 months to ${x.omega_bpc[1].toFixed(2)} at ${x.months[1]}.`]);
 for (const [k, v] of lifeRows) life.append(el("dt", { text: k }), el("dd", { text: v }));
 const pa = life.querySelectorAll("dd")[3];
 if (ind.parent) { pa.textContent = ""; pa.append(el("a", { href: `individual.html?n=${ind.parent}`, text: `#${ind.parent}` })); }
@@ -90,6 +105,19 @@ if (ind.status !== "trained") {
 } else {
   document.getElementById("talk-sec").hidden = false;
   const state = { age: 30, logs: {} };
+  // the slider covers the whole life; each stretch of it is coloured by what the individual heard then
+  const MAX = Math.max(72, ...(ind.extended || []).map((x) => x.months[1]));
+  const slider = document.getElementById("age");
+  slider.max = MAX;
+  const phases = [{ from: 0, to: 72, env: ind.heard || "Ω", cls: "p0" }, ...(ind.extended || []).map((x, k) => ({ from: x.months[0] - 1, to: x.months[1], env: x.env, cls: "p" + (k + 1) }))];
+  const pct = (m) => (100 * m / MAX).toFixed(2) + "%";
+  slider.style.background = "linear-gradient(to right, " + phases.map((p) => `var(--${p.cls}) ${pct(p.from)} ${pct(p.to)}`).join(", ") + ")";
+  const ticks = document.getElementById("ticks");
+  for (let m = 0; m <= MAX; m += MAX > 72 ? 24 : 12) ticks.append(el("span", { text: String(m) }));
+  if (phases.length > 1) {
+    const ph = document.getElementById("phases");
+    for (const p of phases) ph.append(el("span", { class: p.cls, style: `width:${pct(p.to - p.from)}`, text: p.env === "WT2" ? "WT2 · books only" : p.env + " · family speech" }));
+  }
   let man = null;
   const models = new Map();
 
@@ -97,7 +125,8 @@ if (ind.status !== "trained") {
     man = man || await fetch(`${BASE}n${pad(serial)}/web/manifest.json`).then((r) => { if (!r.ok) throw 0; return r.json(); });
     const month = Math.max(...man.snapshots.filter((s) => s <= age));
     if (!models.has(month)) {
-      const buf = await fetch(`${BASE}n${pad(serial)}/web/m${String(month).padStart(2, "0")}.bin`).then((r) => { if (!r.ok) throw 0; return r.arrayBuffer(); });
+      // snapshots up to 72 months are named m06 ... m72, later ones m073 ... m144
+      const buf = await fetch(`${BASE}n${pad(serial)}/web/m${String(month).padStart(month > 72 ? 3 : 2, "0")}.bin`).then((r) => { if (!r.ok) throw 0; return r.arrayBuffer(); });
       models.set(month, makeModel(man, decode(buf)));
       if (models.size > 3) models.delete(models.keys().next().value);
     }
@@ -142,6 +171,38 @@ if (ind.status !== "trained") {
     send.disabled = false; render(); input.focus();
   });
   render();
+
+  // the same line to two ages, answers side by side
+  const ages = (man0) => man0.snapshots;
+  const sa = document.getElementById("age-a"), sb = document.getElementById("age-b");
+  man = man || await fetch(`${BASE}n${pad(serial)}/web/manifest.json`).then((r) => r.ok ? r.json() : null).catch(() => null);
+  if (man) {
+    document.getElementById("cmp-sec").hidden = false;
+    for (const s of [sa, sb]) for (const m of ages(man)) s.append(el("option", { value: m, text: m + " months" }));
+    sa.value = 72; sb.value = String(Math.max(...ages(man)));
+    if (sb.value === "72") sa.value = "36";
+    document.getElementById("cmp-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const input = document.getElementById("cmp-say"), text = input.value.trim();
+      if (!text) return;
+      input.value = "";
+      const a = Number(sa.value), b = Number(sb.value);
+      const cell = (age) => el("div", { class: "cmp-cell" }, el("div", { class: "ex-meta", text: `#${serial} @${age}m` }), el("div", { class: "cmp-reply", text: "…" }));
+      const ca = cell(a), cb = cell(b);
+      const item = el("div", { class: "cmp-item" }, el("div", { class: "cmp-adult" }, el("span", { class: "muted", text: "you  " }), el("span", { text })), el("div", { class: "cmp-pair" }, ca, cb));
+      const logEl = document.getElementById("cmp-log");
+      logEl.prepend(item);
+      document.getElementById("cmp-send").disabled = true;
+      for (const [age, c] of [[a, ca], [b, cb]]) {
+        try {
+          const model = await modelAt(age);
+          await new Promise((r) => setTimeout(r, 20));
+          c.querySelector(".cmp-reply").textContent = scrub(reply(model, text.replace(/\s+/g, " ").slice(0, 200) + "\n")) || "…";
+        } catch { c.querySelector(".cmp-reply").textContent = "(no answer)"; }
+      }
+      document.getElementById("cmp-send").disabled = false;
+    });
+  }
 }
 </script>
 </body>

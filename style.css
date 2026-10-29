@@ -190,3 +190,22 @@ table.reg { border-collapse: collapse; width: 100%; min-width: 760px; font-size:
 @media (max-width: 620px) { .ex-grid.four { grid-template-columns: minmax(0, 1fr); } }
 .reg td.strong { font-weight: 500; }
 .dose { grid-template-columns: 112px 1fr 150px; }
+
+/* life phases on the age slider */
+:root { --p0: #cfcfc6; --p1: #8fb0e6; --p2: #e6c48f; }
+.age input[type=range] { -webkit-appearance: none; appearance: none; height: 6px; border-radius: 3px; }
+.age input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--ink); border: 2px solid var(--bg); cursor: pointer; }
+.age input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--ink); border: 2px solid var(--bg); cursor: pointer; }
+.age input[type=range]::-moz-range-track { background: transparent; }
+.phases { display: flex; font: 11px var(--font-id); color: var(--muted); margin-top: 2px; }
+.phases span { border-top: 3px solid; padding-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.phases .p0 { border-color: var(--p0); }
+.phases .p1 { border-color: var(--p1); }
+.cmp-ages { display: flex; gap: 16px; flex-wrap: wrap; font: 13px var(--font-id); margin-bottom: 8px; }
+.cmp-ages select { font: 13px var(--font-id); padding: 3px 6px; border: 1px solid var(--rule); background: var(--bg); color: var(--ink); }
+.cmp-compose { border: 1px solid var(--rule); }
+.cmp-log { margin-top: 10px; }
+.cmp-item { border-top: 1px solid var(--faint); padding: 8px 0; }
+.cmp-adult { font-size: 14.5px; margin-bottom: 6px; }
+.cmp-pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+.cmp-cell { border-left: 2px solid var(--faint); padding-left: 8px; font-size: 14.5px; line-height: 1.45; }
