@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>StemmaLM</title>
 <meta name="description" content="A lineage of small language models, each raised from scratch on what adults say to children.">
-<link rel="stylesheet" href="style.css?v=20261029080833">
+<link rel="stylesheet" href="style.css?v=20261029092525">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 </head>
 <body>
@@ -62,7 +62,7 @@
 </div>
 
 <script type="module">
-import { header, registry, lineageMap, fullId, el, sparkline } from "./site.js?v=20261029080833";
+import { header, registry, lineageMap, fullId, el, sparkline } from "./site.js?v=20261029092525";
 header("overview");
 const [reg, stats, log] = await Promise.all([
   registry(), fetch("stats.json?v=" + Date.now()).then((r) => r.json()), fetch("log.json?v=" + Date.now()).then((r) => r.json())]);
@@ -98,7 +98,7 @@ for (const i of grown) {
     el("td", {}, el("a", { href: `individual.html?n=${i.serial}`, text: "#" + i.serial })),
     el("td", { class: "mono", text: fullId(i) }),
     el("td", { text: "G" + i.gen }),
-    el("td", { text: i.parent ? "#" + i.parent : "—" }),
+    el("td", { text: i.clone_of ? `clone of #${i.clone_of}` : i.parent ? "#" + i.parent : "—" }),
     el("td", { class: "mono", text: i.heard || "Ω" }),
     spark,
     el("td", { class: "num", text: at72 != null ? at72.toFixed(1) : "—" }),

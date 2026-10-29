@@ -45,15 +45,16 @@ function s(tag, attrs = {}, text) {
 // The figure's legend (B22a2 §3b): shape = strain, colour = environment, hollow = lesioned,
 // line = how the parent passed its speech on, a thin ring = lived past the first 72 months.
 export const SHAPES = ["circle", "square", "triangle", "diamond"];
-export const ENV_COLORS = { WT1: "var(--ink)", WT2: "#2f6fd0" };
+export const ENV_COLORS = { WT1: "var(--ink)", WT2: "#2f6fd0", WT2m: "#2e9a68" };
 export const MODES = {
   care: { name: "real caregivers' speech", dash: "", width: 1, color: "var(--muted)" },
   c: { name: "copy", dash: "", width: 1.3 },
   f: { name: "free speech", dash: "5 3", width: 1.3 },
   r: { name: "respeak", dash: "1.5 2.5", width: 1.3 },
   d: { name: "distill", dash: "", width: 3 },
+  clone: { name: "clone: the same life up to the branch point", dash: "7 3 1 3", width: 1.3, color: "var(--muted)" },
 };
-export const modeOf = (i) => (i.parent ? (/·([a-z])/.exec(i.heard || "") || [, "c"])[1] : "care");
+export const modeOf = (i) => i.clone_of ? "clone" : (i.parent ? (/·([a-z])/.exec(i.heard || "") || [, "c"])[1] : "care");
 export const envOf = (i) => (i.extended && i.extended.length ? i.extended[i.extended.length - 1].env : i.env);
 export function mark(shape, x, y, r, color, hollow) {
   const paint = hollow ? { fill: "var(--bg)", stroke: color, "stroke-width": 1.4 } : { fill: color };
@@ -65,8 +66,12 @@ export function mark(shape, x, y, r, color, hollow) {
 
 export function lineageFigure(reg0, { compact = false } = {}) {
   const reg = { ...reg0, individuals: reg0.individuals.filter((i) => i.status === "trained") };  // only grown ones are shown
-  const kids = (p) => reg.individuals.filter((i) => (p === null ? i.gen === 0 : i.parent === p));
-  const depth = Math.max(0, ...reg.individuals.map((i) => i.gen)) + 1;
+  // a clone hangs off the individual it was copied from, one column further right
+  const up = (i) => i.clone_of ?? i.parent ?? null;
+  const kids = (p) => reg.individuals.filter((i) => (p === null ? up(i) === null : up(i) === p));
+  const byN = new Map(reg.individuals.map((i) => [i.serial, i]));
+  const col = (i) => (i.clone_of ? col(byN.get(i.clone_of)) + 1 : i.gen);
+  const depth = Math.max(0, ...reg.individuals.map(col)) + 1;
   const ROW = compact ? 22 : 30, X0 = 14, COL = compact ? 150 : 290, LEAD = 30;
   const xs = (d) => X0 + 110 + d * COL;  // d = generation
   let leaf = 0;
@@ -89,19 +94,19 @@ export function lineageFigure(reg0, { compact = false } = {}) {
 
   function edges(parentX, parentY, children) {
     if (!children.length) return;
-    const ex = xs(children[0].gen) - LEAD;
+    const ex = xs(col(children[0])) - LEAD;
     const ys = children.map((c) => pos.get(c.serial));
     const ms = children.map((c) => MODES[modeOf(c)] || MODES.c);
     const trunk = ms.every((m) => m === ms[0]) ? ms[0] : MODES.c;
     line(`M${parentX} ${parentY}H${ex}M${ex} ${Math.min(...ys)}V${Math.max(...ys)}`, trunk);
-    children.forEach((c, k) => line(`M${ex} ${pos.get(c.serial)}H${xs(c.gen) - 4}`, ms[k]));
+    children.forEach((c, k) => line(`M${ex} ${pos.get(c.serial)}H${xs(col(c)) - 4}`, ms[k]));
   }
   // root: the real caregivers
   svg.append(s("circle", { cx: X0, cy: rootY, r: 3.5, fill: "currentColor" }));
   svg.append(s("text", { ...font, x: X0 - 4, y: rootY - 9, opacity: 0.7 }, compact ? "caregivers" : "real caregivers"));
   edges(X0, rootY, roots);
   for (const i of reg.individuals) {
-    const x = xs(i.gen), y = pos.get(i.serial), ch = kids(i.serial);
+    const x = xs(col(i)), y = pos.get(i.serial), ch = kids(i.serial);
     edges(x, y, ch);
     const a = s("a", { href: `individual.html?n=${i.serial}`, "data-serial": i.serial, "aria-label": `#${i.serial} ${fullId(i)}` });
     if (envOf(i) !== i.env) a.append(s("circle", { cx: x, cy: y, r: 7, fill: "none", stroke: "currentColor", "stroke-width": 0.8, opacity: 0.7 }));
@@ -211,6 +216,8 @@ export function lineageMap(reg, stats = { individuals: {} }, opts = {}) {
       el("div", { class: "card-n", text: "#" + i.serial }),
       el("div", { class: "card-id", text: fullId(i) }),
       row("generation", "G" + i.gen + (i.parent ? " · parent #" + i.parent : "")),
+      ...(i.clone_of ? [row("clone of", `#${i.clone_of} at ${i.clone_at} m`)] : []),
+      ...((i.extended || []).map((x) => row("lived on", `${x.env}, ${x.months[0]}–${x.months[1]} m`))),
       row("heard", i.heard || "Ω"),
       ...(i.born ? [row("born", when(i.born))] : []),
       ...(curve.length ? [row("words per utterance", curve[curve.length - 1][1].toFixed(1) + " at 72 m")] : []),

@@ -4,7 +4,8 @@
   },
   "envs": {
     "WT1": "adult speech from AO-CHILDES with all child turns removed, fed once in order of the child's age, 0–72 months",
-    "WT2": "Project Gutenberg children's books, easy to hard, about 1M words a year, 73–144 months; nothing else (WT2 first part)"
+    "WT2": "Project Gutenberg children's books, easy to hard, about 1M words a year, 73–144 months; nothing else (WT2 first part)",
+    "WT2m": "WT2's children's books with family speech mixed back in: 70% books, 30% Ω 36–72 months, 73–144 months"
   },
   "individuals": [
     {
@@ -168,6 +169,90 @@
       "born": "2026-10-28T23:03:46+01:00",
       "grown": "2026-10-28T23:24:23+01:00",
       "heard": "Ω>#2@72m·c5"
+    },
+    {
+      "serial": 10,
+      "strain": "EN1",
+      "env": "WT1",
+      "gen": 0,
+      "lesion": null,
+      "seed": 1,
+      "parent": null,
+      "clone_of": 1,
+      "clone_at": 72,
+      "status": "trained",
+      "born": "2026-10-29T08:18:12+01:00",
+      "grown": "2026-10-29T09:21:42+01:00",
+      "heard": "Ω",
+      "extended": [
+        {
+          "env": "WT2m",
+          "months": [
+            73,
+            144
+          ],
+          "omega_bpc": [
+            1.7321,
+            1.8538
+          ]
+        }
+      ]
+    },
+    {
+      "serial": 11,
+      "strain": "EN1",
+      "env": "WT1",
+      "gen": 0,
+      "lesion": null,
+      "seed": 2,
+      "parent": null,
+      "clone_of": 2,
+      "clone_at": 72,
+      "status": "trained",
+      "born": "2026-10-29T08:18:12+01:00",
+      "grown": "2026-10-29T09:22:41+01:00",
+      "heard": "Ω",
+      "extended": [
+        {
+          "env": "WT2m",
+          "months": [
+            73,
+            144
+          ],
+          "omega_bpc": [
+            1.7229,
+            1.8239
+          ]
+        }
+      ]
+    },
+    {
+      "serial": 12,
+      "strain": "EN1",
+      "env": "WT1",
+      "gen": 0,
+      "lesion": null,
+      "seed": 3,
+      "parent": null,
+      "clone_of": 3,
+      "clone_at": 72,
+      "status": "trained",
+      "born": "2026-10-29T08:18:12+01:00",
+      "grown": "2026-10-29T09:22:00+01:00",
+      "heard": "Ω",
+      "extended": [
+        {
+          "env": "WT2m",
+          "months": [
+            73,
+            144
+          ],
+          "omega_bpc": [
+            1.7214,
+            1.8543
+          ]
+        }
+      ]
     }
   ],
   "sources": {

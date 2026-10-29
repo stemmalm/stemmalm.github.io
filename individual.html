@@ -6,7 +6,7 @@
 <title>StemmaLM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="style.css?v=20261029080833">
+<link rel="stylesheet" href="style.css?v=20261029092525">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 </head>
 <body>
@@ -60,9 +60,9 @@
 </div>
 
 <script type="module">
-import { registry, fullId, STATUS, el, header } from "./site.js?v=20261029080833";
+import { registry, fullId, STATUS, el, header } from "./site.js?v=20261029092525";
 header("");
-import { decode, makeModel, reply, scrub } from "./stemma.js?v=20261029080833";
+import { decode, makeModel, reply, scrub } from "./stemma.js?v=20261029092525";
 
 // weights: the public model repo on Hugging Face; a local folder when previewing on this machine
 const LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && !new URLSearchParams(location.search).has("hf");  // ?hf: use the public weights while previewing
@@ -96,9 +96,10 @@ const lifeRows = [
   ["Grown", when(ind.grown)],
   ["Heard", ind.heard ? `${ind.heard} — ${reg.corpora?.[ind.heard] || ""}` : "—"],
   ["Parent", ind.parent ? `#${ind.parent}` : "none (real caregivers)"],
+  ...(ind.clone_of ? [["Clone of", `#${ind.clone_of} at ${ind.clone_at} months: the same life up to then, a different one after`]] : []),
 ];
 for (const x of ind.extended || [])
-  lifeRows.push(["Extended", `${x.months[0]}–${x.months[1]} months on ${x.env}${x.env === "WT2" ? " (children's books only)" : ""}. On held-out family speech (Ω), bits per character went from ${x.omega_bpc[0].toFixed(2)} at 72 months to ${x.omega_bpc[1].toFixed(2)} at ${x.months[1]}.`]);
+  lifeRows.push(["Extended", `${x.months[0]}–${x.months[1]} months on ${x.env}${x.env === "WT2" ? " (children's books only)" : x.env === "WT2m" ? " (70% children's books, 30% family speech)" : ""}. On held-out family speech (Ω), bits per character went from ${x.omega_bpc[0].toFixed(2)} at 72 months to ${x.omega_bpc[1].toFixed(2)} at ${x.months[1]}.`]);
 for (const [k, v] of lifeRows) life.append(el("dt", { text: k }), el("dd", { text: v }));
 const pa = life.querySelectorAll("dd")[3];
 if (ind.parent) { pa.textContent = ""; pa.append(el("a", { href: `individual.html?n=${ind.parent}`, text: `#${ind.parent}` })); }
@@ -112,28 +113,33 @@ if (ind.status !== "trained") {
   const MAX = Math.max(72, ...(ind.extended || []).map((x) => x.months[1]));
   const slider = document.getElementById("age");
   slider.max = MAX;
-  const phases = [{ from: 0, to: 72, env: ind.heard || "Ω", cls: "p0" }, ...(ind.extended || []).map((x, k) => ({ from: x.months[0] - 1, to: x.months[1], env: x.env, cls: "p" + (k + 1) }))];
+  const phases = [{ from: 0, to: 72, env: ind.heard || "Ω", cls: "p0" }, ...(ind.extended || []).map((x, k) => ({ from: x.months[0] - 1, to: x.months[1], env: x.env, cls: x.env === "WT2m" ? "p2" : "p" + (k + 1) }))];
   const pct = (m) => (100 * m / MAX).toFixed(2) + "%";
   slider.style.background = "linear-gradient(to right, " + phases.map((p) => `var(--${p.cls}) ${pct(p.from)} ${pct(p.to)}`).join(", ") + ")";
   const ticks = document.getElementById("ticks");
   for (let m = 0; m <= MAX; m += MAX > 72 ? 24 : 12) ticks.append(el("span", { text: String(m) }));
   if (phases.length > 1) {
     const ph = document.getElementById("phases");
-    for (const p of phases) ph.append(el("span", { class: p.cls, style: `width:${pct(p.to - p.from)}`, text: p.env === "WT2" ? "WT2 · books only" : p.env + " · family speech" }));
+    for (const p of phases) ph.append(el("span", { class: p.cls, style: `width:${pct(p.to - p.from)}`, text: p.env === "WT2" ? "WT2 · books only" : p.env === "WT2m" ? "WT2m · books + family speech" : p.env + " · family speech" }));
   }
   let man = null;
   const models = new Map();
 
+  // a clone's life before the branch point is the original's; its snapshots are read from there
+  const manifests = {};
+  const getMan = (n) => manifests[n] || (manifests[n] = fetch(`${BASE}n${pad(n)}/web/manifest.json`).then((r) => { if (!r.ok) throw 0; return r.json(); }));
   async function modelAt(age) {
-    man = man || await fetch(`${BASE}n${pad(serial)}/web/manifest.json`).then((r) => { if (!r.ok) throw 0; return r.json(); });
+    const src = ind.clone_of && age < ind.clone_at ? ind.clone_of : serial;
+    man = await getMan(src);
     const month = Math.max(...man.snapshots.filter((s) => s <= age));
-    if (!models.has(month)) {
+    const key = src + "@" + month;
+    if (!models.has(key)) {
       // snapshots up to 72 months are named m06 ... m72, later ones m073 ... m144
-      const buf = await fetch(`${BASE}n${pad(serial)}/web/m${String(month).padStart(month > 72 ? 3 : 2, "0")}.bin`).then((r) => { if (!r.ok) throw 0; return r.arrayBuffer(); });
-      models.set(month, makeModel(man, decode(buf)));
+      const buf = await fetch(`${BASE}n${pad(src)}/web/m${String(month).padStart(month > 72 ? 3 : 2, "0")}.bin`).then((r) => { if (!r.ok) throw 0; return r.arrayBuffer(); });
+      models.set(key, makeModel(man, decode(buf)));
       if (models.size > 3) models.delete(models.keys().next().value);
     }
-    return models.get(month);
+    return models.get(key);
   }
 
   function render(typing = false) {
@@ -178,7 +184,9 @@ if (ind.status !== "trained") {
   // the same line to two ages, answers side by side
   const ages = (man0) => man0.snapshots;
   const sa = document.getElementById("age-a"), sb = document.getElementById("age-b");
-  man = man || await fetch(`${BASE}n${pad(serial)}/web/manifest.json`).then((r) => r.ok ? r.json() : null).catch(() => null);
+  const own = await getMan(serial).catch(() => null);
+  const before = ind.clone_of ? await getMan(ind.clone_of).catch(() => null) : null;
+  man = own && { ...own, snapshots: [...new Set([...(before ? before.snapshots.filter((s) => s < ind.clone_at) : []), ...own.snapshots])].sort((a, b) => a - b) };
   if (man) {
     document.getElementById("cmp-sec").hidden = false;
     for (const s of [sa, sb]) for (const m of ages(man)) s.append(el("option", { value: m, text: m + " months" }));
