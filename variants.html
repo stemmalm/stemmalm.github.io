@@ -63,7 +63,7 @@ const map = {
   highlight(counts, copy) {
     const max = Math.max(1, ...Object.values(counts));
     // size stays model size; the count shows as colour and as a number
-    individuals.select("circle").attr("fill", (d) => { const n = counts[d.i.serial] || 0; return n ? d3.interpolateRgb("#f1d7a0", "#a8650a")(Math.sqrt(n / max)) : "#d6d5cf"; });
+    individuals.select("circle").attr("fill", (d) => { const n = counts[d.i.serial] || 0; return n ? d3.interpolateRgb("#c6dbef", "#08519c")(Math.sqrt(n / max)) : "#d0d7de"; });
     individuals.selectAll("text.count").remove();
     individuals.filter((d) => counts[d.i.serial]).append("text").attr("class", "count").attr("x", -14).attr("y", 4).attr("text-anchor", "end").text((d) => counts[d.i.serial]);
     nodeSel.classed("lit", (d) => d.id === copy);

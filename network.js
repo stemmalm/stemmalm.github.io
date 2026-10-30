@@ -6,17 +6,17 @@
 const CSS = `
 .net { position: relative; overflow: hidden; }
 .net svg { width: 100%; height: 100%; display: block; cursor: grab; }
-.net .link { stroke: #c4c3bc; stroke-width: 1.2; transition: opacity .15s; }
+.net .link { stroke: #c4ccd5; stroke-width: 1.2; transition: opacity .15s; }
 .net .link.clone { stroke-dasharray: 5 4; }
-.net .link.hot { stroke: #55554f; stroke-width: 1.8; }
-.net .node text { font: 12px "IBM Plex Mono", ui-monospace, monospace; fill: #1c1c1a; pointer-events: none; paint-order: stroke; stroke: #fff; stroke-width: 3px; }
-.net .node.text text, .net .node.source text { font: italic 12px "IBM Plex Sans", system-ui, sans-serif; fill: #6f6f6a; }
+.net .link.hot { stroke: #57606a; stroke-width: 1.8; }
+.net .node text { font: 12px "IBM Plex Mono", ui-monospace, monospace; fill: #1f2328; pointer-events: none; paint-order: stroke; stroke: #fff; stroke-width: 3px; }
+.net .node.text text, .net .node.source text { font: italic 12px "IBM Plex Sans", system-ui, sans-serif; fill: #59636e; }
 .net .node { cursor: pointer; transition: opacity .15s; }
 .net .node circle { transition: fill .25s, r .25s; }
-.net .node .count { font: 500 11px "IBM Plex Mono", ui-monospace, monospace; fill: #8a5a00; }
+.net .node .count { font: 500 11px "IBM Plex Mono", ui-monospace, monospace; fill: #7d5e00; }
 .net .dim { opacity: 0.12; }
 .net .unborn { opacity: 0.18; }
-.net .lit .shape { stroke: #1c1c1a; stroke-width: 2.2; }
+.net .lit .shape { stroke: #1f2328; stroke-width: 2.2; }
 `;
 
 export function lineageNetwork(main, reg, { zoomable = true, flat = 0.06, onPick = () => {} } = {}) {
@@ -56,10 +56,10 @@ export function lineageNetwork(main, reg, { zoomable = true, flat = 0.06, onPick
   // an individual's area grows with its number of parameters (EN1, about 10.8M, is the unit)
   const radius = (i) => 9 * Math.sqrt((i.params || 10.77e6) / 10.77e6);
   for (const d of nodes) if (d.i) d.r = radius(d.i);
-  nodeSel.filter((d) => d.kind === "ind").append("circle").attr("r", (d) => d.r).attr("fill", "#3d3d3a").attr("stroke", "#fff").attr("stroke-width", 1.5);
+  nodeSel.filter((d) => d.kind === "ind").append("circle").attr("r", (d) => d.r).attr("fill", "#32383f").attr("stroke", "#fff").attr("stroke-width", 1.5);
   const SYM = { circle: d3.symbolCircle, square: d3.symbolSquare, diamond: d3.symbolDiamond, triangle: d3.symbolTriangle };
   nodeSel.filter((d) => d.kind !== "ind").append("path").attr("class", "shape")
-    .attr("d", (d) => d3.symbol(SYM[d.shape], d.kind === "source" ? 170 : 110)()).attr("fill", "#fff").attr("stroke", "#8a897f").attr("stroke-width", 1.5);
+    .attr("d", (d) => d3.symbol(SYM[d.shape], d.kind === "source" ? 170 : 110)()).attr("fill", "#fff").attr("stroke", "#8b949e").attr("stroke-width", 1.5);
   nodeSel.append("text").attr("x", (d) => (d.kind === "ind" ? d.r + 5 : 11)).attr("y", 4).text((d) => d.label);
 
   const sim = d3.forceSimulation(nodes)
@@ -95,7 +95,7 @@ export function lineageNetwork(main, reg, { zoomable = true, flat = 0.06, onPick
 
 // the legend for the texts, as small inline SVGs
 export function textLegend() {
-  const one = (sym, name) => `<div class="kind"><svg width="14" height="14" viewBox="-7 -7 14 14"><path d="${d3.symbol(sym, 60)()}" fill="#fff" stroke="#8a897f" stroke-width="1.4"/></svg>${name}</div>`;
+  const one = (sym, name) => `<div class="kind"><svg width="14" height="14" viewBox="-7 -7 14 14"><path d="${d3.symbol(sym, 60)()}" fill="#fff" stroke="#8b949e" stroke-width="1.4"/></svg>${name}</div>`;
   return one(d3.symbolSquare, "real family speech (Ω)") + one(d3.symbolDiamond, "a copy written by an individual") + one(d3.symbolTriangle, "children's books");
 }
 

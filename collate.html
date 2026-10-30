@@ -41,7 +41,7 @@
 .rx .row { border-left: 2px solid var(--faint); padding: 2px 0 2px 9px; margin: 0 0 8px; font-size: 13.5px; }
 .rx .meta { font: 11px var(--font-id); color: var(--muted); }
 .rx .adult { color: var(--muted); }
-.rx mark { background: var(--mark); outline: 1px solid #e3c25b; padding: 0 1px; }
+.rx mark { background: var(--mark); outline: 1px solid #d4a72c; padding: 0 1px; }
 .cnt { display: flex; gap: 12px; flex-wrap: wrap; font: 12.5px var(--font-id); }
 .cnt span { border: 1px solid var(--faint); border-radius: 4px; padding: 2px 8px; }
 .cnt b { font-weight: 500; }
@@ -69,7 +69,7 @@
 import { header, el } from "./site.js?v=20261029142959";
 header("collation");
 const [C, V, reg] = await Promise.all(["collate.json", "variants.json", "registry.json"].map((u) => fetch(u + "?v=" + Date.now()).then((r) => r.json())));
-const COPY = { 1: "#d17a22", 2: "#7b5bb8", 3: "#3f8f8a" };
+const COPY = { 1: "#d55e00", 2: "#cc79a7", 3: "#009e73" };
 const byId = new Map(V.variants.map((v) => [v.id, v]));
 const kids = (c) => reg.individuals.filter((i) => i.parent === c).map((i) => String(i.serial));
 const others = (c) => reg.individuals.filter((i) => i.parent && i.parent !== c).map((i) => String(i.serial));
@@ -122,7 +122,7 @@ async function drawMain() {
   table.append(pos);
   for (const s of ["Ω", "1", "2", "3"]) {
     const tr = el("tr", { class: s === "Ω" ? "arch" : "" });
-    tr.append(el("td", { class: "sig" }, el("i", { style: `background:${s === "Ω" ? "#8d8b82" : COPY[s]}` }), document.createTextNode(s === "Ω" ? "Ω" : "#" + s)));
+    tr.append(el("td", { class: "sig" }, el("i", { style: `background:${s === "Ω" ? "#8b949e" : COPY[s]}` }), document.createTextNode(s === "Ω" ? "Ω" : "#" + s)));
     W[s].forEach((w, i) => {
       const td = el("td", { text: w });
       if (s !== "Ω" && w !== W["Ω"][i]) { td.classList.add("var"); td.style.background = COPY[s] + "26"; td.style.color = COPY[s]; }

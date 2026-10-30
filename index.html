@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <style>
-:root { --ink: #1c1c1a; --muted: #6f6f6a; --faint: #e7e6e1; --rule: #d6d5cf; --panel: #f7f6f2; --sel: #fff3cf; --link: #2b5fae;
+:root { --ink: #1f2328; --muted: #59636e; --faint: #e1e4e8; --rule: #d0d7de; --panel: #f6f8fa; --sel: #dcebf8; --link: #0550ae;
   --sans: "IBM Plex Sans", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace; }
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
@@ -27,74 +27,105 @@ a:hover { text-decoration: underline; }
 .head .what { color: var(--muted); }
 .head .counts { margin-left: auto; font: 12.5px var(--mono); color: var(--muted); display: flex; gap: 16px; }
 .head .counts b { color: var(--ink); font-weight: 500; }
-.grid { flex: 1; min-height: 0; display: grid; grid-template-columns: 250px minmax(0, 1fr) 330px; }
-.col { min-height: 0; overflow: auto; }
-.idx { border-right: 1px solid var(--faint); background: var(--panel); }
-.rec { border-left: 1px solid var(--faint); background: var(--panel); padding: 14px 16px 24px; }
-.sec { font: 600 11px var(--sans); letter-spacing: .07em; text-transform: uppercase; color: var(--muted); margin: 14px 0 6px; }
-.chips { display: flex; flex-wrap: wrap; gap: 5px; padding: 0 12px; }
+.grid { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 34%); }
+.db { min-height: 0; display: flex; flex-direction: column; }
+.tree { min-height: 0; display: flex; flex-direction: column; border-left: 1px solid var(--faint); background: var(--panel); }
+/* search and filters */
+.find { flex: none; padding: 12px 18px 10px; border-bottom: 1px solid var(--faint); display: flex; flex-direction: column; gap: 8px; }
+.q { display: flex; align-items: center; gap: 8px; border: 1px solid var(--rule); border-radius: 6px; padding: 0 10px; background: #fff; }
+.q:focus-within { border-color: var(--ink); }
+.q svg { flex: none; color: var(--muted); }
+.q input { flex: 1; min-width: 0; border: 0; outline: 0; font: 14px var(--mono); padding: 8px 0; background: none; color: var(--ink); }
+.q .hits { font: 12px var(--mono); color: var(--muted); white-space: nowrap; }
+.q .clear { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 16px; padding: 0 2px; }
+.row { display: flex; align-items: center; gap: 6px 14px; flex-wrap: wrap; font-size: 12.5px; }
+.row .lbl { color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; }
 .chips button { font: 12px var(--sans); border: 1px solid var(--rule); background: #fff; border-radius: 12px; padding: 1px 9px; cursor: pointer; color: var(--muted); }
 .chips button.on { background: var(--ink); color: #fff; border-color: var(--ink); }
 .chips button span { font-family: var(--mono); margin-left: 4px; opacity: .7; }
-.list { margin-top: 10px; border-top: 1px solid var(--faint); }
-.list .it { display: grid; grid-template-columns: 34px 1fr auto; gap: 6px; align-items: baseline; padding: 6px 12px; border-bottom: 1px solid var(--faint); cursor: pointer; }
-.list .it:hover { background: #fff; }
-.list .it.on { background: var(--sel); }
-.list .n { font: 500 13px var(--mono); }
-.list .k { font-size: 12px; color: var(--muted); }
-.list .sw { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
-.list .life { font: 11.5px var(--mono); color: var(--muted); }
-.center { display: flex; flex-direction: column; }
-.ctrl { flex: none; display: flex; align-items: center; gap: 14px; padding: 8px 16px; border-bottom: 1px solid var(--faint); font-size: 12.5px; flex-wrap: wrap; }
-.ctrl select { font: 12.5px var(--sans); padding: 3px 6px; border: 1px solid var(--rule); border-radius: 4px; background: #fff; }
-.ctrl input[type=range] { width: 200px; }
-.ctrl .m { font: 12.5px var(--mono); min-width: 4em; }
-.ctrl .ramp { width: 120px; height: 7px; border-radius: 4px; }
-.chart { flex: 1; min-height: 0; overflow: auto; position: relative; }
-.chart svg { display: block; width: 100%; }
-.axis text { font: 10.5px var(--mono); fill: var(--muted); }
-.lab { font: 500 12px var(--mono); fill: var(--ink); }
-.edge { fill: none; stroke: #8a897f; stroke-width: 1.1; }
-.edge.clone { stroke-dasharray: 5 4; }
-.band { fill: none; }
-.lifeg { cursor: pointer; }
-.crumb { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; font: 12.5px var(--mono); margin-bottom: 4px; }
-.crumb span { background: #fff; border: 1px solid var(--rule); border-radius: 3px; padding: 0 6px; }
-.crumb .arr { border: 0; background: none; padding: 0; color: var(--muted); }
-.crumb .big { font: 600 18px var(--sans); border: 0; background: none; padding: 0 4px 0 0; }
+.try { font: 12px var(--mono); color: var(--muted); }
+.try a { margin-right: 8px; }
+.row input[type=range] { width: 160px; vertical-align: middle; }
+.row .m { font: 12.5px var(--mono); min-width: 3.5em; display: inline-block; }
+.row .ramp { width: 90px; height: 7px; border-radius: 4px; display: inline-block; vertical-align: middle; }
+/* the table */
+.tw { flex: 1; min-height: 0; overflow: auto; }
+table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 12.5px; }
+th { position: sticky; top: 0; z-index: 2; background: #fff; text-align: left; font: 600 11px var(--sans); letter-spacing: .05em; text-transform: uppercase; color: var(--muted);
+  padding: 8px 10px 6px; border-bottom: 1px solid var(--rule); white-space: nowrap; cursor: pointer; user-select: none; }
+th.num, td.num { text-align: right; }
+th .ar { font-family: var(--mono); margin-left: 3px; opacity: .8; }
+th.ck { cursor: default; text-align: center; }
+td { padding: 7px 10px; border-bottom: 1px solid var(--faint); white-space: nowrap; vertical-align: middle; }
+td.mono { font: 12px var(--mono); }
+td.n { font: 500 13px var(--mono); }
+tbody tr.r { cursor: pointer; }
+tbody tr.r:hover td { background: #f3f6f9; }
+tbody tr.r.hov td { background: #f3f6f9; }
+tbody tr.r.on td { background: var(--sel); }
+.sw { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; vertical-align: 1px; }
+.ln { width: 14px; height: 3px; display: inline-block; margin-right: 6px; vertical-align: 2px; border-radius: 1px; }
+.mute { color: var(--muted); }
+.cell { display: inline-block; min-width: 40px; padding: 1px 0; border-radius: 3px; text-align: center; font: 11.5px var(--mono); }
+mark { background: #fff1a8; color: inherit; border-radius: 2px; padding: 0 1px; }
+.empty { padding: 28px 18px; color: var(--muted); }
+/* the record, unfolded under its row */
+tr.detail td { background: var(--panel); padding: 12px 16px 16px; white-space: normal; border-bottom: 1px solid var(--rule); }
+.dgrid { position: sticky; left: 16px; display: grid; grid-template-columns: minmax(240px, 1fr) minmax(260px, 1.2fr); gap: 8px 28px; }
+.sec { font: 600 11px var(--sans); letter-spacing: .07em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
 dl.f { display: grid; grid-template-columns: 92px 1fr; gap: 3px 10px; margin: 0; font-size: 12.5px; }
 dl.f dt { color: var(--muted); }
 dl.f dd { margin: 0; font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
-.hm { display: grid; grid-template-columns: 120px 1fr 40px; gap: 4px 8px; align-items: center; font-size: 12px; }
+.hm { display: grid; grid-template-columns: 130px 1fr 40px; gap: 4px 8px; align-items: center; font-size: 12px; }
 .hm .bar { height: 10px; border-radius: 3px; position: relative; overflow: hidden; display: flex; }
 .hm .bar i { flex: 1; }
 .hm .v { font: 12px var(--mono); text-align: right; }
 .hm .cursor { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--ink); }
-.acts { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
-.acts a { display: block; border: 1px solid var(--rule); background: #fff; border-radius: 4px; padding: 6px 10px; font-size: 13px; }
 .note { font-size: 12px; color: var(--muted); margin-top: 4px; }
-.how { position: relative; font-size: 12.5px; }
-.how summary { cursor: pointer; color: var(--link); list-style: none; }
-.how summary::-webkit-details-marker { display: none; }
-.how ol { position: absolute; z-index: 5; top: 24px; left: 0; width: 360px; margin: 0; padding: 10px 12px 10px 28px; background: #fff; border: 1px solid var(--rule); border-radius: 6px; box-shadow: 0 6px 18px rgba(0,0,0,.08); line-height: 1.45; }
-.how li { margin: 0 0 6px; }
+.acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.acts a { border: 1px solid var(--rule); background: #fff; border-radius: 4px; padding: 5px 10px; font-size: 12.5px; }
+/* the lineage */
+.tree .th { flex: none; display: flex; align-items: baseline; gap: 10px; padding: 12px 16px 6px; }
+.tree .th .sec { margin: 0; }
+.tree .th { flex-wrap: wrap; row-gap: 6px; }
+.tree .th .note { margin: 0; margin-left: auto; }
+.seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 5px; overflow: hidden; }
+.seg button { font: 12px var(--sans); border: 0; background: #fff; color: var(--muted); padding: 2px 10px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--rule); }
+.seg button.on { background: var(--ink); color: #fff; }
+#metric { font: 12px var(--sans); padding: 2px 4px; border: 1px solid var(--rule); border-radius: 4px; background: #fff; color: var(--ink); }
+.axis text { font: 10.5px var(--mono); fill: var(--muted); }
+.nd rect.ring { fill: var(--sel); stroke: none; }
+.tree .fig { flex: 1; min-height: 0; position: relative; }
+.tree svg { display: block; width: 100%; height: 100%; }
+.tree .key { flex: none; padding: 8px 16px 14px; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--faint); }
+.tree .key svg { width: auto; height: auto; display: inline-block; vertical-align: -2px; margin-right: 4px; }
+.colh { font: 600 10.5px var(--sans); letter-spacing: .06em; text-transform: uppercase; fill: #8c959f; }
+.edge { fill: none; stroke: #afb8c1; stroke-width: 1.3; }
+.edge.clone { stroke-dasharray: 5 4; }
+.nd { cursor: pointer; }
+.nd text { font: 500 12px var(--mono); fill: var(--ink); paint-order: stroke; stroke: var(--panel); stroke-width: 3px; }
+.nd.text text { font: italic 12px var(--sans); fill: var(--muted); }
+.nd .ring { fill: none; stroke: var(--ink); stroke-width: 2; }
+.nd, .edge { transition: opacity .15s; }
 @media (max-width: 1000px) {
   body { height: auto; display: block; }
-  .grid { display: block; }
-  .col { overflow: visible; }
-  .idx { border-right: 0; border-bottom: 1px solid var(--faint); padding-bottom: 8px; }
-  .list { max-height: 240px; overflow: auto; }
-  .chart { height: 70vh; }
-  .rec { border-left: 0; border-top: 1px solid var(--faint); }
+  .grid { display: flex; flex-direction: column; }
+  .tree { border-left: 0; border-top: 1px solid var(--faint); }
+  .tree .fig { height: 420px; flex: none; }
+  .tw { overflow-x: auto; }
   .head .counts { margin-left: 0; flex-wrap: wrap; }
   .top { height: auto; flex-wrap: wrap; padding: 10px 16px; row-gap: 6px; }
-  .top nav { margin-left: 0; width: 100%; gap: 14px; }
+  .top nav { margin-left: 0; width: 100%; gap: 14px; flex-wrap: wrap; }
+  .find, .head { padding-left: 16px; padding-right: 16px; }
+  .dgrid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="./"><svg aria-hidden="true" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#1c1c1a"/><path d="M29.03 46.36Q26.51 46.36 24.7 45.55Q22.88 44.74 21.77 43.39L23.78 41.59Q24.8 42.7 26.08 43.28Q27.35 43.87 29.09 43.87Q30.68 43.87 31.65 43.33Q32.63 42.79 32.63 41.65Q32.63 41.17 32.45 40.84Q32.27 40.51 31.94 40.3Q31.61 40.09 31.18 39.97Q30.74 39.85 30.26 39.79L27.8 39.4Q26.9 39.28 25.97 39.01Q25.04 38.74 24.3 38.25Q23.57 37.75 23.11 36.97Q22.64 36.19 22.64 34.99Q22.64 32.62 24.45 31.39Q26.27 30.16 29.24 30.16Q31.4 30.16 32.97 30.8Q34.55 31.45 35.6 32.59L33.77 34.51Q33.17 33.82 32.06 33.23Q30.95 32.65 29.12 32.65Q25.85 32.65 25.85 34.72Q25.85 35.71 26.55 36.09Q27.26 36.46 28.22 36.58L30.68 36.97Q31.61 37.12 32.52 37.36Q33.44 37.6 34.17 38.09Q34.91 38.59 35.38 39.37Q35.84 40.15 35.84 41.35Q35.84 43.69 34.03 45.02Q32.21 46.36 29.03 46.36ZM47.93 46Q45.89 46 44.93 44.91Q43.97 43.81 43.97 42.07V33.16H39.2V30.52H42.59Q43.46 30.52 43.82 30.18Q44.18 29.83 44.18 28.93V25.06H47.24V30.52H53.84V33.16H47.24V43.36H53.84V46ZM29.03 80.36Q26.51 80.36 24.7 79.55Q22.88 78.74 21.77 77.39L23.78 75.59Q24.8 76.7 26.08 77.28Q27.35 77.87 29.09 77.87Q30.68 77.87 31.65 77.33Q32.63 76.79 32.63 75.65Q32.63 75.17 32.45 74.84Q32.27 74.51 31.94 74.3Q31.61 74.09 31.18 73.97Q30.74 73.85 30.26 73.79L27.8 73.4Q26.9 73.28 25.97 73.01Q25.04 72.74 24.3 72.25Q23.57 71.75 23.11 70.97Q22.64 70.19 22.64 68.99Q22.64 66.62 24.45 65.39Q26.27 64.16 29.24 64.16Q31.4 64.16 32.97 64.81Q34.55 65.45 35.6 66.59L33.77 68.51Q33.17 67.82 32.06 67.23Q30.95 66.65 29.12 66.65Q25.85 66.65 25.85 68.72Q25.85 69.71 26.55 70.09Q27.26 70.46 28.22 70.58L30.68 70.97Q31.61 71.12 32.52 71.36Q33.44 71.6 34.17 72.09Q34.91 72.59 35.38 73.37Q35.84 74.15 35.84 75.35Q35.84 77.69 34.03 79.03Q32.21 80.36 29.03 80.36Z" fill="#ffffff"/><path d="M40.25 77.36H45.38V60.44H40.25V57.8H48.65V77.36H53.78V80H40.25Z" fill="#f0a35a"/></svg>StemmaLM</a>
+  <a class="brand" href="./"><svg aria-hidden="true" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#1f2328"/><path d="M29.03 46.36Q26.51 46.36 24.7 45.55Q22.88 44.74 21.77 43.39L23.78 41.59Q24.8 42.7 26.08 43.28Q27.35 43.87 29.09 43.87Q30.68 43.87 31.65 43.33Q32.63 42.79 32.63 41.65Q32.63 41.17 32.45 40.84Q32.27 40.51 31.94 40.3Q31.61 40.09 31.18 39.97Q30.74 39.85 30.26 39.79L27.8 39.4Q26.9 39.28 25.97 39.01Q25.04 38.74 24.3 38.25Q23.57 37.75 23.11 36.97Q22.64 36.19 22.64 34.99Q22.64 32.62 24.45 31.39Q26.27 30.16 29.24 30.16Q31.4 30.16 32.97 30.8Q34.55 31.45 35.6 32.59L33.77 34.51Q33.17 33.82 32.06 33.23Q30.95 32.65 29.12 32.65Q25.85 32.65 25.85 34.72Q25.85 35.71 26.55 36.09Q27.26 36.46 28.22 36.58L30.68 36.97Q31.61 37.12 32.52 37.36Q33.44 37.6 34.17 38.09Q34.91 38.59 35.38 39.37Q35.84 40.15 35.84 41.35Q35.84 43.69 34.03 45.02Q32.21 46.36 29.03 46.36ZM47.93 46Q45.89 46 44.93 44.91Q43.97 43.81 43.97 42.07V33.16H39.2V30.52H42.59Q43.46 30.52 43.82 30.18Q44.18 29.83 44.18 28.93V25.06H47.24V30.52H53.84V33.16H47.24V43.36H53.84V46ZM29.03 80.36Q26.51 80.36 24.7 79.55Q22.88 78.74 21.77 77.39L23.78 75.59Q24.8 76.7 26.08 77.28Q27.35 77.87 29.09 77.87Q30.68 77.87 31.65 77.33Q32.63 76.79 32.63 75.65Q32.63 75.17 32.45 74.84Q32.27 74.51 31.94 74.3Q31.61 74.09 31.18 73.97Q30.74 73.85 30.26 73.79L27.8 73.4Q26.9 73.28 25.97 73.01Q25.04 72.74 24.3 72.25Q23.57 71.75 23.11 70.97Q22.64 70.19 22.64 68.99Q22.64 66.62 24.45 65.39Q26.27 64.16 29.24 64.16Q31.4 64.16 32.97 64.81Q34.55 65.45 35.6 66.59L33.77 68.51Q33.17 67.82 32.06 67.23Q30.95 66.65 29.12 66.65Q25.85 66.65 25.85 68.72Q25.85 69.71 26.55 70.09Q27.26 70.46 28.22 70.58L30.68 70.97Q31.61 71.12 32.52 71.36Q33.44 71.6 34.17 72.09Q34.91 72.59 35.38 73.37Q35.84 74.15 35.84 75.35Q35.84 77.69 34.03 79.03Q32.21 80.36 29.03 80.36Z" fill="#ffffff"/><path d="M40.25 77.36H45.38V60.44H40.25V57.8H48.65V77.36H53.78V80H40.25Z" fill="#58a6ff"/></svg>StemmaLM</a>
   <nav><a class="on" href="./">Collection</a><a href="variants.html">Variants</a><a href="collate.html">Collation</a><a href="checkup.html">Check-up</a><a href="log.html">Log</a><a href="about.html">About</a></nav>
 </header>
 <div class="head">
@@ -103,53 +134,55 @@ dl.f dd { margin: 0; font-family: var(--mono); font-size: 12px; overflow-wrap: a
   <span class="counts" id="counts"></span>
 </div>
 <div class="grid">
-  <aside class="col idx">
-    <div class="sec" style="padding:0 12px">Generation</div>
-    <div class="chips" id="f-gen"></div>
-    <div class="sec" style="padding:0 12px">Grew up on</div>
-    <div class="chips" id="f-in"></div>
-    <div class="list" id="list"></div>
-  </aside>
-  <section class="col center">
-    <div class="ctrl">
-      <label>bars show <select id="metric">
+  <section class="db">
+    <div class="find">
+      <label class="q">
+        <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <input id="q" type="search" placeholder="Search models: #4, G1, clone, child of #2, books, s3 …" autocomplete="off" spellcheck="false" aria-label="Search models">
+        <span class="hits" id="hits"></span>
+      </label>
+      <div class="row"><span class="lbl">Generation</span><span class="chips" id="f-gen"></span><span class="lbl">Grew up on</span><span class="chips" id="f-in"></span></div>
+      <div class="row">
+        <span class="try">try <a href="#" data-q="child of #1">child of #1</a><a href="#" data-q="clone">clone</a><a href="#" data-q="books + family">books + family</a><a href="#" data-q="s2">s2</a></span>
+        <span style="margin-left:auto"><span class="lbl">check-up at</span> <input type="range" id="age" min="0" max="144" value="96" aria-label="month on the lineage clock"> <span class="m" id="agev"></span>
+        <span class="ramp" id="ramp"></span> <span class="mute" style="font-size:11.5px">30% · 100%</span></span>
+      </div>
+    </div>
+    <div class="tw"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table><div class="empty" id="empty" hidden>No model matches. Search by number (#7), generation (G1), parent (child of #2), clone, input (#1's copy, books) or seed (s3).</div></div>
+  </section>
+  <aside class="tree">
+    <div class="th"><span class="sec">Lineage</span><span class="seg" id="view"><button data-v="tree">tree</button><button data-v="time">over time</button></span>
+      <select id="metric" aria-label="colour the lives by">
         <option value="agreement/question">agreement, questions</option>
         <option value="agreement/statement">agreement, statements</option>
         <option value="past/irregular">irregular past</option>
         <option value="plural/nonce">plural, made-up words</option>
-        <option value="plural/singular">singular, made-up words</option>
-      </select></label>
-      <span class="ramp" id="ramp"></span><span class="note" style="margin:0">30% · chance · 100%</span>
-      <details class="how"><summary>how to read</summary><ol>
-        <li>Each bar is one life, left to right on one clock. Its colour is the chosen check-up, month by month.</li>
-        <li>At 72 months a parent copies the book it heard, word by word, with 5% lapses; its children grow up on that copy.</li>
-        <li>The thin line under a bar is what the individual was hearing; its colour is the same everywhere on the site.</li>
-        <li>For the family in view, a band runs from the parent to each child; its width is how often the child says the parent's own lapses.</li>
-      </ol></details>
-      <label>viewing <input type="range" id="age" min="0" max="144" value="96"></label><span class="m" id="agev"></span>
-    </div>
-    <div class="chart" id="chart"><svg id="svg"></svg></div>
-  </section>
-  <aside class="col rec" id="rec"></aside>
+      </select><span class="note">click a model to open its record</span></div>
+    <div class="fig" id="fig"><svg id="svg"></svg></div>
+    <div class="key" id="key"></div>
+  </aside>
 </div>
 
 <script type="module">
 const [reg, ck, V, stats] = await Promise.all(["registry.json", "checkup.json", "variants.json", "stats.json"].map((u) => fetch(u + "?v=" + Date.now()).then((r) => r.json())));
 const ind = reg.individuals.filter((i) => i.status === "trained");
 const byN = new Map(ind.map((i) => [i.serial, i]));
-// one fixed colour per input, used everywhere: list dots, thin lines, bands
-const INPUT = { "Ω": ["#8d8b82", "Ω, family speech"], "Ω>#1@72m·c5": ["#d17a22", "#1's copy"], "Ω>#2@72m·c5": ["#7b5bb8", "#2's copy"] };
-const LATER = { WT2: ["#2b5fae", "books only"], WT2m: ["#2e9a68", "books + family"] };
+// one fixed colour per input, used everywhere on the site
+const INPUT = { "Ω": ["#8b949e", "Ω, family speech"], "Ω>#1@72m·c5": ["#d55e00", "#1's copy"], "Ω>#2@72m·c5": ["#cc79a7", "#2's copy"], "Ω>#3@72m·c5": ["#009e73", "#3's copy"] };
+const LATER = { WT2: ["#0072b2", "books only"], WT2m: ["#56b4e9", "books + family"] };
 const from = (i) => (i.parent ? 72 : i.clone_of ? i.clone_at : 0);
 const to = (i) => (i.parent ? 144 : Math.max(72, ...(i.extended || []).map((x) => x.months[1])));
 const ownAge = (i, t) => (i.parent ? t - 72 : t);
+const pad3 = (n) => String(n).padStart(3, "0");
+const fullId = (i) => [i.strain, i.env, "G" + i.gen, i.lesion || "—", "s" + i.seed].join("·");
+const origin = (i) => (i.parent ? `child of #${i.parent}` : i.clone_of ? `clone of #${i.clone_of}` : "founder");
+const later = (i) => (i.extended || []).map((x) => LATER[x.env]?.[1] || x.env).join(", ");
 const said = (c, n) => V.variants.filter((v) => v.group === "private_" + c).reduce((a, v) => a + (v.speech[n] || 0), 0);
-const maxSaid = Math.max(...[1, 2, 3].flatMap((c) => [4, 5, 6, 7, 8, 9].map((n) => said(c, n))));
 const nSnap = Object.values(ck.curves).reduce((a, c) => a + c["agreement"].length, 0);
-document.getElementById("counts").innerHTML = `<span><b>${ind.length}</b> individuals</span><span><b>2</b> generations</span><span><b>${nSnap}</b> snapshots</span><span><b>${V.variants.length}</b> variants</span>`;
+document.getElementById("counts").innerHTML = `<span><b>${ind.length}</b> models</span><span><b>${1 + Math.max(...ind.map((i) => i.gen))}</b> generations</span><span><b>${nSnap}</b> snapshots</span><span><b>${V.variants.length}</b> variants</span>`;
 
 const ramp = (a) => {
-  const t = Math.max(0, Math.min(1, (a - 0.3) / 0.7)), st = [[0, [196, 92, 62]], [0.29, [226, 220, 208]], [1, [43, 95, 174]]];
+  const t = Math.max(0, Math.min(1, (a - 0.3) / 0.7)), st = [[0, [178, 24, 43]], [0.29, [236, 236, 236]], [1, [33, 102, 172]]];
   let k = 0; while (k < st.length - 2 && t > st[k + 1][0]) k++;
   const [t0, c0] = st[k], [t1, c1] = st[k + 1], u = (t - t0) / (t1 - t0);
   return `rgb(${c0.map((v, j) => Math.round(v + (c1[j] - v) * u)).join(",")})`;
@@ -160,115 +193,248 @@ function curve(i, key) {  // smoothed score by lineage month; a clone shares the
   return src.map(([m], j) => { const w = src.slice(Math.max(0, j - 2), j + 3); return [(i.parent ? 72 : 0) + m, w.reduce((s, [, v]) => s + v, 0) / w.length]; });
 }
 const at = (pts, t) => { let v = null; for (const [m, a] of pts) if (m <= t) v = a; return v; };
+const score = (i, key, t) => (t < from(i) || t > to(i) ? null : at(curve(i, key).filter(([m]) => m >= from(i)), t));
 
-// state shared by list, chart and record
-const S = { sel: 4, gen: "all", input: "all", t: 96 };
-const visible = () => ind.filter((i) => (S.gen === "all" || (S.gen === "clone" ? i.clone_of : !i.clone_of && "G" + i.gen === S.gen)) && (S.input === "all" || i.heard === S.input));
+// every word a model can be found by
+const words = (i) => [`#${i.serial}`, `n${pad3(i.serial)}`, fullId(i), i.strain, i.env, `G${i.gen}`, `s${i.seed}`, `seed ${i.seed}`, origin(i),
+  i.parent ? `#${i.parent}` : "", i.clone_of ? `#${i.clone_of} clone` : "", INPUT[i.heard]?.[1] || i.heard, later(i), ...(i.extended || []).map((x) => x.env), i.lesion || "healthy"].join(" | ").toLowerCase();
+// a query is space-separated terms that must all match; "#1" matches the number, not #10–#12
+function matches(i, q) {
+  const w = words(i);
+  return q.split(/\s+/).filter(Boolean).every((term) => {
+    if (/^#\d+$/.test(term)) return new RegExp(term + "(?!\\d)").test(w);
+    if (/^g\d$/.test(term)) return term === "g" + i.gen;
+    return w.includes(term);
+  });
+}
+
+const S = { sel: null, q: "", gen: "all", input: "all", t: 96, sort: "serial", dir: 1, hover: null, view: "tree" };
+const u = new URLSearchParams(location.search);
+if (u.get("q")) S.q = u.get("q");
+if (byN.has(+u.get("n"))) S.sel = +u.get("n");
+if (u.get("v") === "time") S.view = "time";
+document.getElementById("q").value = S.q;
+const visible = () => ind.filter((i) => (S.gen === "all" || (S.gen === "clone" ? i.clone_of : !i.clone_of && "G" + i.gen === S.gen))
+  && (S.input === "all" || i.heard === S.input) && matches(i, S.q.trim().toLowerCase()));
 
 function chips(id, opts, keyName) {
-  const box = document.getElementById(id);
-  box.replaceChildren(...opts.map(([v, label, n]) => {
+  document.getElementById(id).replaceChildren(...opts.map(([v, label, n]) => {
     const b = document.createElement("button");
     b.innerHTML = `${label}<span>${n}</span>`; if (S[keyName] === v) b.className = "on";
     b.onclick = () => { S[keyName] = v; render(); };
     return b;
   }));
 }
-function list() {
-  chips("f-gen", [["all", "all", ind.length], ["G0", "G0", ind.filter((i) => i.gen === 0 && !i.clone_of).length], ["G1", "G1", ind.filter((i) => i.gen === 1).length], ["clone", "clones", ind.filter((i) => i.clone_of).length]], "gen");
-  chips("f-in", [["all", "all", ind.length], ...Object.entries(INPUT).map(([k, [, n]]) => [k, n, ind.filter((i) => i.heard === k).length])], "input");
-  const L = document.getElementById("list");
-  L.replaceChildren(...visible().map((i) => {
-    const d = document.createElement("div");
-    d.className = "it" + (i.serial === S.sel ? " on" : "");
-    d.innerHTML = `<span class="n">#${i.serial}</span><span class="k"><i class="sw" style="background:${INPUT[i.heard][0]}"></i>${i.clone_of ? "clone of #" + i.clone_of : i.parent ? "child of #" + i.parent : "G0"}</span><span class="life">${from(i)}–${to(i)} m</span>`;
-    d.onclick = () => { S.sel = i.serial; render(); };
-    return d;
-  }));
+
+const CK = [["agreement/question", "agree"], ["past/irregular", "past"], ["plural/nonce", "plural"]];
+const COLS = [
+  ["serial", "#", (i) => i.serial, "num"], ["id", "full id", (i) => fullId(i)], ["gen", "gen", (i) => i.gen + (i.clone_of ? 0.5 : 0)],
+  ["origin", "origin", (i) => (i.parent || i.clone_of || 0) * 10 + (i.clone_of ? 1 : 0)], ["heard", "grew up on", (i) => INPUT[i.heard]?.[1]],
+  ["later", "after 72 m", (i) => later(i)], ["life", "life", (i) => from(i) * 1000 + to(i), "num"],
+  ["loss", "loss 72 m", (i) => (stats.individuals[i.serial] || stats.individuals[i.clone_of] || {}).loss_72m ?? 9, "num"],
+  ...CK.map(([k, name]) => [k, name, (i) => score(i, k, S.t) ?? -1, "num ck"]),
+];
+const hl = (txt) => {  // mark the search terms inside a cell
+  const terms = S.q.trim().toLowerCase().split(/\s+/).filter((x) => x.length > 0 && !/^g\d$/.test(x));
+  let h = String(txt).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+  for (const t of terms) h = h.replace(new RegExp("(" + t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + (/^#\d+$/.test(t) ? "(?!\\d)" : "") + ")", "ig"), "<mark>$1</mark>");
+  return h;
+};
+
+function table() {
+  const th = document.getElementById("thead");
+  th.innerHTML = `<tr>${COLS.map(([k, name, , cls = ""]) => `<th data-k="${k}" class="${cls}">${name}${S.sort === k ? `<span class="ar">${S.dir > 0 ? "↑" : "↓"}</span>` : ""}</th>`).join("")}</tr>`;
+  th.querySelectorAll("th").forEach((h) => (h.onclick = () => { const k = h.dataset.k; S.dir = S.sort === k ? -S.dir : 1; S.sort = k; render(); }));
+  const get = COLS.find((c) => c[0] === S.sort)[2];
+  const rows = visible().sort((a, b) => { const x = get(a), y = get(b); return (x > y ? 1 : x < y ? -1 : a.serial - b.serial) * S.dir; });
+  document.getElementById("hits").textContent = `${rows.length} of ${ind.length}`;
+  document.getElementById("empty").hidden = rows.length > 0;
+  const tb = document.getElementById("tbody");
+  tb.replaceChildren();
+  for (const i of rows) {
+    const st = stats.individuals[i.serial] || stats.individuals[i.clone_of] || {};
+    const tr = document.createElement("tr");
+    tr.className = "r" + (i.serial === S.sel ? " on" : ""); tr.dataset.n = i.serial;
+    const cks = CK.map(([k]) => { const v = score(i, k, S.t); return `<td class="num">${v == null ? '<span class="mute">—</span>' : `<span class="cell" style="background:${ramp(v)};color:${v > 0.8 || v < 0.38 ? "#fff" : "var(--ink)"}">${Math.round(v * 100)}%</span>`}</td>`; }).join("");
+    tr.innerHTML = `<td class="n num">${hl("#" + i.serial)}</td><td class="mono">${hl(fullId(i))}</td><td class="mono">${hl("G" + i.gen)}</td>
+      <td>${hl(origin(i))}${i.clone_of ? `<span class="mute"> @${i.clone_at} m</span>` : ""}</td>
+      <td><i class="sw" style="background:${INPUT[i.heard][0]}"></i>${hl(INPUT[i.heard][1])}</td>
+      <td>${(i.extended || []).map((x) => `<i class="ln" style="background:${LATER[x.env][0]}"></i>${hl(LATER[x.env][1])}`).join("") || '<span class="mute">—</span>'}</td>
+      <td class="mono num">${from(i)}–${to(i)} m</td><td class="mono num">${st.loss_72m != null ? st.loss_72m.toFixed(3) : "—"}</td>${cks}`;
+    tr.onclick = () => { S.sel = S.sel === i.serial ? null : i.serial; render(); };
+    tr.onmouseenter = () => { S.hover = i.serial; lit(); };
+    tr.onmouseleave = () => { S.hover = null; lit(); };
+    tb.append(tr);
+    if (i.serial === S.sel) tb.append(detail(i));
+  }
 }
 
-function chart() {
-  const box = document.getElementById("chart"), svg = d3.select("#svg");
-  const vis = new Set(visible().map((i) => i.serial));
-  const rows = [];
-  for (const g0 of ind.filter((i) => !i.parent && !i.clone_of)) { rows.push(g0, ...ind.filter((c) => c.parent === g0.serial), ...ind.filter((c) => c.clone_of === g0.serial)); rows.push(null); }
-  rows.pop();
-  const ROW = 40, T = 34, B = 34, W = box.clientWidth, H = Math.max(box.clientHeight - 2, T + B + ROW * rows.length);
-  svg.attr("height", H).attr("viewBox", `0 0 ${W} ${H}`).selectAll("*").remove();
-  const x = d3.scaleLinear([-16, 144], [24, W - 70]);
-  const y = new Map(); rows.forEach((i, k) => i && y.set(i.serial, T + ROW * k + ROW / 2));
-  const key = document.getElementById("metric").value, sel = byN.get(S.sel);
-  const fam = new Set([sel.serial, sel.parent, sel.clone_of, ...ind.filter((c) => c.parent === sel.serial || c.clone_of === sel.serial).map((c) => c.serial)].filter(Boolean));
-  const op = (n) => (!vis.has(n) ? 0.12 : fam.has(n) ? 1 : 0.45);
-  const ax = svg.append("g").attr("class", "axis");
-  for (const m of [0, 24, 48, 72, 96, 120, 144]) {
-    ax.append("line").attr("x1", x(m)).attr("x2", x(m)).attr("y1", T - 8).attr("y2", H - B + 4).attr("stroke", m === 72 ? "#dcdbd4" : "#f1f0ec");
-    ax.append("text").attr("x", x(m)).attr("y", H - B + 18).attr("text-anchor", "middle").text(m);
-  }
-  ax.append("text").attr("x", x(72)).attr("y", 18).attr("text-anchor", "middle").text("72 m · parents copy the book, children start");
-  // Ω, the root
-  const g0 = ind.filter((i) => !i.parent && !i.clone_of), ry = (y.get(g0[0].serial) + y.get(g0[g0.length - 1].serial)) / 2;
-  svg.append("text").attr("class", "lab").attr("x", x(-12)).attr("y", ry + 4).attr("text-anchor", "end").attr("fill", "#8d8b82").text("Ω");
-  for (const i of g0) svg.append("path").attr("class", "edge").attr("opacity", op(i.serial)).attr("d", `M${x(-10)} ${ry}C${x(-5)} ${ry},${x(-5)} ${y.get(i.serial)},${x(0)} ${y.get(i.serial)}`);
-  // branches, and bands only for the family in view
-  for (const c of ind.filter((i) => i.parent || i.clone_of)) {
-    const p = c.parent || c.clone_of, py = y.get(p), cy = y.get(c.serial);
-    if (c.parent && fam.has(c.serial) && fam.has(p)) {
-      const k = said(c.parent, c.serial);
-      svg.append("path").attr("class", "band").attr("d", `M${x(72)} ${py}C${x(72) + 26} ${py},${x(72) + 26} ${cy},${x(84)} ${cy}`)
-        .attr("stroke", INPUT[c.heard][0]).attr("stroke-width", 1 + 12 * k / maxSaid).attr("stroke-opacity", 0.4);
-    }
-    svg.append("path").attr("class", "edge" + (c.clone_of ? " clone" : "")).attr("opacity", op(c.serial)).attr("d", `M${x(72)} ${py}V${cy}H${x(from(c))}`);
-  }
-  // lives: the bar is the measurement (a heat strip over months); the thin line is the input
-  for (const i of rows.filter(Boolean)) {
-    const yy = y.get(i.serial), g = svg.append("g").attr("class", "lifeg").attr("opacity", op(i.serial));
-    if (i.serial === S.sel) g.append("rect").attr("x", x(from(i)) - 6).attr("y", yy - 13).attr("width", x(to(i)) - x(from(i)) + 50).attr("height", 26).attr("rx", 4).attr("fill", "#fff3cf");
-    const pts = curve(i, key).filter(([m]) => m >= from(i)), id = "c" + i.serial;
-    g.append("clipPath").attr("id", id).append("rect").attr("x", x(from(i))).attr("y", yy - 6).attr("width", x(to(i)) - x(from(i))).attr("height", 12).attr("rx", 3);
-    const sg = g.append("g").attr("clip-path", `url(#${id})`);
-    pts.forEach(([m, v], j) => sg.append("rect").attr("x", x(m)).attr("y", yy - 6).attr("width", Math.max(1, x(j + 1 < pts.length ? pts[j + 1][0] : to(i)) - x(m) + 0.6)).attr("height", 12).attr("fill", ramp(v)));
-    const segs = [[from(i), i.parent ? 144 : 72, INPUT[i.heard][0]], ...(i.extended || []).map((x2) => [72, x2.months[1], LATER[x2.env][0]])].filter(([a, b]) => b > a && b > from(i));
-    for (const [a, b, c] of segs) g.append("rect").attr("x", x(Math.max(a, from(i)))).attr("y", yy + 8).attr("width", x(b) - x(Math.max(a, from(i)))).attr("height", 3).attr("fill", c);
-    g.append("text").attr("class", "lab").attr("x", x(to(i)) + 8).attr("y", yy + 4).text("#" + i.serial);
-    g.on("click", () => { S.sel = i.serial; render(); });
-  }
-  // the month being viewed
-  svg.append("line").attr("x1", x(S.t)).attr("x2", x(S.t)).attr("y1", T - 8).attr("y2", H - B + 4).attr("stroke", "#1c1c1a").attr("stroke-width", 1.2);
-  svg.append("text").attr("x", x(S.t) + 4).attr("y", H - B - 4).attr("font", "11px IBM Plex Mono").attr("fill", "#1c1c1a").style("font", "11px 'IBM Plex Mono', monospace").text(S.t + " m");
-}
-
-function record() {
-  const i = byN.get(S.sel), R = document.getElementById("rec"), t = S.t, age = ownAge(i, t);
-  const alive = t >= from(i) && t <= to(i);
+function detail(i) {
+  const t = S.t, alive = t >= from(i) && t <= to(i), age = ownAge(i, t);
   const st = stats.individuals[i.serial] || stats.individuals[i.clone_of] || {};
-  const chain = [`<span class="big">#${i.serial}</span>`];
-  if (i.parent) chain.push(`<span class="arr">←</span><span>#${i.parent}'s copy</span>`); else if (i.clone_of) chain.push(`<span class="arr">≡</span><span>#${i.clone_of} until ${i.clone_at} m</span>`); else chain.push(`<span class="arr">←</span><span>Ω</span>`);
-  chain.push(`<span>G${i.gen}</span>`, `<span>${alive ? "age " + age + " m" : "not alive at " + t + " m"}</span>`);
-  const rows = [["full id", [i.strain, i.env, "G" + i.gen, i.lesion || "—", "s" + i.seed].join("·")], ["strain", "EN1 · 10.8M params"], ["grew up on", i.heard],
-    ["later", (i.extended || []).map((x) => `${x.env}, ${x.months[0]}–${x.months[1]} m`).join("; ") || "—"], ["lives", `${from(i)}–${to(i)} m on the lineage clock`],
-    ["snapshots", (ck.curves[i.serial]?.agreement || []).length], ["loss at 72 m", st.loss_72m != null ? st.loss_72m.toFixed(3) + " nats/char" : "—"],
-    ["born", new Date(i.born).toISOString().slice(0, 16).replace("T", " ")], ["weights", `<a href="https://huggingface.co/xchuanli/stemmalm-weights/tree/main/n${String(i.serial).padStart(3, "0")}">n${String(i.serial).padStart(3, "0")}</a>`]];
-  const metrics = [["agreement/question", "agreement, questions"], ["agreement/statement", "agreement, statements"], ["past/irregular", "irregular past"], ["plural/nonce", "plural, made-up"]];
+  const rows = [["full id", fullId(i)], ["strain", reg.strains[i.strain] ? "EN1 · 10.8M params" : i.strain], ["grew up on", i.parent ? i.input : reg.corpora[i.heard]?.split(":")[0] || i.heard],
+    ["after 72 m", (i.extended || []).map((x) => `${x.env}, ${x.months[0]}–${x.months[1]} m`).join("; ") || "—"],
+    ["lives", `${from(i)}–${to(i)} m on the lineage clock`], ["snapshots", (ck.curves[i.serial]?.agreement || []).length],
+    ["loss at 72 m", st.loss_72m != null ? st.loss_72m.toFixed(3) + " nats/char" : "—"],
+    ["born", new Date(i.born).toISOString().slice(0, 16).replace("T", " ")],
+    ["weights", `<a href="https://huggingface.co/xchuanli/stemmalm-weights/tree/main/n${pad3(i.serial)}">n${pad3(i.serial)}</a>`]];
+  const metrics = [["agreement/question", "agreement, questions"], ["agreement/statement", "agreement, statements"], ["past/irregular", "irregular past"], ["plural/nonce", "plural, made-up words"]];
   const hm = metrics.map(([k, name]) => {
     const pts = curve(i, k).filter(([m]) => m >= from(i)), span = to(i) - from(i);
-    const cells = Array.from({ length: 36 }, (_, j) => { const m = from(i) + span * (j + 0.5) / 36; const v = at(pts, m); return `<i style="background:${v == null ? "#eee" : ramp(v)}"></i>`; }).join("");
+    const cells = Array.from({ length: 36 }, (_, j) => { const v = at(pts, from(i) + span * (j + 0.5) / 36); return `<i style="background:${v == null ? "#eee" : ramp(v)}"></i>`; }).join("");
     const v = at(pts, t), cur = alive ? `<span class="cursor" style="left:${(100 * (t - from(i)) / span).toFixed(1)}%"></span>` : "";
     return `<span>${name}</span><span class="bar">${cells}${cur}</span><span class="v">${alive && v != null ? Math.round(v * 100) + "%" : "—"}</span>`;
   }).join("");
+  const kids = ind.filter((c) => c.parent === i.serial || c.clone_of === i.serial);
   const vline = i.parent ? `<dl class="f"><dt>own copy's</dt><dd>said #${i.parent}'s lapses ${said(i.parent, i.serial)} times</dd><dt>other copies'</dt><dd>${[1, 2, 3].filter((o) => o !== i.parent).map((o) => `#${o}: ${said(o, i.serial)}`).join(" · ")}</dd></dl><div class="note">counted in what it said at 24–72 months (E07)</div>`
-    : `<div class="note">${ind.some((c) => c.parent === i.serial) ? "its copy raised #" + ind.filter((c) => c.parent === i.serial).map((c) => c.serial).join(", #") : "no children yet"}</div>`;
-  R.innerHTML = `<div class="crumb">${chain.join("")}</div>
-    <div class="sec">Record</div><dl class="f">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>
-    <div class="sec">Check-up over its life · at ${t} m</div><div class="hm">${hm}</div>
-    <div class="sec">Variants</div>${vline}
-    <div class="acts"><a href="individual.html?n=${i.serial}">Talk to #${i.serial} at ${alive ? age : from(i)} months →</a><a href="variants.html">Trace its variants →</a></div>`;
+    : `<div class="note">${kids.length ? kids.map((c) => (c.clone_of ? `clone #${c.serial}` : `child #${c.serial}`)).join(", ") : "no children yet"}</div>`;
+  const tr = document.createElement("tr");
+  tr.className = "detail";
+  tr.innerHTML = `<td colspan="${COLS.length}"><div class="dgrid" style="max-width:${document.querySelector(".tw").clientWidth - 32}px">
+    <div><div class="sec">Record · #${i.serial}</div><dl class="f">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl></div>
+    <div><div class="sec">Check-up over its life · line at ${t} m</div><div class="hm">${hm}</div>
+      <div class="sec" style="margin-top:14px">Variants</div>${vline}
+      <div class="acts"><a href="individual.html?n=${i.serial}">Talk to #${i.serial} at ${alive ? age : from(i)} months →</a><a href="variants.html">Trace its variants →</a><a href="checkup.html">Check-up →</a></div></div>
+  </div></td>`;
+  return tr;
 }
-function render() { list(); chart(); record(); document.getElementById("agev").textContent = S.t + " m"; }
-document.getElementById("metric").onchange = render;
-document.getElementById("age").oninput = (e) => { S.t = +e.target.value; render(); };
-new ResizeObserver(() => chart()).observe(document.getElementById("chart"));
-render();
+
+// the lineage as a tree: Ω, the founders, their copies and clones at 72 months, the children raised on the copies
+const svg = d3.select("#svg"), fig = document.getElementById("fig");
+const T = { nodes: [], edges: [] };
+function layout() {
+  const W = fig.clientWidth, H = fig.clientHeight, top = 36, bot = 14;
+  const cx = [0, 1, 2, 3].map((k) => 26 + k * (W - 26 - 64) / 3);
+  const founders = ind.filter((i) => !i.parent && !i.clone_of);
+  const groups = founders.map((f) => ({ f, clones: ind.filter((c) => c.clone_of === f.serial), copy: Object.keys(reg.corpora).find((c) => c.startsWith(`Ω>#${f.serial}@`)), kids: ind.filter((c) => c.parent === f.serial) }));
+  const nLeaves = groups.reduce((a, g) => a + g.clones.length + Math.max(1, g.kids.length), 0), gap = 0.7;
+  const step = (H - top - bot) / (nLeaves + gap * (groups.length - 1));
+  let r = 0.5; const nodes = [], edges = [], Y = (k) => top + k * step;
+  for (const g of groups) {
+    const mid = [];
+    for (const c of g.clones) { const y = Y(r++); nodes.push({ id: c.serial, i: c, x: cx[2], y }); mid.push(y); edges.push({ a: g.f.serial, b: c.serial, clone: true }); }
+    if (g.copy) {
+      const ys = g.kids.length ? g.kids.map((c) => { const y = Y(r++); nodes.push({ id: c.serial, i: c, x: cx[3], y }); edges.push({ a: g.copy, b: c.serial, color: INPUT[c.heard][0] }); return y; }) : [Y(r++)];
+      const y = d3.mean(ys); nodes.push({ id: g.copy, text: "copy", label: `#${g.f.serial}'s copy`, x: cx[2], y }); mid.push(y); edges.push({ a: g.f.serial, b: g.copy });
+    }
+    nodes.push({ id: g.f.serial, i: g.f, x: cx[1], y: d3.mean(mid) }); edges.push({ a: "Ω", b: g.f.serial });
+    r += gap;
+  }
+  nodes.push({ id: "Ω", text: "root", label: "Ω", x: cx[0], y: d3.mean(nodes.filter((n) => n.i && !n.i.parent && !n.i.clone_of), (n) => n.y) });
+  Object.assign(T, { W, H, cx, nodes, edges, top });
+}
+function tree() {
+  layout();
+  const { W, H, cx, nodes, edges } = T, at = new Map(nodes.map((n) => [n.id, n]));
+  svg.attr("viewBox", `0 0 ${W} ${H}`).selectAll("*").remove();
+  [["root", 0], ["G0", 1], ["copy · clone", 2], ["G1", 3]].forEach(([t, k]) => svg.append("text").attr("class", "colh").attr("x", cx[k]).attr("y", 18).attr("text-anchor", k ? "middle" : "start").text(t));
+  svg.append("g").selectAll("path").data(edges).join("path")
+    .attr("class", (e) => "edge" + (e.clone ? " clone" : ""))
+    .attr("d", (e) => { const a = at.get(e.a), b = at.get(e.b), m = (a.x + b.x) / 2; return `M${a.x} ${a.y}C${m} ${a.y},${m} ${b.y},${b.x} ${b.y}`; })
+    .style("stroke", (e) => e.color || null).style("stroke-opacity", (e) => (e.color ? 0.75 : null));
+  const g = svg.append("g").selectAll("g").data(nodes).join("g").attr("class", (n) => "nd" + (n.text ? " text" : "")).attr("transform", (n) => `translate(${n.x},${n.y})`);
+  g.filter((n) => n.i).append("circle").attr("class", "ring").attr("r", 12).attr("opacity", 0);
+  g.filter((n) => n.i).append("circle").attr("r", 7.5).attr("fill", (n) => INPUT[n.i.heard][0]).attr("stroke", "#fff").attr("stroke-width", 1.5);
+  g.filter((n) => n.i && n.i.extended).append("rect").attr("x", -7).attr("y", 10).attr("width", 14).attr("height", 3).attr("rx", 1).attr("fill", (n) => LATER[n.i.extended[0].env][0]);
+  g.filter((n) => n.text === "copy").append("path").attr("d", d3.symbol(d3.symbolDiamond, 90)()).attr("fill", "#fff").attr("stroke", (n) => INPUT[Object.keys(INPUT).find((k) => k === n.id)]?.[0] || "#8b949e").attr("stroke-width", 1.6);
+  g.filter((n) => n.text === "root").append("path").attr("d", d3.symbol(d3.symbolSquare, 110)()).attr("fill", "#fff").attr("stroke", "#8b949e").attr("stroke-width", 1.6);
+  g.append("text").attr("x", (n) => (n.text === "root" ? 0 : 12)).attr("y", (n) => (n.text === "root" ? -12 : 4)).attr("text-anchor", (n) => (n.text === "root" ? "middle" : "start"))
+    .text((n) => (n.i ? "#" + n.i.serial + (n.i.clone_of ? ` ≡#${n.i.clone_of}` : "") : n.label));
+  g.filter((n) => n.i)
+    .on("click", (e, n) => { S.sel = n.i.serial; render(); document.querySelector(`tr.r[data-n="${n.i.serial}"]`)?.scrollIntoView({ block: "nearest", behavior: "smooth" }); })
+    .on("mouseenter", (e, n) => { S.hover = n.i.serial; lit(); })
+    .on("mouseleave", () => { S.hover = null; lit(); });
+  lit();
+}
+// fade what the search leaves out; ring the selected and hovered models; light the path from Ω
+function lit() {
+  const vis = new Set(visible().map((i) => i.serial)), focus = S.hover ?? S.sel;
+  const path = new Set();
+  if (focus != null) { let i = byN.get(focus); path.add(i.serial); const p = i.parent || i.clone_of; if (i.parent) path.add(Object.keys(reg.corpora).find((c) => c.startsWith(`Ω>#${i.parent}@`))); if (p) path.add(p); path.add("Ω"); }
+  svg.selectAll(".nd").attr("opacity", (n) => (n.i ? (vis.has(n.i.serial) ? 1 : path.has(n.i.serial) ? 0.6 : 0.18) : 0.9))
+    .select(".ring").attr("opacity", (n) => (n.i && (n.i.serial === S.sel || n.i.serial === S.hover) ? (n.i.serial === S.sel ? 1 : 0.35) : 0));
+  svg.selectAll(".edge").attr("opacity", (e) => (focus == null ? (typeof e.b === "number" && !vis.has(e.b) ? 0.25 : 1) : path.has(e.a) && path.has(e.b) ? 1 : 0.25))
+    .style("stroke-width", (e) => (focus != null && path.has(e.a) && path.has(e.b) ? 2.4 : null));
+  document.querySelectorAll("tr.r").forEach((tr) => tr.classList.toggle("hov", +tr.dataset.n === S.hover));
+}
+const sym = (s, stroke) => `<svg width="14" height="14" viewBox="-7 -7 14 14"><path d="${d3.symbol(s, 60)()}" fill="#fff" stroke="${stroke}" stroke-width="1.4"/></svg>`;
+const treeKey = `<span>${sym(d3.symbolSquare, "#8b949e")}real family speech</span><span>${sym(d3.symbolDiamond, "#8b949e")}a copy written by a model</span>`
+  + `<span><svg width="22" height="8"><line x1="0" y1="4" x2="22" y2="4" stroke="#afb8c1" stroke-width="1.3" stroke-dasharray="5 4"/></svg>clone</span>`
+  + Object.values(LATER).map(([c, n]) => `<span><i class="ln" style="background:${c}"></i>${n}</span>`).join("")
+  + `<span>dot colour = what it grew up on</span>`;
+const timeKey = `<span><i class="ln" style="width:60px;height:7px;background:${document.getElementById("ramp").style.background}"></i>30% · chance · 100%</span>`
+  + `<span>thin line = what it was hearing (${Object.values(INPUT).slice(0, 3).map(([c]) => `<i class="ln" style="background:${c};width:10px"></i>`).join("")}copies, ${Object.values(LATER).map(([c, n]) => `<i class="ln" style="background:${c};width:10px"></i>${n}`).join(", ")})</span>`
+  + `<span><svg width="22" height="8"><line x1="0" y1="4" x2="22" y2="4" stroke="#afb8c1" stroke-width="1.3" stroke-dasharray="5 4"/></svg>clone</span><span>vertical line = the check-up month</span>`;
+
+// the lineage over time: each life a strip on one clock, coloured by the chosen check-up month by month
+function timeline() {
+  const W = fig.clientWidth, H = fig.clientHeight, key = document.getElementById("metric").value, T = 30, B = 26;
+  const rows = [];
+  for (const f of ind.filter((i) => !i.parent && !i.clone_of)) rows.push(f, ...ind.filter((c) => c.parent === f.serial), ...ind.filter((c) => c.clone_of === f.serial), null);
+  rows.pop();
+  const ROW = (H - T - B) / rows.length, x = d3.scaleLinear([-14, 144], [22, W - 44]), y = new Map();
+  rows.forEach((i, k) => i && y.set(i.serial, T + ROW * (k + 0.5)));
+  svg.attr("viewBox", `0 0 ${W} ${H}`).selectAll("*").remove();
+  const ax = svg.append("g").attr("class", "axis");
+  for (const m of [0, 24, 48, 72, 96, 120, 144]) {
+    ax.append("line").attr("x1", x(m)).attr("x2", x(m)).attr("y1", T - 6).attr("y2", H - B + 2).attr("stroke", m === 72 ? "#d0d7de" : "#eef1f4");
+    ax.append("text").attr("x", x(m)).attr("y", H - B + 16).attr("text-anchor", "middle").text(m + (m === 144 ? " m" : ""));
+  }
+  ax.append("text").attr("x", x(72)).attr("y", 16).attr("text-anchor", "middle").text("72 m · copies made, clones split, children start");
+  const founders = rows.filter((i) => i && !i.parent && !i.clone_of), ry = d3.mean(founders, (i) => y.get(i.serial));
+  svg.append("text").attr("class", "lab").attr("x", x(-11)).attr("y", ry + 4).attr("text-anchor", "end").style("font", "italic 12px var(--sans)").attr("fill", "#8b949e").text("Ω");
+  const edges = [...founders.map((i) => ({ a: "Ω", b: i.serial, d: `M${x(-10)} ${ry}C${x(-5)} ${ry},${x(-5)} ${y.get(i.serial)},${x(0)} ${y.get(i.serial)}` })),
+    ...ind.filter((c) => c.parent || c.clone_of).map((c) => { const p = c.parent || c.clone_of; return { a: p, b: c.serial, clone: !!c.clone_of, color: c.parent ? INPUT[c.heard][0] : null, d: `M${x(72)} ${y.get(p)}V${y.get(c.serial)}H${x(from(c))}` }; })];
+  svg.append("g").selectAll("path").data(edges).join("path").attr("class", (e) => "edge" + (e.clone ? " clone" : "")).attr("d", (e) => e.d)
+    .style("stroke", (e) => e.color || null).style("stroke-opacity", (e) => (e.color ? 0.75 : null));
+  const h = Math.min(12, ROW * 0.42);
+  const g = svg.append("g").selectAll("g").data(rows.filter(Boolean).map((i) => ({ i }))).join("g").attr("class", "nd");
+  g.each(function ({ i }) {
+    const s = d3.select(this), yy = y.get(i.serial), a = x(from(i)), b = x(to(i));
+    s.append("rect").attr("class", "ring").attr("x", a - 6).attr("y", yy - h / 2 - 5).attr("width", b - a + 40).attr("height", h + 14).attr("rx", 4);
+    const pts = curve(i, key).filter(([m]) => m >= from(i)), id = "clip" + i.serial;
+    s.append("clipPath").attr("id", id).append("rect").attr("x", a).attr("y", yy - h / 2).attr("width", b - a).attr("height", h).attr("rx", 2.5);
+    const sg = s.append("g").attr("clip-path", `url(#${id})`);
+    sg.append("rect").attr("x", a).attr("y", yy - h / 2).attr("width", b - a).attr("height", h).attr("fill", "#eee");
+    pts.forEach(([m, v], j) => sg.append("rect").attr("x", x(m)).attr("y", yy - h / 2).attr("width", Math.max(1, x(j + 1 < pts.length ? pts[j + 1][0] : to(i)) - x(m) + 0.6)).attr("height", h).attr("fill", ramp(v)));
+    const segs = [[from(i), i.parent ? 144 : 72, INPUT[i.heard][0]], ...(i.extended || []).map((e) => [72, e.months[1], LATER[e.env][0]])].filter(([p, q]) => q > p && q > from(i));
+    for (const [p, q, c] of segs) s.append("rect").attr("x", x(Math.max(p, from(i)))).attr("y", yy + h / 2 + 2).attr("width", x(q) - x(Math.max(p, from(i)))).attr("height", 2.5).attr("fill", c);
+    s.append("text").attr("x", b + 6).attr("y", yy + 4).text("#" + i.serial);
+  });
+  g.on("click", (e, n) => { S.sel = n.i.serial; render(); document.querySelector(`tr.r[data-n="${n.i.serial}"]`)?.scrollIntoView({ block: "nearest", behavior: "smooth" }); })
+    .on("mouseenter", (e, n) => { S.hover = n.i.serial; lit(); })
+    .on("mouseleave", () => { S.hover = null; lit(); });
+  svg.append("line").attr("x1", x(S.t)).attr("x2", x(S.t)).attr("y1", T - 6).attr("y2", H - B + 2).attr("stroke", "#1f2328").attr("stroke-width", 1.2).style("pointer-events", "none");
+  lit();
+}
+
+function sync() {
+  const p = new URLSearchParams();
+  if (S.q) p.set("q", S.q); if (S.sel != null) p.set("n", S.sel); if (S.view === "time") p.set("v", "time");
+  history.replaceState(null, "", p.toString() ? "?" + p : location.pathname);
+}
+function render() {
+  chips("f-gen", [["all", "all", ind.length], ["G0", "G0", ind.filter((i) => i.gen === 0 && !i.clone_of).length], ["G1", "G1", ind.filter((i) => i.gen === 1).length], ["clone", "clones", ind.filter((i) => i.clone_of).length]], "gen");
+  chips("f-in", [["all", "all", ind.length], ...Object.entries(INPUT).filter(([k]) => ind.some((i) => i.heard === k)).map(([k, [, n]]) => [k, n, ind.filter((i) => i.heard === k).length])], "input");
+  document.getElementById("agev").textContent = S.t + " m";
+  table(); lit(); sync();
+}
+const qi = document.getElementById("q");
+qi.oninput = () => { S.q = qi.value; const v = visible(); if (v.length === 1) S.sel = v[0].serial; render(); };
+qi.onkeydown = (e) => { if (e.key === "Enter") { const v = visible(); if (v.length) { S.sel = v[0].serial; render(); } } };
+document.querySelectorAll("[data-q]").forEach((a) => (a.onclick = (e) => { e.preventDefault(); qi.value = S.q = a.dataset.q; render(); }));
+document.getElementById("age").oninput = (e) => { S.t = +e.target.value; render(); if (S.view === "time") draw(); };
+addEventListener("keydown", (e) => { if (e.key === "/" && document.activeElement !== qi) { e.preventDefault(); qi.focus(); } });
+document.getElementById("metric").onchange = () => draw();
+document.querySelectorAll("#view button").forEach((b) => (b.onclick = () => { S.view = b.dataset.v; sync(); draw(); }));
+function draw() {
+  document.querySelectorAll("#view button").forEach((b) => b.classList.toggle("on", b.dataset.v === S.view));
+  document.getElementById("metric").hidden = S.view !== "time";
+  document.getElementById("key").innerHTML = S.view === "time" ? timeKey : treeKey;
+  if (S.view === "time") timeline(); else tree();
+}
+new ResizeObserver(() => draw()).observe(fig);
+render(); draw();
 </script>
 </body>
 </html>
