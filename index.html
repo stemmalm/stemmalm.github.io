@@ -144,7 +144,7 @@ dl.f dd { margin: 0; font-family: var(--mono); font-size: 12px; overflow-wrap: a
       <div class="row"><span class="lbl">Generation</span><span class="chips" id="f-gen"></span><span class="lbl">Root</span><span class="chips" id="f-in"></span></div>
       <div class="row">
         <span class="try">try <a href="#" data-q="child of #1">child of #1</a><a href="#" data-q="clone">clone</a><a href="#" data-q="books + family">books + family</a><a href="#" data-q="s2">s2</a></span>
-        <span style="margin-left:auto"><span class="lbl">check-up at</span> <input type="range" id="age" min="0" max="144" value="96" aria-label="month on the lineage clock"> <span class="m" id="agev"></span>
+        <span style="margin-left:auto"><span class="lbl">check-up at</span> <input type="range" id="age" min="0" max="144" value="72" aria-label="month on the lineage clock"> <span class="m" id="agev"></span>
         <span class="ramp" id="ramp"></span> <span class="mute" style="font-size:11.5px">30% · 100%</span></span>
       </div>
     </div>
@@ -216,7 +216,7 @@ function matches(i, q) {
   });
 }
 
-const S = { sel: null, q: "", gen: "all", input: "Ω", t: 96, sort: "serial", dir: 1, hover: null, view: "tree" };
+const S = { sel: null, q: "", gen: "all", input: "Ω", t: 72, sort: "serial", dir: 1, hover: null, view: "tree" };
 const u = new URLSearchParams(location.search);
 if (u.get("q")) S.q = u.get("q");
 if (u.get("r") && ["all", "Ω", "BL1", "BL2"].includes(u.get("r"))) S.input = u.get("r");
@@ -258,8 +258,10 @@ const WORDS = ["words", "heard", (i) => stOf(i).words_m ?? -1, "num", (i) => `<t
 const PASSES = ["passes", "passes", (i) => stOf(i).passes ?? -1, "num", (i) => `<td class="mono num">${stOf(i).passes != null ? `${stOf(i).approx ? "≈" : ""}${stOf(i).passes}` : "—"}</td>`];
 const HELD = ["held", "held-out loss", (i) => stOf(i).heldout ?? 9, "num", (i) => `<td class="mono num">${stOf(i).heldout != null ? `${stOf(i).heldout.toFixed(3)}<span class="mute"> ${/bits/.test(stOf(i).heldout_unit || "") ? "b/ch" : "n/tok"}</span>` : "—"}</td>`];
 const LEVELS = [["1", "L1 accept"], ["2n", "L2 new noun"], ["2v", "L2 new verb"], ["3", "L3 continue"]].map(([k, name]) => [`lv${k}`, name, (i) => stOf(i).levels?.[k] ?? -99, "num", (i) => `<td class="num">${leanCell(stOf(i).levels?.[k])}</td>`]);
+// BL1-raised EN3 individuals: the same check-up on their last snapshot (not on the month clock)
+const CK_LAST = CK.map(([k, name]) => [`last_${k}`, name, (i) => stOf(i).checkup_last?.[k] ?? -1, "num ck", (i) => { const v = stOf(i).checkup_last?.[k]; return `<td class="num">${v == null ? MUTE : `<span class="cell" style="background:${ramp(v)};color:${v > 0.8 || v < 0.38 ? "#fff" : "var(--ink)"}">${Math.round(v * 100)}%</span>`}</td>`; }]);
 const BORN = ["born", "born", (i) => i.born || "", "", (i) => `<td class="mono">${(i.born || "").slice(0, 10)}</td>`];
-const cols = () => (S.input === "Ω" ? [...BASE, ...OMEGA] : S.input === "BL1" ? [...BASE, PARAMS_COL, WORDS, PASSES, HELD] : S.input === "BL2" ? [...BASE, PARAMS_COL, WORDS, PASSES, HELD, ...LEVELS] : [...BASE, PARAMS_COL, BORN]);
+const cols = () => (S.input === "Ω" ? [...BASE, ...OMEGA] : S.input === "BL1" ? [...BASE, PARAMS_COL, WORDS, PASSES, HELD, ...CK_LAST] : S.input === "BL2" ? [...BASE, PARAMS_COL, WORDS, PASSES, HELD, ...LEVELS] : [...BASE, PARAMS_COL, BORN]);
 const hl = (txt) => {  // mark the search terms inside a cell
   const terms = S.q.trim().toLowerCase().split(/\s+/).filter((x) => x.length > 0 && !/^g\d$/.test(x));
   let h = String(txt).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
@@ -301,6 +303,7 @@ function detail(i) {
     ...(st.words_m != null ? [["training", `${st.approx ? "about " : ""}${st.words_m}M words, ${st.approx ? "about " : ""}${st.passes} passes${st.steps ? `, ${st.steps.toLocaleString()} steps` : ""}`]] : []),
     st.loss_72m != null ? ["loss at 72 m", st.loss_72m.toFixed(3) + " nats/char"] : ["held-out loss", st.heldout != null ? `${st.heldout.toFixed(4)} ${st.heldout_unit || ""}` : "—"],
     ...(st.heldout_72 != null ? [["held-out at 72 m", st.heldout_72.toFixed(3) + " bits/char on Ω"]] : []),
+    ...(st.checkup_last ? [["check-up, last snapshot", `agreement ${Math.round(st.checkup_last.agreement * 100)}% · past ${Math.round(st.checkup_last.past * 100)}% · plural ${Math.round(st.checkup_last.plural * 100)}% (part ${st.checkup_last_part} of 10)`]] : []),
     ...(st.levels ? [["gain–loss lean", `L1 ${st.levels["1"].toFixed(1)} · L2 new noun ${st.levels["2n"].toFixed(1)} · L2 new verb ${st.levels["2v"].toFixed(1)} · L3 continue ${st.levels["3"].toFixed(1)} (mean log-odds for the gain–loss frame, B24 E31)`]] : []),
     ["born", new Date(i.born).toISOString().slice(0, 16).replace("T", " ")], ["grown", i.grown ? new Date(i.grown).toISOString().slice(0, 16).replace("T", " ") : "—"],
     ["weights", i.web ? `<a href="https://huggingface.co/xchuanli/stemmalm-weights/tree/main/n${pad3(i.serial)}">n${pad3(i.serial)}</a>` : "on the cluster only"],
