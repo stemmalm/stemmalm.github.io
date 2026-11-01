@@ -216,10 +216,11 @@ function matches(i, q) {
   });
 }
 
-const S = { sel: null, q: "", gen: "all", input: "all", t: 96, sort: "serial", dir: 1, hover: null, view: "tree" };
+const S = { sel: null, q: "", gen: "all", input: "Ω", t: 96, sort: "serial", dir: 1, hover: null, view: "tree" };
 const u = new URLSearchParams(location.search);
 if (u.get("q")) S.q = u.get("q");
-if (byN.has(+u.get("n"))) S.sel = +u.get("n");
+if (u.get("r") && ["all", "Ω", "BL1", "BL2"].includes(u.get("r"))) S.input = u.get("r");
+if (byN.has(+u.get("n"))) { S.sel = +u.get("n"); if (!u.get("r") && rootOf(byN.get(S.sel)) !== S.input) S.input = rootOf(byN.get(S.sel)); }
 if (u.get("v") === "time") S.view = "time";
 document.getElementById("q").value = S.q;
 const visible = () => ind.filter((i) => (S.gen === "all" || (S.gen === "clone" ? i.clone_of : !i.clone_of && "G" + i.gen === S.gen))
@@ -235,13 +236,30 @@ function chips(id, opts, keyName) {
 }
 
 const CK = [["agreement/question", "agree"], ["past/irregular", "past"], ["plural/nonce", "plural"]];
-const COLS = [
-  ["serial", "#", (i) => i.serial, "num"], ["id", "full id", (i) => fullId(i)], ["gen", "gen", (i) => i.gen + (i.clone_of ? 0.5 : 0)],
-  ["origin", "origin", (i) => (i.parent || i.clone_of || 0) * 10 + (i.clone_of ? 1 : 0)], ["heard", "grew up on", (i) => inputOf(i)[1]],
-  ["later", "after 72 m", (i) => later(i)], ["life", "life", (i) => (clock(i) ? from(i) * 1000 + to(i) : -1), "num"],
-  ["loss", "loss 72 m", (i) => (stats.individuals[i.serial] || stats.individuals[i.clone_of] || {}).loss_72m ?? 9, "num"],
-  ...CK.map(([k, name]) => [k, name, (i) => score(i, k, S.t) ?? -1, "num ck"]),
+const stOf = (i) => stats.individuals[i.serial] || stats.individuals[i.clone_of] || {};
+const MUTE = '<span class="mute">—</span>';
+const leanCell = (v) => (v == null ? MUTE : `<span class="cell" style="background:${v > 0 ? `rgba(33,102,172,${Math.min(0.85, 0.12 + Math.abs(v) / 18)})` : `rgba(178,24,43,${Math.min(0.85, 0.12 + Math.abs(v) / 18)})`};color:${Math.abs(v) > 6 ? "#fff" : "var(--ink)"}">${v > 0 ? "+" : ""}${v.toFixed(1)}</span>`);
+// a column: key, heading, sort value, class, cell html
+const BASE = [
+  ["serial", "#", (i) => i.serial, "num", (i) => `<td class="n num">${hl("#" + i.serial)}</td>`],
+  ["id", "full id", (i) => fullId(i), "", (i) => `<td class="mono">${hl(fullId(i))}</td>`],
+  ["gen", "gen", (i) => i.gen + (i.clone_of ? 0.5 : 0), "", (i) => `<td class="mono">${hl("G" + i.gen)}</td>`],
+  ["origin", "origin", (i) => (i.parent || i.clone_of || 0) * 10 + (i.clone_of ? 1 : 0), "", (i) => `<td>${hl(origin(i))}${i.clone_of ? `<span class="mute"> @${i.clone_at} m</span>` : ""}</td>`],
+  ["heard", "grew up on", (i) => inputOf(i)[1], "", (i) => `<td><i class="sw" style="background:${inputOf(i)[0]}"></i>${hl(inputOf(i)[1])}</td>`],
 ];
+const OMEGA = [
+  ["later", "after 72 m", (i) => later(i), "", (i) => `<td>${(i.extended || []).map((x) => `<i class="ln" style="background:${LATER[x.env][0]}"></i>${hl(LATER[x.env][1])}`).join("") || MUTE}</td>`],
+  ["life", "life", (i) => from(i) * 1000 + to(i), "num", (i) => `<td class="mono num">${from(i)}–${to(i)} m</td>`],
+  ["loss", "loss 72 m", (i) => stOf(i).loss_72m ?? 9, "num", (i) => `<td class="mono num">${stOf(i).loss_72m != null ? stOf(i).loss_72m.toFixed(3) : "—"}</td>`],
+  ...CK.map(([k, name]) => [k, name, (i) => score(i, k, S.t) ?? -1, "num ck", (i) => { const v = score(i, k, S.t); return `<td class="num">${v == null ? MUTE : `<span class="cell" style="background:${ramp(v)};color:${v > 0.8 || v < 0.38 ? "#fff" : "var(--ink)"}">${Math.round(v * 100)}%</span>`}</td>`; }]),
+];
+const PARAMS_COL = ["params", "params", (i) => stOf(i).params ?? 0, "num", (i) => `<td class="mono num">${PARAMS[i.strain] || "—"}</td>`];
+const WORDS = ["words", "heard", (i) => stOf(i).words_m ?? -1, "num", (i) => `<td class="mono num">${stOf(i).words_m != null ? `${stOf(i).approx ? "≈" : ""}${stOf(i).words_m}M words` : "—"}</td>`];
+const PASSES = ["passes", "passes", (i) => stOf(i).passes ?? -1, "num", (i) => `<td class="mono num">${stOf(i).passes != null ? `${stOf(i).approx ? "≈" : ""}${stOf(i).passes}` : "—"}</td>`];
+const HELD = ["held", "held-out loss", (i) => stOf(i).heldout ?? 9, "num", (i) => `<td class="mono num">${stOf(i).heldout != null ? `${stOf(i).heldout.toFixed(3)}<span class="mute"> ${/bits/.test(stOf(i).heldout_unit || "") ? "b/ch" : "n/tok"}</span>` : "—"}</td>`];
+const LEVELS = [["1", "L1 accept"], ["2n", "L2 new noun"], ["2v", "L2 new verb"], ["3", "L3 continue"]].map(([k, name]) => [`lv${k}`, name, (i) => stOf(i).levels?.[k] ?? -99, "num", (i) => `<td class="num">${leanCell(stOf(i).levels?.[k])}</td>`]);
+const BORN = ["born", "born", (i) => i.born || "", "", (i) => `<td class="mono">${(i.born || "").slice(0, 10)}</td>`];
+const cols = () => (S.input === "Ω" ? [...BASE, ...OMEGA] : S.input === "BL1" ? [...BASE, PARAMS_COL, WORDS, PASSES, HELD] : S.input === "BL2" ? [...BASE, PARAMS_COL, WORDS, PASSES, HELD, ...LEVELS] : [...BASE, PARAMS_COL, BORN]);
 const hl = (txt) => {  // mark the search terms inside a cell
   const terms = S.q.trim().toLowerCase().split(/\s+/).filter((x) => x.length > 0 && !/^g\d$/.test(x));
   let h = String(txt).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
@@ -250,25 +268,22 @@ const hl = (txt) => {  // mark the search terms inside a cell
 };
 
 function table() {
+  const C = cols();
+  if (!C.some((c) => c[0] === S.sort)) { S.sort = "serial"; S.dir = 1; }
+  document.querySelector(".find .row:last-child > span:last-child").style.visibility = S.input === "Ω" ? "visible" : "hidden";  // the check-up month only means something on Ω
   const th = document.getElementById("thead");
-  th.innerHTML = `<tr>${COLS.map(([k, name, , cls = ""]) => `<th data-k="${k}" class="${cls}">${name}${S.sort === k ? `<span class="ar">${S.dir > 0 ? "↑" : "↓"}</span>` : ""}</th>`).join("")}</tr>`;
+  th.innerHTML = `<tr>${C.map(([k, name, , cls = ""]) => `<th data-k="${k}" class="${cls}">${name}${S.sort === k ? `<span class="ar">${S.dir > 0 ? "↑" : "↓"}</span>` : ""}</th>`).join("")}</tr>`;
   th.querySelectorAll("th").forEach((h) => (h.onclick = () => { const k = h.dataset.k; S.dir = S.sort === k ? -S.dir : 1; S.sort = k; render(); }));
-  const get = COLS.find((c) => c[0] === S.sort)[2];
+  const get = C.find((c) => c[0] === S.sort)[2];
   const rows = visible().sort((a, b) => { const x = get(a), y = get(b); return (x > y ? 1 : x < y ? -1 : a.serial - b.serial) * S.dir; });
   document.getElementById("hits").textContent = `${rows.length} of ${ind.length}`;
   document.getElementById("empty").hidden = rows.length > 0;
   const tb = document.getElementById("tbody");
   tb.replaceChildren();
   for (const i of rows) {
-    const st = stats.individuals[i.serial] || stats.individuals[i.clone_of] || {};
     const tr = document.createElement("tr");
     tr.className = "r" + (i.serial === S.sel ? " on" : ""); tr.dataset.n = i.serial;
-    const cks = CK.map(([k]) => { const v = score(i, k, S.t); return `<td class="num">${v == null ? '<span class="mute">—</span>' : `<span class="cell" style="background:${ramp(v)};color:${v > 0.8 || v < 0.38 ? "#fff" : "var(--ink)"}">${Math.round(v * 100)}%</span>`}</td>`; }).join("");
-    tr.innerHTML = `<td class="n num">${hl("#" + i.serial)}</td><td class="mono">${hl(fullId(i))}</td><td class="mono">${hl("G" + i.gen)}</td>
-      <td>${hl(origin(i))}${i.clone_of ? `<span class="mute"> @${i.clone_at} m</span>` : ""}</td>
-      <td><i class="sw" style="background:${inputOf(i)[0]}"></i>${hl(inputOf(i)[1])}</td>
-      <td>${(i.extended || []).map((x) => `<i class="ln" style="background:${LATER[x.env][0]}"></i>${hl(LATER[x.env][1])}`).join("") || '<span class="mute">—</span>'}</td>
-      <td class="mono num">${clock(i) ? `${from(i)}–${to(i)} m` : '<span class="mute">—</span>'}</td><td class="mono num">${st.loss_72m != null ? st.loss_72m.toFixed(3) : "—"}</td>${cks}`;
+    tr.innerHTML = C.map((c) => c[4](i)).join("");
     tr.onclick = () => { S.sel = S.sel === i.serial ? null : i.serial; render(); };
     tr.onmouseenter = () => { S.hover = i.serial; lit(); };
     tr.onmouseleave = () => { S.hover = null; lit(); };
@@ -283,7 +298,10 @@ function detail(i) {
   const rows = [["full id", fullId(i)], ["strain", `${i.strain} · ${PARAMS[i.strain] || "?"} params`], ["root", ROOTS[rootOf(i)]?.[1] || rootOf(i)], ["grew up on", i.parent ? i.input : reg.corpora[i.heard]?.split(":")[0] || i.heard],
     ["after 72 m", (i.extended || []).map((x) => `${x.env}, ${x.months[0]}–${x.months[1]} m`).join("; ") || "—"],
     ...(clock(i) ? [["lives", `${from(i)}–${to(i)} m on the lineage clock`], ["snapshots", (ck.curves[i.serial]?.agreement || []).length]] : []),
-    st.loss_72m != null ? ["loss at 72 m", st.loss_72m.toFixed(3) + " nats/char"] : ["held-out loss", i.dev_loss != null ? i.dev_loss.toFixed(4) + " nats/token" : "—"],
+    ...(st.words_m != null ? [["training", `${st.approx ? "about " : ""}${st.words_m}M words, ${st.approx ? "about " : ""}${st.passes} passes${st.steps ? `, ${st.steps.toLocaleString()} steps` : ""}`]] : []),
+    st.loss_72m != null ? ["loss at 72 m", st.loss_72m.toFixed(3) + " nats/char"] : ["held-out loss", st.heldout != null ? `${st.heldout.toFixed(4)} ${st.heldout_unit || ""}` : "—"],
+    ...(st.heldout_72 != null ? [["held-out at 72 m", st.heldout_72.toFixed(3) + " bits/char on Ω"]] : []),
+    ...(st.levels ? [["gain–loss lean", `L1 ${st.levels["1"].toFixed(1)} · L2 new noun ${st.levels["2n"].toFixed(1)} · L2 new verb ${st.levels["2v"].toFixed(1)} · L3 continue ${st.levels["3"].toFixed(1)} (mean log-odds for the gain–loss frame, B24 E31)`]] : []),
     ["born", new Date(i.born).toISOString().slice(0, 16).replace("T", " ")], ["grown", i.grown ? new Date(i.grown).toISOString().slice(0, 16).replace("T", " ") : "—"],
     ["weights", i.web ? `<a href="https://huggingface.co/xchuanli/stemmalm-weights/tree/main/n${pad3(i.serial)}">n${pad3(i.serial)}</a>` : "on the cluster only"],
     ...(i.experiment ? [["experiment", i.experiment]] : []), ...(i.note ? [["note", i.note]] : [])];
@@ -299,7 +317,7 @@ function detail(i) {
     : `<div class="note">${kids.length ? kids.map((c) => (c.clone_of ? `clone #${c.serial}` : `child #${c.serial}`)).join(", ") : "no children yet"}</div>`;
   const tr = document.createElement("tr");
   tr.className = "detail";
-  tr.innerHTML = `<td colspan="${COLS.length}"><div class="dgrid" style="max-width:${document.querySelector(".tw").clientWidth - 32}px">
+  tr.innerHTML = `<td colspan="${cols().length}"><div class="dgrid" style="max-width:${document.querySelector(".tw").clientWidth - 32}px">
     <div><div class="sec">Record · #${i.serial}</div><dl class="f">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl></div>
     <div>${clock(i) && ck.curves[i.serial] ? `<div class="sec">Check-up over its life · line at ${t} m</div><div class="hm">${hm}</div>` : `<div class="sec">Check-up</div><div class="note">${clock(i) ? "no check-up run on this individual yet" : "not on the lineage clock: raised on " + rootOf(i) + " in one go"}</div>`}
       <div class="sec" style="margin-top:14px">Variants</div>${vline}
@@ -369,12 +387,12 @@ function tree() {
     .text((n) => (n.i ? "#" + n.i.serial + (n.i.clone_of ? ` ≡#${n.i.clone_of}` : "") : n.label))
     .attr("x", (n) => (n.group ? 12 + (n.group.length - 1) * 2.5 : n.text === "root" ? 0 : 12));
   g.filter((n) => n.i)
-    .on("click", (e, n) => { S.sel = n.i.serial; render(); document.querySelector(`tr.r[data-n="${n.i.serial}"]`)?.scrollIntoView({ block: "nearest", behavior: "smooth" }); })
+    .on("click", (e, n) => { S.sel = n.i.serial; if (rootOf(n.i) !== S.input) S.input = rootOf(n.i); render(); document.querySelector(`tr.r[data-n="${n.i.serial}"]`)?.scrollIntoView({ block: "nearest", behavior: "smooth" }); })
     .on("mouseenter", (e, n) => { S.hover = n.i.serial; lit(); })
     .on("mouseleave", () => { S.hover = null; lit(); });
   // a group: click shows its members in the table, hover lights their rows
   g.filter((n) => n.group).style("cursor", "pointer")
-    .on("click", (e, n) => { const f = n.group[0]; S.q = `${f.strain}·${f.env}`; S.sel = null; document.getElementById("q").value = S.q; render(); })
+    .on("click", (e, n) => { const f = n.group[0]; S.q = `${f.strain}·${f.env}`; S.sel = null; S.input = rootOf(f); document.getElementById("q").value = S.q; render(); })
     .on("mouseenter", (e, n) => { S.hoverSet = new Set(n.group.map((i) => i.serial)); lit(); })
     .on("mouseleave", () => { S.hoverSet = null; lit(); });
   lit();
@@ -444,7 +462,7 @@ function timeline() {
 
 function sync() {
   const p = new URLSearchParams();
-  if (S.q) p.set("q", S.q); if (S.sel != null) p.set("n", S.sel); if (S.view === "time") p.set("v", "time");
+  if (S.q) p.set("q", S.q); if (S.input !== "Ω") p.set("r", S.input); if (S.sel != null) p.set("n", S.sel); if (S.view === "time") p.set("v", "time");
   history.replaceState(null, "", p.toString() ? "?" + p : location.pathname);
 }
 function render() {
