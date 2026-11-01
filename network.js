@@ -22,15 +22,17 @@ const CSS = `
 export function lineageNetwork(main, reg, { zoomable = true, flat = 0.06, onPick = () => {} } = {}) {
   if (!document.getElementById("net-css")) document.head.append(Object.assign(document.createElement("style"), { id: "net-css", textContent: CSS }));
   main.classList.add("net");
-  const ind = reg.individuals.filter((i) => i.status === "trained");
+  // the lapse map covers the Ω lineage whose copies were traced (#1–#12, the ones with browser weights)
+  const ind = reg.individuals.filter((i) => i.status === "trained" && i.web);
   // texts by kind, each its own shape: real speech, a copy made by an individual, books
   const nodes = [{ id: "Ω", kind: "text", label: "Ω, family speech", shape: "square" },
     { id: "WT2", kind: "text", label: "children's books", shape: "triangle" }];
   const links = [];
   for (const i of ind) nodes.push({ id: "#" + i.serial, kind: "ind", label: "#" + i.serial, i });
   for (const code of Object.keys(reg.corpora || {})) {
-    if (code === "Ω") continue;
-    const w = /#(\d+)/.exec(code)[1];
+    const m = /^Ω>#(\d+)@/.exec(code);  // only the copies written by an individual; BL1, BL2 and the Ω variants are not part of this map
+    if (!m) continue;
+    const w = m[1];
     nodes.push({ id: code, kind: "text", label: `#${w}'s copy`, shape: "diamond" });
     links.push({ source: "#" + w, target: code });
   }
