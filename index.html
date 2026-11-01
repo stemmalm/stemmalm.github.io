@@ -130,7 +130,7 @@ dl.f dd { margin: 0; font-family: var(--mono); font-size: 12px; overflow-wrap: a
 </header>
 <div class="head">
   <h1>StemmaLM</h1>
-  <span class="what">a lineage database of small language models raised on what adults say to children</span>
+  <span class="what">a lineage database of small language models raised from scratch on what adults say to children and on the BabyLM corpora</span>
   <span class="counts" id="counts"></span>
 </div>
 <div class="grid">
@@ -138,10 +138,10 @@ dl.f dd { margin: 0; font-family: var(--mono); font-size: 12px; overflow-wrap: a
     <div class="find">
       <label class="q">
         <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-        <input id="q" type="search" placeholder="Search models: #4, G1, clone, child of #2, books, s3 …" autocomplete="off" spellcheck="false" aria-label="Search models">
+        <input id="q" type="search" placeholder="Search models: #4, G1, clone, child of #2, EN5·M011, BL2, B24, s3 …" autocomplete="off" spellcheck="false" aria-label="Search models">
         <span class="hits" id="hits"></span>
       </label>
-      <div class="row"><span class="lbl">Generation</span><span class="chips" id="f-gen"></span><span class="lbl">Grew up on</span><span class="chips" id="f-in"></span></div>
+      <div class="row"><span class="lbl">Generation</span><span class="chips" id="f-gen"></span><span class="lbl">Root</span><span class="chips" id="f-in"></span></div>
       <div class="row">
         <span class="try">try <a href="#" data-q="child of #1">child of #1</a><a href="#" data-q="clone">clone</a><a href="#" data-q="books + family">books + family</a><a href="#" data-q="s2">s2</a></span>
         <span style="margin-left:auto"><span class="lbl">check-up at</span> <input type="range" id="age" min="0" max="144" value="96" aria-label="month on the lineage clock"> <span class="m" id="agev"></span>
@@ -170,6 +170,14 @@ const byN = new Map(ind.map((i) => [i.serial, i]));
 // one fixed colour per input, used everywhere on the site
 const INPUT = { "Ω": ["#8b949e", "Ω, family speech"], "Ω>#1@72m·c5": ["#d55e00", "#1's copy"], "Ω>#2@72m·c5": ["#cc79a7", "#2's copy"], "Ω>#3@72m·c5": ["#009e73", "#3's copy"] };
 const LATER = { WT2: ["#0072b2", "books only"], WT2m: ["#56b4e9", "books + family"] };
+// three roots: Ω (family speech) and the two BabyLM corpora; an individual not raised on Ω names its root in the registry
+const ROOTS = { "Ω": ["#8b949e", "Ω, family speech"], BL1: ["#7a5195", "BL1, BabyLM 10M words"], BL2: ["#1b7f79", "BL2, BabyLM 100M words"] };
+const rootOf = (i) => i.root || "Ω";
+const inputOf = (i) => INPUT[i.heard] || [ROOTS[rootOf(i)]?.[0] || "#8b949e", i.heard];
+const clock = (i) => rootOf(i) === "Ω";  // only lives on Ω run on the 0–144-month clock
+const PARAMS = { EN1: "10.8M", EN2: "25.4M", EN3: "97.7M", EN4: "16.9M", EN5: "97.7M" };
+// founders other than #1–#3 are drawn as one node per strain × upbringing
+const gid = (i) => (!i.web && !i.parent && !i.clone_of ? `g:${i.strain}·${i.env}` : null);
 const from = (i) => (i.parent ? 72 : i.clone_of ? i.clone_at : 0);
 const to = (i) => (i.parent ? 144 : Math.max(72, ...(i.extended || []).map((x) => x.months[1])));
 const ownAge = (i, t) => (i.parent ? t - 72 : t);
@@ -197,7 +205,7 @@ const score = (i, key, t) => (t < from(i) || t > to(i) ? null : at(curve(i, key)
 
 // every word a model can be found by
 const words = (i) => [`#${i.serial}`, `n${pad3(i.serial)}`, fullId(i), i.strain, i.env, `G${i.gen}`, `s${i.seed}`, `seed ${i.seed}`, origin(i),
-  i.parent ? `#${i.parent}` : "", i.clone_of ? `#${i.clone_of} clone` : "", INPUT[i.heard]?.[1] || i.heard, later(i), ...(i.extended || []).map((x) => x.env), i.lesion || "healthy"].join(" | ").toLowerCase();
+  i.parent ? `#${i.parent}` : "", i.clone_of ? `#${i.clone_of} clone` : "", inputOf(i)[1], rootOf(i), i.experiment || "", i.project || "", later(i), ...(i.extended || []).map((x) => x.env), i.lesion || "healthy"].join(" | ").toLowerCase();
 // a query is space-separated terms that must all match; "#1" matches the number, not #10–#12
 function matches(i, q) {
   const w = words(i);
@@ -215,7 +223,7 @@ if (byN.has(+u.get("n"))) S.sel = +u.get("n");
 if (u.get("v") === "time") S.view = "time";
 document.getElementById("q").value = S.q;
 const visible = () => ind.filter((i) => (S.gen === "all" || (S.gen === "clone" ? i.clone_of : !i.clone_of && "G" + i.gen === S.gen))
-  && (S.input === "all" || i.heard === S.input) && matches(i, S.q.trim().toLowerCase()));
+  && (S.input === "all" || rootOf(i) === S.input) && matches(i, S.q.trim().toLowerCase()));
 
 function chips(id, opts, keyName) {
   document.getElementById(id).replaceChildren(...opts.map(([v, label, n]) => {
@@ -229,8 +237,8 @@ function chips(id, opts, keyName) {
 const CK = [["agreement/question", "agree"], ["past/irregular", "past"], ["plural/nonce", "plural"]];
 const COLS = [
   ["serial", "#", (i) => i.serial, "num"], ["id", "full id", (i) => fullId(i)], ["gen", "gen", (i) => i.gen + (i.clone_of ? 0.5 : 0)],
-  ["origin", "origin", (i) => (i.parent || i.clone_of || 0) * 10 + (i.clone_of ? 1 : 0)], ["heard", "grew up on", (i) => INPUT[i.heard]?.[1]],
-  ["later", "after 72 m", (i) => later(i)], ["life", "life", (i) => from(i) * 1000 + to(i), "num"],
+  ["origin", "origin", (i) => (i.parent || i.clone_of || 0) * 10 + (i.clone_of ? 1 : 0)], ["heard", "grew up on", (i) => inputOf(i)[1]],
+  ["later", "after 72 m", (i) => later(i)], ["life", "life", (i) => (clock(i) ? from(i) * 1000 + to(i) : -1), "num"],
   ["loss", "loss 72 m", (i) => (stats.individuals[i.serial] || stats.individuals[i.clone_of] || {}).loss_72m ?? 9, "num"],
   ...CK.map(([k, name]) => [k, name, (i) => score(i, k, S.t) ?? -1, "num ck"]),
 ];
@@ -258,9 +266,9 @@ function table() {
     const cks = CK.map(([k]) => { const v = score(i, k, S.t); return `<td class="num">${v == null ? '<span class="mute">—</span>' : `<span class="cell" style="background:${ramp(v)};color:${v > 0.8 || v < 0.38 ? "#fff" : "var(--ink)"}">${Math.round(v * 100)}%</span>`}</td>`; }).join("");
     tr.innerHTML = `<td class="n num">${hl("#" + i.serial)}</td><td class="mono">${hl(fullId(i))}</td><td class="mono">${hl("G" + i.gen)}</td>
       <td>${hl(origin(i))}${i.clone_of ? `<span class="mute"> @${i.clone_at} m</span>` : ""}</td>
-      <td><i class="sw" style="background:${INPUT[i.heard][0]}"></i>${hl(INPUT[i.heard][1])}</td>
+      <td><i class="sw" style="background:${inputOf(i)[0]}"></i>${hl(inputOf(i)[1])}</td>
       <td>${(i.extended || []).map((x) => `<i class="ln" style="background:${LATER[x.env][0]}"></i>${hl(LATER[x.env][1])}`).join("") || '<span class="mute">—</span>'}</td>
-      <td class="mono num">${from(i)}–${to(i)} m</td><td class="mono num">${st.loss_72m != null ? st.loss_72m.toFixed(3) : "—"}</td>${cks}`;
+      <td class="mono num">${clock(i) ? `${from(i)}–${to(i)} m` : '<span class="mute">—</span>'}</td><td class="mono num">${st.loss_72m != null ? st.loss_72m.toFixed(3) : "—"}</td>${cks}`;
     tr.onclick = () => { S.sel = S.sel === i.serial ? null : i.serial; render(); };
     tr.onmouseenter = () => { S.hover = i.serial; lit(); };
     tr.onmouseleave = () => { S.hover = null; lit(); };
@@ -272,12 +280,13 @@ function table() {
 function detail(i) {
   const t = S.t, alive = t >= from(i) && t <= to(i), age = ownAge(i, t);
   const st = stats.individuals[i.serial] || stats.individuals[i.clone_of] || {};
-  const rows = [["full id", fullId(i)], ["strain", reg.strains[i.strain] ? "EN1 · 10.8M params" : i.strain], ["grew up on", i.parent ? i.input : reg.corpora[i.heard]?.split(":")[0] || i.heard],
+  const rows = [["full id", fullId(i)], ["strain", `${i.strain} · ${PARAMS[i.strain] || "?"} params`], ["root", ROOTS[rootOf(i)]?.[1] || rootOf(i)], ["grew up on", i.parent ? i.input : reg.corpora[i.heard]?.split(":")[0] || i.heard],
     ["after 72 m", (i.extended || []).map((x) => `${x.env}, ${x.months[0]}–${x.months[1]} m`).join("; ") || "—"],
-    ["lives", `${from(i)}–${to(i)} m on the lineage clock`], ["snapshots", (ck.curves[i.serial]?.agreement || []).length],
-    ["loss at 72 m", st.loss_72m != null ? st.loss_72m.toFixed(3) + " nats/char" : "—"],
-    ["born", new Date(i.born).toISOString().slice(0, 16).replace("T", " ")],
-    ["weights", `<a href="https://huggingface.co/xchuanli/stemmalm-weights/tree/main/n${pad3(i.serial)}">n${pad3(i.serial)}</a>`]];
+    ...(clock(i) ? [["lives", `${from(i)}–${to(i)} m on the lineage clock`], ["snapshots", (ck.curves[i.serial]?.agreement || []).length]] : []),
+    st.loss_72m != null ? ["loss at 72 m", st.loss_72m.toFixed(3) + " nats/char"] : ["held-out loss", i.dev_loss != null ? i.dev_loss.toFixed(4) + " nats/token" : "—"],
+    ["born", new Date(i.born).toISOString().slice(0, 16).replace("T", " ")], ["grown", i.grown ? new Date(i.grown).toISOString().slice(0, 16).replace("T", " ") : "—"],
+    ["weights", i.web ? `<a href="https://huggingface.co/xchuanli/stemmalm-weights/tree/main/n${pad3(i.serial)}">n${pad3(i.serial)}</a>` : "on the cluster only"],
+    ...(i.experiment ? [["experiment", i.experiment]] : []), ...(i.note ? [["note", i.note]] : [])];
   const metrics = [["agreement/question", "agreement, questions"], ["agreement/statement", "agreement, statements"], ["past/irregular", "irregular past"], ["plural/nonce", "plural, made-up words"]];
   const hm = metrics.map(([k, name]) => {
     const pts = curve(i, k).filter(([m]) => m >= from(i)), span = to(i) - from(i);
@@ -292,9 +301,9 @@ function detail(i) {
   tr.className = "detail";
   tr.innerHTML = `<td colspan="${COLS.length}"><div class="dgrid" style="max-width:${document.querySelector(".tw").clientWidth - 32}px">
     <div><div class="sec">Record · #${i.serial}</div><dl class="f">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl></div>
-    <div><div class="sec">Check-up over its life · line at ${t} m</div><div class="hm">${hm}</div>
+    <div>${clock(i) && ck.curves[i.serial] ? `<div class="sec">Check-up over its life · line at ${t} m</div><div class="hm">${hm}</div>` : `<div class="sec">Check-up</div><div class="note">${clock(i) ? "no check-up run on this individual yet" : "not on the lineage clock: raised on " + rootOf(i) + " in one go"}</div>`}
       <div class="sec" style="margin-top:14px">Variants</div>${vline}
-      <div class="acts"><a href="individual.html?n=${i.serial}">Talk to #${i.serial} at ${alive ? age : from(i)} months →</a><a href="variants.html">Trace its variants →</a><a href="checkup.html">Check-up →</a></div></div>
+      <div class="acts"><a href="individual.html?n=${i.serial}">${i.web ? `Talk to #${i.serial} at ${alive ? age : from(i)} months` : `Record of #${i.serial}`} →</a><a href="variants.html">Trace its variants →</a><a href="checkup.html">Check-up →</a></div></div>
   </div></td>`;
   return tr;
 }
@@ -305,10 +314,14 @@ const T = { nodes: [], edges: [] };
 function layout() {
   const W = fig.clientWidth, H = fig.clientHeight, top = 36, bot = 14;
   const cx = [0, 1, 2, 3].map((k) => 26 + k * (W - 26 - 64) / 3);
-  const founders = ind.filter((i) => !i.parent && !i.clone_of);
+  const founders = ind.filter((i) => !i.parent && !i.clone_of && i.web);
   const groups = founders.map((f) => ({ f, clones: ind.filter((c) => c.clone_of === f.serial), copy: Object.keys(reg.corpora).find((c) => c.startsWith(`Ω>#${f.serial}@`)), kids: ind.filter((c) => c.parent === f.serial) }));
-  const nLeaves = groups.reduce((a, g) => a + g.clones.length + Math.max(1, g.kids.length), 0), gap = 0.7;
-  const step = (H - top - bot) / (nLeaves + gap * (groups.length - 1));
+  // the other founders, one node per strain × upbringing, listed under their root
+  const bunches = [];
+  for (const i of ind.filter((i) => gid(i))) { const b = bunches.find((b) => b.id === gid(i)); if (b) b.members.push(i); else bunches.push({ id: gid(i), root: rootOf(i), members: [i] }); }
+  const rootsHere = ["Ω", ...Object.keys(ROOTS).filter((r) => r !== "Ω" && bunches.some((b) => b.root === r))];
+  const nLeaves = groups.reduce((a, g) => a + g.clones.length + Math.max(1, g.kids.length), 0) + bunches.length, gap = 0.7;
+  const step = (H - top - bot) / (nLeaves + gap * (groups.length + rootsHere.length - 1));
   let r = 0.5; const nodes = [], edges = [], Y = (k) => top + k * step;
   for (const g of groups) {
     const mid = [];
@@ -320,7 +333,19 @@ function layout() {
     nodes.push({ id: g.f.serial, i: g.f, x: cx[1], y: d3.mean(mid) }); edges.push({ a: "Ω", b: g.f.serial });
     r += gap;
   }
-  nodes.push({ id: "Ω", text: "root", label: "Ω", x: cx[0], y: d3.mean(nodes.filter((n) => n.i && !n.i.parent && !n.i.clone_of), (n) => n.y) });
+  for (const root of rootsHere) {
+    const ys = [];
+    for (const b of bunches.filter((b) => b.root === root)) {
+      const y = Y(r++), m = b.members, first = m[0];
+      const span = m.length > 1 ? `#${first.serial}–${m[m.length - 1].serial}` : `#${first.serial}`;
+      nodes.push({ id: b.id, group: m, label: `${span}  ${first.strain}·${first.env}`, x: cx[1], y, color: inputOf(first)[0] });
+      edges.push({ a: root, b: b.id, m });
+      ys.push(y);
+    }
+    if (root === "Ω") ys.push(...nodes.filter((n) => n.i && !n.i.parent && !n.i.clone_of).map((n) => n.y));
+    nodes.push({ id: root, text: "root", label: root, x: cx[0], y: d3.mean(ys) });
+    r += gap;
+  }
   Object.assign(T, { W, H, cx, nodes, edges, top });
 }
 function tree() {
@@ -333,32 +358,41 @@ function tree() {
     .attr("d", (e) => { const a = at.get(e.a), b = at.get(e.b), m = (a.x + b.x) / 2; return `M${a.x} ${a.y}C${m} ${a.y},${m} ${b.y},${b.x} ${b.y}`; })
     .style("stroke", (e) => e.color || null).style("stroke-opacity", (e) => (e.color ? 0.75 : null));
   const g = svg.append("g").selectAll("g").data(nodes).join("g").attr("class", (n) => "nd" + (n.text ? " text" : "")).attr("transform", (n) => `translate(${n.x},${n.y})`);
-  g.filter((n) => n.i).append("circle").attr("class", "ring").attr("r", 12).attr("opacity", 0);
-  g.filter((n) => n.i).append("circle").attr("r", 7.5).attr("fill", (n) => INPUT[n.i.heard][0]).attr("stroke", "#fff").attr("stroke-width", 1.5);
+  g.filter((n) => n.i || n.group).append("circle").attr("class", "ring").attr("r", 12).attr("opacity", 0);
+  g.filter((n) => n.i).append("circle").attr("r", 7.5).attr("fill", (n) => inputOf(n.i)[0]).attr("stroke", "#fff").attr("stroke-width", 1.5);
+  // a group of seeds: one dot per member, stacked, so the eye reads how many there are
+  g.filter((n) => n.group).each(function (n) { const q = d3.select(this), k = n.group.length; n.group.forEach((_, j) => q.append("circle").attr("cx", (j - (k - 1) / 2) * 5).attr("r", 5.5).attr("fill", n.color).attr("stroke", "#fff").attr("stroke-width", 1.2)); });
   g.filter((n) => n.i && n.i.extended).append("rect").attr("x", -7).attr("y", 10).attr("width", 14).attr("height", 3).attr("rx", 1).attr("fill", (n) => LATER[n.i.extended[0].env][0]);
   g.filter((n) => n.text === "copy").append("path").attr("d", d3.symbol(d3.symbolDiamond, 90)()).attr("fill", "#fff").attr("stroke", (n) => INPUT[Object.keys(INPUT).find((k) => k === n.id)]?.[0] || "#8b949e").attr("stroke-width", 1.6);
   g.filter((n) => n.text === "root").append("path").attr("d", d3.symbol(d3.symbolSquare, 110)()).attr("fill", "#fff").attr("stroke", "#8b949e").attr("stroke-width", 1.6);
   g.append("text").attr("x", (n) => (n.text === "root" ? 0 : 12)).attr("y", (n) => (n.text === "root" ? -12 : 4)).attr("text-anchor", (n) => (n.text === "root" ? "middle" : "start"))
-    .text((n) => (n.i ? "#" + n.i.serial + (n.i.clone_of ? ` ≡#${n.i.clone_of}` : "") : n.label));
+    .text((n) => (n.i ? "#" + n.i.serial + (n.i.clone_of ? ` ≡#${n.i.clone_of}` : "") : n.label))
+    .attr("x", (n) => (n.group ? 12 + (n.group.length - 1) * 2.5 : n.text === "root" ? 0 : 12));
   g.filter((n) => n.i)
     .on("click", (e, n) => { S.sel = n.i.serial; render(); document.querySelector(`tr.r[data-n="${n.i.serial}"]`)?.scrollIntoView({ block: "nearest", behavior: "smooth" }); })
     .on("mouseenter", (e, n) => { S.hover = n.i.serial; lit(); })
     .on("mouseleave", () => { S.hover = null; lit(); });
+  // a group: click shows its members in the table, hover lights their rows
+  g.filter((n) => n.group).style("cursor", "pointer")
+    .on("click", (e, n) => { const f = n.group[0]; S.q = `${f.strain}·${f.env}`; S.sel = null; document.getElementById("q").value = S.q; render(); })
+    .on("mouseenter", (e, n) => { S.hoverSet = new Set(n.group.map((i) => i.serial)); lit(); })
+    .on("mouseleave", () => { S.hoverSet = null; lit(); });
   lit();
 }
 // fade what the search leaves out; ring the selected and hovered models; light the path from Ω
 function lit() {
   const vis = new Set(visible().map((i) => i.serial)), focus = S.hover ?? S.sel;
   const path = new Set();
-  if (focus != null) { let i = byN.get(focus); path.add(i.serial); const p = i.parent || i.clone_of; if (i.parent) path.add(Object.keys(reg.corpora).find((c) => c.startsWith(`Ω>#${i.parent}@`))); if (p) path.add(p); path.add("Ω"); }
-  svg.selectAll(".nd").attr("opacity", (n) => (n.i ? (vis.has(n.i.serial) ? 1 : path.has(n.i.serial) ? 0.6 : 0.18) : 0.9))
-    .select(".ring").attr("opacity", (n) => (n.i && (n.i.serial === S.sel || n.i.serial === S.hover) ? (n.i.serial === S.sel ? 1 : 0.35) : 0));
-  svg.selectAll(".edge").attr("opacity", (e) => (focus == null ? (typeof e.b === "number" && !vis.has(e.b) ? 0.25 : 1) : path.has(e.a) && path.has(e.b) ? 1 : 0.25))
+  if (focus != null) { let i = byN.get(focus); path.add(i.serial); const p = i.parent || i.clone_of; if (i.parent) path.add(Object.keys(reg.corpora).find((c) => c.startsWith(`Ω>#${i.parent}@`))); if (p) path.add(p); if (gid(i)) path.add(gid(i)); path.add(rootOf(i)); }
+  const anyVis = (m) => m.some((i) => vis.has(i.serial));
+  svg.selectAll(".nd").attr("opacity", (n) => (n.i ? (vis.has(n.i.serial) ? 1 : path.has(n.i.serial) ? 0.6 : 0.18) : n.group ? (anyVis(n.group) ? 1 : path.has(n.id) ? 0.6 : 0.18) : 0.9))
+    .select(".ring").attr("opacity", (n) => (n.i && (n.i.serial === S.sel || n.i.serial === S.hover) ? (n.i.serial === S.sel ? 1 : 0.35) : n.group && (n.group.some((i) => i.serial === S.sel) || S.hoverSet?.has(n.group[0].serial)) ? 0.6 : 0));
+  svg.selectAll(".edge").attr("opacity", (e) => (focus == null ? ((typeof e.b === "number" && !vis.has(e.b)) || (e.m && !anyVis(e.m)) ? 0.25 : 1) : path.has(e.a) && path.has(e.b) ? 1 : 0.25))
     .style("stroke-width", (e) => (focus != null && path.has(e.a) && path.has(e.b) ? 2.4 : null));
-  document.querySelectorAll("tr.r").forEach((tr) => tr.classList.toggle("hov", +tr.dataset.n === S.hover));
+  document.querySelectorAll("tr.r").forEach((tr) => tr.classList.toggle("hov", +tr.dataset.n === S.hover || !!S.hoverSet?.has(+tr.dataset.n)));
 }
 const sym = (s, stroke) => `<svg width="14" height="14" viewBox="-7 -7 14 14"><path d="${d3.symbol(s, 60)()}" fill="#fff" stroke="${stroke}" stroke-width="1.4"/></svg>`;
-const treeKey = `<span>${sym(d3.symbolSquare, "#8b949e")}real family speech</span><span>${sym(d3.symbolDiamond, "#8b949e")}a copy written by a model</span>`
+const treeKey = `<span>${sym(d3.symbolSquare, "#8b949e")}a root corpus (Ω family speech, BL1, BL2)</span><span>${sym(d3.symbolDiamond, "#8b949e")}a copy written by a model</span><span>stacked dots = one individual per seed</span>`
   + `<span><svg width="22" height="8"><line x1="0" y1="4" x2="22" y2="4" stroke="#afb8c1" stroke-width="1.3" stroke-dasharray="5 4"/></svg>clone</span>`
   + Object.values(LATER).map(([c, n]) => `<span><i class="ln" style="background:${c}"></i>${n}</span>`).join("")
   + `<span>dot colour = what it grew up on</span>`;
@@ -370,7 +404,7 @@ const timeKey = `<span><i class="ln" style="width:60px;height:7px;background:${d
 function timeline() {
   const W = fig.clientWidth, H = fig.clientHeight, key = document.getElementById("metric").value, T = 30, B = 26;
   const rows = [];
-  for (const f of ind.filter((i) => !i.parent && !i.clone_of)) rows.push(f, ...ind.filter((c) => c.parent === f.serial), ...ind.filter((c) => c.clone_of === f.serial), null);
+  for (const f of ind.filter((i) => !i.parent && !i.clone_of && clock(i))) rows.push(f, ...ind.filter((c) => c.parent === f.serial), ...ind.filter((c) => c.clone_of === f.serial), null);
   rows.pop();
   const ROW = (H - T - B) / rows.length, x = d3.scaleLinear([-14, 144], [22, W - 44]), y = new Map();
   rows.forEach((i, k) => i && y.set(i.serial, T + ROW * (k + 0.5)));
@@ -380,11 +414,11 @@ function timeline() {
     ax.append("line").attr("x1", x(m)).attr("x2", x(m)).attr("y1", T - 6).attr("y2", H - B + 2).attr("stroke", m === 72 ? "#d0d7de" : "#eef1f4");
     ax.append("text").attr("x", x(m)).attr("y", H - B + 16).attr("text-anchor", "middle").text(m + (m === 144 ? " m" : ""));
   }
-  ax.append("text").attr("x", x(72)).attr("y", 16).attr("text-anchor", "middle").text("72 m · copies made, clones split, children start");
+  ax.append("text").attr("x", x(72)).attr("y", 16).attr("text-anchor", "middle").text(`72 m · copies made, clones split, children start · ${ind.filter((i) => !clock(i)).length} BabyLM-raised models are not on this clock`);
   const founders = rows.filter((i) => i && !i.parent && !i.clone_of), ry = d3.mean(founders, (i) => y.get(i.serial));
   svg.append("text").attr("class", "lab").attr("x", x(-11)).attr("y", ry + 4).attr("text-anchor", "end").style("font", "italic 12px var(--sans)").attr("fill", "#8b949e").text("Ω");
   const edges = [...founders.map((i) => ({ a: "Ω", b: i.serial, d: `M${x(-10)} ${ry}C${x(-5)} ${ry},${x(-5)} ${y.get(i.serial)},${x(0)} ${y.get(i.serial)}` })),
-    ...ind.filter((c) => c.parent || c.clone_of).map((c) => { const p = c.parent || c.clone_of; return { a: p, b: c.serial, clone: !!c.clone_of, color: c.parent ? INPUT[c.heard][0] : null, d: `M${x(72)} ${y.get(p)}V${y.get(c.serial)}H${x(from(c))}` }; })];
+    ...ind.filter((c) => c.parent || c.clone_of).map((c) => { const p = c.parent || c.clone_of; return { a: p, b: c.serial, clone: !!c.clone_of, color: c.parent ? inputOf(c)[0] : null, d: `M${x(72)} ${y.get(p)}V${y.get(c.serial)}H${x(from(c))}` }; })];
   svg.append("g").selectAll("path").data(edges).join("path").attr("class", (e) => "edge" + (e.clone ? " clone" : "")).attr("d", (e) => e.d)
     .style("stroke", (e) => e.color || null).style("stroke-opacity", (e) => (e.color ? 0.75 : null));
   const h = Math.min(12, ROW * 0.42);
@@ -397,7 +431,7 @@ function timeline() {
     const sg = s.append("g").attr("clip-path", `url(#${id})`);
     sg.append("rect").attr("x", a).attr("y", yy - h / 2).attr("width", b - a).attr("height", h).attr("fill", "#eee");
     pts.forEach(([m, v], j) => sg.append("rect").attr("x", x(m)).attr("y", yy - h / 2).attr("width", Math.max(1, x(j + 1 < pts.length ? pts[j + 1][0] : to(i)) - x(m) + 0.6)).attr("height", h).attr("fill", ramp(v)));
-    const segs = [[from(i), i.parent ? 144 : 72, INPUT[i.heard][0]], ...(i.extended || []).map((e) => [72, e.months[1], LATER[e.env][0]])].filter(([p, q]) => q > p && q > from(i));
+    const segs = [[from(i), i.parent ? 144 : 72, inputOf(i)[0]], ...(i.extended || []).map((e) => [72, e.months[1], LATER[e.env][0]])].filter(([p, q]) => q > p && q > from(i));
     for (const [p, q, c] of segs) s.append("rect").attr("x", x(Math.max(p, from(i)))).attr("y", yy + h / 2 + 2).attr("width", x(q) - x(Math.max(p, from(i)))).attr("height", 2.5).attr("fill", c);
     s.append("text").attr("x", b + 6).attr("y", yy + 4).text("#" + i.serial);
   });
@@ -415,7 +449,7 @@ function sync() {
 }
 function render() {
   chips("f-gen", [["all", "all", ind.length], ["G0", "G0", ind.filter((i) => i.gen === 0 && !i.clone_of).length], ["G1", "G1", ind.filter((i) => i.gen === 1).length], ["clone", "clones", ind.filter((i) => i.clone_of).length]], "gen");
-  chips("f-in", [["all", "all", ind.length], ...Object.entries(INPUT).filter(([k]) => ind.some((i) => i.heard === k)).map(([k, [, n]]) => [k, n, ind.filter((i) => i.heard === k).length])], "input");
+  chips("f-in", [["all", "all", ind.length], ...Object.entries(ROOTS).filter(([k]) => ind.some((i) => rootOf(i) === k)).map(([k, [, n]]) => [k, n.split(",")[0], ind.filter((i) => rootOf(i) === k).length])], "input");
   document.getElementById("agev").textContent = S.t + " m";
   table(); lit(); sync();
 }

@@ -104,8 +104,17 @@ for (const [k, v] of lifeRows) life.append(el("dt", { text: k }), el("dd", { tex
 const pa = life.querySelectorAll("dd")[3];
 if (ind.parent) { pa.textContent = ""; pa.append(el("a", { href: `individual.html?n=${ind.parent}`, text: `#${ind.parent}` })); }
 
+// more of its record, when the registry has it
+const extra = [["Root", ind.root || "Ω"], ...(ind.experiment ? [["Experiment", ind.experiment]] : []), ...(ind.dev_loss != null ? [["Held-out loss", `${ind.dev_loss.toFixed(4)} nats/token at the end of training`]] : []), ...(ind.note ? [["Note", ind.note]] : [])];
+for (const [k, v] of extra) life.append(el("dt", { text: k }), el("dd", { text: v }));
+
 if (ind.status !== "trained") {
   document.getElementById("not-yet").hidden = false;
+} else if (!ind.web) {
+  // only #1–#12 (EN1, character level) have snapshots exported for the browser; the others' weights are on the cluster
+  const p = document.getElementById("not-yet");
+  p.textContent = `// no browser weights for #${ind.serial} yet — its snapshots live on the cluster only`;
+  p.hidden = false;
 } else {
   document.getElementById("talk-sec").hidden = false;
   const state = { age: 30, logs: {} };
