@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Findings · StemmaLM</title>
-<link rel="stylesheet" href="style.css?v=20261104080918">
-<link rel="icon" href="logo.svg?v=20261104080918" type="image/svg+xml">
+<link rel="stylesheet" href="style.css?v=20261104082000">
+<link rel="icon" href="logo.svg?v=20261104082000" type="image/svg+xml">
 <style>
   .life { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; margin: 20px 0 8px; border: 1px solid var(--rule); }
   .stage { padding: 10px 10px 12px; border-left: 1px solid var(--rule); min-width: 0; }
@@ -99,7 +99,7 @@
   <footer>Experiment numbers refer to the project’s internal list. Numbers on this page come from <a href="stats.json">stats.json</a>, <a href="checkup.json">checkup.json</a> and <a href="variants.json">variants.json</a>; findings 3 and 4 are summaries from the experiment records.</footer>
 </div>
 <script type="module">
-import { header } from "./site.js?v=20261104080918";
+import { header } from "./site.js?v=20261104082000";
 header("findings");
 
 const NS = "http://www.w3.org/2000/svg";
@@ -107,7 +107,7 @@ const ORANGE = "#d55e00", BLUE = "#0072b2", INK = "var(--ink)", MUTED = "var(--m
 function s(tag, a = {}, text) { const e = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(a)) e.setAttribute(k, v); if (text != null) e.textContent = text; return e; }
 
 // a plain x–y frame; returns helpers to map data to pixels
-function frame(host, { w = 680, h = 230, x0, x1, y0, y1, xticks, yticks, xlab, ylab, yfmt = (v) => v }) {
+function frame(host, { w = 1000, h = 230, x0, x1, y0, y1, xticks, yticks, xlab, ylab, yfmt = (v) => v }) {
   const m = { l: 44, r: 12, t: 22, b: 34 };
   const svg = s("svg", { viewBox: `0 0 ${w} ${h}`, role: "img" });
   const X = (v) => m.l + (v - x0) / (x1 - x0) * (w - m.l - m.r);
@@ -156,7 +156,7 @@ const [stats, check, variants] = await Promise.all(["stats.json", "checkup.json"
 // 3 · tests passed per individual, by condition (from E11, E13)
 {
   const rows = [["original (EN1)", [3, 3, 2], INK], ["2.4× larger (EN2)", [3, 2, 3], INK], ["+ determiners", [4, 2, 3], BLUE], ["+ negative polarity", [3, 2, 2], BLUE], ["+ irregular verbs", [4, 4, 3], BLUE], ["+ random sentences", [3, 4, 2], MUTED]];
-  const w = 680, rowH = 26, top = 6, h = top + rows.length * rowH + 30, l = 170, r = 20;
+  const w = 1000, rowH = 26, top = 6, h = top + rows.length * rowH + 30, l = 170, r = 20;
   const svg = s("svg", { viewBox: `0 0 ${w} ${h}`, role: "img" });
   const X = (v) => l + v / 6 * (w - l - r);
   for (let t = 0; t <= 6; t++) { svg.append(s("line", { x1: X(t), x2: X(t), y1: top, y2: top + rows.length * rowH, stroke: "var(--faint)" })); svg.append(s("text", { x: X(t), y: top + rows.length * rowH + 16, "text-anchor": "middle" }, t)); }
@@ -188,7 +188,7 @@ const [stats, check, variants] = await Promise.all(["stats.json", "checkup.json"
 {
   const d = variants.result.dose;
   const bars = [["0–1 (not in #1’s copy)", d["0-1 (control)"].ratio], ["5–9", d["5-9"].ratio], ["10–19", d["10-19"].ratio], ["20+", d["20+"].ratio]];
-  const w = 680, h = 210, l = 44, r = 12, t = 14, b = 48;
+  const w = 1000, h = 210, l = 44, r = 12, t = 14, b = 48;
   const svg = s("svg", { viewBox: `0 0 ${w} ${h}`, role: "img" });
   const Y = (v) => h - b - v / 6.5 * (h - t - b);
   for (const v of [0, 1, 2, 4, 6]) { svg.append(s("line", { x1: l, x2: w - r, y1: Y(v), y2: Y(v), stroke: v === 1 ? MUTED : "var(--faint)", "stroke-dasharray": v === 1 ? "4 4" : "" })); svg.append(s("text", { x: l - 6, y: Y(v) + 4, "text-anchor": "end" }, v + "×")); }

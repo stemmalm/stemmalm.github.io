@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>StemmaLM</title>
-<link rel="stylesheet" href="style.css?v=20261104080918">
-<link rel="icon" href="logo.svg?v=20261104080918" type="image/svg+xml">
+<link rel="stylesheet" href="style.css?v=20261104082000">
+<link rel="icon" href="logo.svg?v=20261104082000" type="image/svg+xml">
 <style>
   .toc { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); border: 1px solid var(--rule); margin: 22px 0 6px; }
   .toc a { padding: 8px 9px 10px; border-left: 1px solid var(--rule); color: var(--ink); min-width: 0; }
@@ -23,7 +23,7 @@
   table.t td.num { font-family: var(--font-id); font-size: 13px; text-align: right; white-space: nowrap; }
   .tscroll { overflow-x: auto; }
   .more { font-family: var(--font-id); font-size: 13.5px; }
-  .angles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 10px 0; }
+  .angles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 10px 0; }
   .angle { border: 1px solid var(--rule); padding: 10px 12px; }
   .angle h3 { margin: 0 0 4px; font-size: 15px; font-weight: 600; }
   .angle p { font-size: 14px; margin: 0 0 6px; }
@@ -31,6 +31,7 @@
   ol.found { padding-left: 1.4em; margin: 8px 0; }
   ol.found li { margin-bottom: 6px; }
   .schema svg { display: block; width: 100%; height: auto; }
+  #tree svg { max-width: 820px; }
   .schema text { font-family: var(--font-id); font-size: 12px; fill: var(--ink); }
   .schema .m { fill: var(--muted); font-size: 11px; }
   .name { font-family: var(--font-id); font-size: 15px; letter-spacing: 0.02em; margin: 6px 0 4px; }
@@ -38,6 +39,7 @@
   dl.parts { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: 2px 12px; font-size: 14px; margin: 6px 0 10px; }
   dl.parts dt { font-family: var(--font-id); font-size: 13px; color: var(--muted); }
   dl.parts dd { margin: 0; }
+  @media (max-width: 900px) { .angles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   @media (max-width: 600px) {
     .toc { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .toc a:nth-child(4) { border-left: 0; }
@@ -132,7 +134,7 @@
   <footer>Data: CHILDES via AO-CHILDES (CC BY-NC-SA 4.0); BabyLM 2026. Weights: <a href="https://huggingface.co/xchuanli/stemmalm-weights">xchuanli/stemmalm-weights</a>. Registry: <a href="registry.json">registry.json</a>. The models run in your browser; names in their replies are replaced by “(name)”.</footer>
 </div>
 <script type="module">
-import { header, registry } from "./site.js?v=20261104080918";
+import { header, registry } from "./site.js?v=20261104082000";
 header("overview");
 
 const NS = "http://www.w3.org/2000/svg";
@@ -162,7 +164,7 @@ for (const [k, v] of Object.entries(reg.envs)) if (!["WT1", "BL1", "BL2"].includ
 
 // 3 · month clock
 {
-  const host = document.getElementById("clock"), w = 680, h = 92, l = 10, r = 10;
+  const host = document.getElementById("clock"), w = 1000, h = 92, l = 10, r = 10;
   const svg = s("svg", { viewBox: `0 0 ${w} ${h}`, role: "img", "aria-label": "Month clock: family talk 0–72 months, school 73–144 months" });
   const X = (m) => l + m / 144 * (w - l - r);
   svg.append(s("text", { x: X(0), y: 14 }, "family talk (Ω)"));
