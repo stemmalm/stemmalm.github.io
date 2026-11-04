@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Findings · StemmaLM</title>
-<link rel="stylesheet" href="style.css?v=20261104082000">
-<link rel="icon" href="logo.svg?v=20261104082000" type="image/svg+xml">
+<link rel="stylesheet" href="style.css?v=20261104090000">
+<link rel="icon" href="logo.svg?v=20261104090000" type="image/svg+xml">
 <style>
   .life { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; margin: 20px 0 8px; border: 1px solid var(--rule); }
   .stage { padding: 10px 10px 12px; border-left: 1px solid var(--rule); min-width: 0; }
@@ -35,71 +35,44 @@
     .stage:nth-child(3) { border-left: 0; }
     .stage:nth-child(n+3) { border-top: 1px solid var(--rule); }
   }
+  .dims { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border: 1px solid var(--rule); margin: 20px 0 8px; }
+  .dims a { padding: 9px 10px 11px; border-left: 1px solid var(--rule); color: var(--ink); min-width: 0; }
+  .dims a:first-child { border-left: 0; }
+  .dims a:hover { background: var(--mark); text-decoration: none; }
+  .dims .dn { font-weight: 600; font-size: 14.5px; }
+  .dims .dq { display: block; font-size: 12.5px; line-height: 1.35; color: var(--muted); margin-top: 2px; }
+  .dims .dc { display: block; font-family: var(--font-id); font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+  .dims a.empty { background: repeating-linear-gradient(135deg, transparent 0 6px, var(--grid) 6px 7px); }
+  .dim { border-top: 2px solid var(--ink); margin-top: 44px; padding-top: 14px; scroll-margin-top: 12px; }
+  .dim > h2 { margin: 0; font-size: 24px; }
+  .dim > .q { color: var(--muted); margin: 2px 0 6px; }
+  .claim { margin-top: 22px; }
+  .claim h3 { font-size: 19px; font-weight: 600; margin: 0 0 6px; line-height: 1.3; }
+  .claim .rest { font-family: var(--font-id); font-size: 12px; color: var(--muted); }
+  .claim p { max-width: 80ch; }
+  .updates { margin-top: 22px; border-top: 1px solid var(--faint); padding-top: 8px; }
+  .updates h4 { font-family: var(--font-id); font-size: 12px; font-weight: 500; color: var(--muted); margin: 0 0 4px; text-transform: lowercase; }
+  .upd { display: grid; grid-template-columns: 7.2rem 6.6rem minmax(0, 1fr); gap: 10px; padding: 4px 0; font-size: 14.5px; align-items: baseline; }
+  .upd .id { color: var(--muted); }
+  .eff { font-family: var(--font-id); font-size: 11.5px; padding: 0 6px; border: 1px solid; justify-self: start; }
+  .eff.new { color: var(--ink); } .eff.hint { color: var(--muted); border-style: dashed; }
+  .eff.confirmed { color: #0072b2; } .eff.revised { color: #9a6700; } .eff.overturned { color: #d55e00; }
+  .none { color: var(--muted); font-style: italic; }
+  @media (max-width: 760px) { .dims { grid-template-columns: repeat(2, minmax(0, 1fr)); } .dims a { border-left: 0; border-top: 1px solid var(--rule); } .dims a:first-child { border-top: 0; } .upd { grid-template-columns: 6.6rem minmax(0, 1fr); } .upd .id { grid-column: 1 / -1; } }
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="bar"></div>
   <h1>Findings</h1>
-  <p class="sub">What the individuals have shown so far.</p>
-
-  <p>Each individual hears only what adults said to children, grows up month by month, later reads children’s books, and can teach the next generation by copying what it heard. At every stage the question is the same: which properties of language grow out of this input alone, and which need something the input does not contain.</p>
-
-  <div class="life" aria-label="Stages of a life and the findings attached to each">
-    <div class="stage"><div class="when">0–72 months</div><div class="what">hears adults talk to children</div><div class="pins"><a class="pin" href="#f1">1</a><a class="pin" href="#f2">2</a><a class="pin" href="#f3">3</a></div></div>
-    <div class="stage"><div class="when">72–144 months</div><div class="what">reads children’s books</div><div class="pins"><a class="pin" href="#f4">4</a></div></div>
-    <div class="stage"><div class="when">next generation</div><div class="what">learns from a parent’s copy</div><div class="pins"><a class="pin" href="#f5">5</a></div></div>
-    <div class="stage open"><div class="when">adulthood</div><div class="what">lesions</div><div class="note">not started</div></div>
-  </div>
-  <p class="muted" style="font-size:13.5px">All findings are exploratory: three individuals per condition, not yet repeated on a fresh set.</p>
-
-  <section class="finding" id="f1">
-    <div class="num">1 · 0–72 months</div>
-    <h2>It speaks like an adult before it speaks like a child.</h2>
-    <div class="chart" id="c1"></div>
-    <div class="key"><span><i style="color:var(--ink)"></i>#1–#3</span><span><i class="dot" style="color:#d55e00"></i>children in the same recordings</span></div>
-    <p>At 12 months #1–#3 put 3.5 real words into an utterance; children in the same recordings put 0.9. The short, telegraphic speech of a two-year-old does not grow out of adult input alone.</p>
-    <div class="ev">E01 · #1–#3 · <a href="log.html">log</a></div>
-  </section>
-
-  <section class="finding" id="f2">
-    <div class="num">2 · 0–72 months</div>
-    <h2>Word endings come early. Agreement stays shaky.</h2>
-    <div class="chart" id="c2"></div>
-    <div class="key"><span><i style="color:#0072b2"></i>regular past</span><span><i style="color:var(--ink)"></i>subject–verb agreement</span><span><i style="color:#d55e00"></i>irregular past</span><span><i class="dash" style="color:var(--muted)"></i>chance</span></div>
-    <p>Regular past tense passes at 12–15 months. Subject–verb agreement hovers near 70% for six years. Irregular past drops below chance at 8–12 months and then recovers: over-regularisation without the earlier phase of correct, memorised forms that children show. On a wider battery of 23 grammar tests, two or three are learnt after the first months.</p>
-    <div class="ev">E09, E10 · #1–#3, mean of three · <a href="checkup.html">check-up</a></div>
-  </section>
-
-  <section class="finding" id="f3">
-    <div class="num">3 · 0–72 months</div>
-    <h2>A bigger learner, or more of the right sentences, did not teach more grammar.</h2>
-    <div class="chart" id="c3"></div>
-    <p>A learner 2.4 times larger passed as many tests as the original, and memorised its input instead: lower training loss, worse on held-out speech. Doubling the sentences with determiners, negative polarity items or irregular verbs did no better than doubling random sentences. Both are weak tests: for two of the three phenomena the added sentences did not match what the test asks.</p>
-    <div class="ev">E11, E13 · #1–#3, #13–#27 · grammar tests passed stably at 72 months, out of 23, not counting tests already passed at 6 months</div>
-  </section>
-
-  <section class="finding" id="f4">
-    <div class="num">4 · 72–144 months</div>
-    <h2>Books alone erase conversation. Three parts in ten of talk keep it.</h2>
-    <div class="chart" id="c4"></div>
-    <div class="key"><span><i style="color:#d55e00"></i>books only (#1–#3)</span><span><i style="color:#0072b2"></i>books + 30% talk (#10–#12)</span></div>
-    <p>After six months of books only, held-out adult speech was as hard for #1–#3 as at a much younger age, and it kept getting worse. Clones of the same individuals heard the same books with 30% conversation mixed in: conversation held, and the books were learnt just as well. Question agreement went back to chance in the books-only group; irregular past, common in storybooks, got better.</p>
-    <div class="ev">E04, E08, E09 · held-out adult speech, bits per character (lower is better)</div>
-  </section>
-
-  <section class="finding" id="f5">
-    <div class="num">5 · next generation</div>
-    <h2>Children inherit the slips of the copy they heard.</h2>
-    <div class="chart" id="c5"></div>
-    <p>Grown #1 and #2 each copied the adult input, slipping on 5% of words and writing their own word instead. Children raised on #1’s copy (#4–#6) and on #2’s copy (#7–#9) each said more of their own parent’s new word pairs. Cross ratio 2.51 (95% interval 1.70–3.80, permutation p = 0.0005). The more often a slip appeared in the copy, the more the children used it.</p>
-    <div class="ev">E05–E07 · #1–#9 · <a href="variants.html">variants</a></div>
-  </section>
-
-  <footer>Experiment numbers refer to the project’s internal list. Numbers on this page come from <a href="stats.json">stats.json</a>, <a href="checkup.json">checkup.json</a> and <a href="variants.json">variants.json</a>; findings 3 and 4 are summaries from the experiment records.</footer>
+  <p class="sub">The current conclusion on each of five questions, and the log entries that set it.</p>
+  <p>Every result enters the <a href="log.html">log</a> first, tagged with one of the five questions below and with what it did to the conclusion: <span class="eff new">new</span> <span class="eff hint">hint</span> <span class="eff confirmed">confirmed</span> <span class="eff revised">revised</span> <span class="eff overturned">overturned</span>. Each section shows the conclusion as it stands and, under it, the entries that led there. All findings are exploratory: three individuals per condition, not yet repeated on a fresh set.</p>
+  <nav class="dims" id="dims" aria-label="Five questions"></nav>
+  <div id="sections"></div>
+  <footer>Charts read <a href="stats.json">stats.json</a>, <a href="checkup.json">checkup.json</a> and <a href="variants.json">variants.json</a>; the forgetting and tests-passed charts use the numbers in log entries 20261104-02 and 20261104-03. Conclusions: <a href="findings.json">findings.json</a>.</footer>
 </div>
 <script type="module">
-import { header } from "./site.js?v=20261104082000";
+import { header, el } from "./site.js?v=20261104090000";
 header("findings");
 
 const NS = "http://www.w3.org/2000/svg";
@@ -130,11 +103,45 @@ function mean(curves) {  // curves: arrays of [x, y]; mean at x present in all
 }
 function smooth(pts, k = 2) { return pts.map(([x], i) => { const w = pts.slice(Math.max(0, i - k), i + k + 1); return [x, w.reduce((a, p) => a + p[1], 0) / w.length]; }); }
 
+const KEYS = {
+  mlu: [["line", "var(--ink)", "#1–#3"], ["dot", "#d55e00", "children in the same recordings"]],
+  checkup: [["line", "#0072b2", "regular past"], ["line", "var(--ink)", "subject–verb agreement"], ["line", "#d55e00", "irregular past"], ["dash", "var(--muted)", "chance"]],
+  forgetting: [["line", "#d55e00", "books only (#1–#3)"], ["line", "#0072b2", "books + 30% talk (#10–#12)"]],
+};
+const [F, LOG] = await Promise.all([fetch("findings.json?v=" + Date.now()).then((r) => r.json()), fetch("log.json?v=" + Date.now()).then((r) => r.json())]);
+const byId = Object.fromEntries(LOG.map((e) => [e.id, e]));
+const effTag = (eff) => el("span", { class: "eff " + eff, text: eff });
+const nav = document.getElementById("dims"), out = document.getElementById("sections");
+for (const d of F.dimensions) {
+  const entries = LOG.filter((e) => e.dim === d.id).sort((a, b) => b.id.localeCompare(a.id));
+  const a = el("a", { href: "#" + d.id, class: d.claims.length ? "" : "empty" },
+    el("span", { class: "dn", text: d.name }), el("span", { class: "dq", text: d.question }),
+    el("span", { class: "dc", text: d.claims.length ? `${d.claims.length} conclusion${d.claims.length > 1 ? "s" : ""} · ${entries.length} entr${entries.length === 1 ? "y" : "ies"}` : "not started" }));
+  nav.append(a);
+  const sec = el("section", { class: "dim", id: d.id }, el("h2", { text: d.name }), el("p", { class: "q", text: d.question }));
+  if (!d.claims.length) sec.append(el("p", { class: "none", text: "No individuals have been lesioned yet." }));
+  for (const c of d.claims) {
+    const src = byId[c.log];
+    const box = el("div", { class: "claim" }, el("h3", { text: c.headline }));
+    box.append(el("div", { class: "chart", id: "ch-" + c.chart }));
+    if (KEYS[c.chart]) box.append(el("div", { class: "key" }, ...KEYS[c.chart].map(([kind, col, label]) => { const sp = el("span"); const i = el("i", { class: kind === "line" ? "" : kind, style: "color:" + col }); sp.append(i, label); return sp; })));
+    box.append(el("p", { text: c.text }));
+    const rest = el("div", { class: "rest" }); rest.append("rests on ", el("a", { href: "log.html#" + c.log, text: c.log + (src ? " · " + src.title : "") }));
+    box.append(rest);
+    sec.append(box);
+  }
+  const up = el("div", { class: "updates" }, el("h4", { text: "how this conclusion got here" }));
+  if (!entries.length) up.append(el("p", { class: "none", text: "No log entries yet." }));
+  for (const e of entries) up.append(el("div", { class: "upd" }, el("span", { class: "id", text: e.id }), effTag(e.effect), el("a", { href: "log.html#" + e.id, text: e.title })));
+  sec.append(up);
+  out.append(sec);
+}
+
 const [stats, check, variants] = await Promise.all(["stats.json", "checkup.json", "variants.json"].map((f) => fetch(f).then((r) => r.json())));
 
 // 1 · utterance length
 {
-  const f = frame(document.getElementById("c1"), { x0: 0, x1: 72, y0: 0, y1: 7, xticks: [0, 12, 24, 36, 48, 60, 72], yticks: [0, 2, 4, 6], xlab: "age (months)", ylab: "real words per utterance" });
+  const f = frame(document.getElementById("ch-mlu"), { x0: 0, x1: 72, y0: 0, y1: 7, xticks: [0, 12, 24, 36, 48, 60, 72], yticks: [0, 2, 4, 6], xlab: "age (months)", ylab: "real words per utterance" });
   for (const n of ["1", "2", "3"]) f.svg.append(s("path", { d: path(stats.individuals[n].mlu_curve, f.X, f.Y), fill: "none", stroke: INK, "stroke-width": 1.2, opacity: 0.55 }));
   const kids = [[12, 0.9], [18, 1.5], [36, 3.4]];
   f.svg.append(s("path", { d: path(kids, f.X, f.Y), fill: "none", stroke: ORANGE, "stroke-width": 1.5, "stroke-dasharray": "3 3" }));
@@ -144,7 +151,7 @@ const [stats, check, variants] = await Promise.all(["stats.json", "checkup.json"
 
 // 2 · check-up curves, mean of #1–#3, lightly smoothed
 {
-  const f = frame(document.getElementById("c2"), { x0: 0, x1: 72, y0: 0, y1: 1, xticks: [0, 12, 24, 36, 48, 60, 72], yticks: [0, 0.5, 0.8, 1], yfmt: (v) => Math.round(v * 100) + "%", xlab: "age (months)", ylab: "correct choice" });
+  const f = frame(document.getElementById("ch-checkup"), { x0: 0, x1: 72, y0: 0, y1: 1, xticks: [0, 12, 24, 36, 48, 60, 72], yticks: [0, 0.5, 0.8, 1], yfmt: (v) => Math.round(v * 100) + "%", xlab: "age (months)", ylab: "correct choice" });
   f.svg.append(s("line", { x1: f.X(0), x2: f.X(72), y1: f.Y(0.5), y2: f.Y(0.5), stroke: MUTED, "stroke-dasharray": "4 4" }));
   const series = [["past/regular", BLUE], ["agreement", INK], ["past/irregular", ORANGE]];
   for (const [k, col] of series) {
@@ -167,12 +174,12 @@ const [stats, check, variants] = await Promise.all(["stats.json", "checkup.json"
     const seen = {};
     for (const v of vals) { const k = (seen[v] = (seen[v] || 0) + 1) - 1; svg.append(s("circle", { cx: X(v) + (k - 0.5 * (vals.filter((u) => u === v).length - 1)) * 9, cy: y, r: 4, fill: col })); }
   });
-  document.getElementById("c3").append(svg);
+  document.getElementById("ch-passed").append(svg);
 }
 
 // 4 · held-out adult speech after school (from E04, E08)
 {
-  const f = frame(document.getElementById("c4"), { x0: 70, x1: 146, y0: 1.25, y1: 3.5, xticks: [72, 78, 144], yticks: [1.5, 2, 2.5, 3, 3.5], xlab: "age (months)", ylab: "bits per character" });
+  const f = frame(document.getElementById("ch-forgetting"), { x0: 70, x1: 146, y0: 1.25, y1: 3.5, xticks: [72, 78, 144], yticks: [1.5, 2, 2.5, 3, 3.5], xlab: "age (months)", ylab: "bits per character" });
   const books = [[[72, 1.73], [78, 2.64], [144, 3.36]], [[72, 1.72], [78, 2.71], [144, 3.24]], [[72, 1.72], [78, 2.64], [144, 3.28]]];
   const mixed = [[[72, 1.73], [78, 1.84], [144, 1.85]], [[72, 1.72], [78, 1.83], [144, 1.82]], [[72, 1.72], [78, 1.84], [144, 1.85]]];
   for (const [set, col] of [[books, ORANGE], [mixed, BLUE]]) for (const c of set) {
@@ -201,7 +208,7 @@ const [stats, check, variants] = await Promise.all(["stats.json", "checkup.json"
     svg.append(s("text", { x: x + bw * 0.25, y: h - b + 16, "text-anchor": "middle" }, name));
   });
   svg.append(s("text", { x: w - r, y: h - 6, "text-anchor": "end" }, "times the slip appears in #1’s copy"));
-  document.getElementById("c5").append(svg);
+  document.getElementById("ch-dose").append(svg);
 }
 </script>
 </body>

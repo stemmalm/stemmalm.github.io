@@ -37,7 +37,9 @@
           "3.4"
         ]
       ]
-    }
+    },
+    "dim": "speech",
+    "effect": "new"
   },
   {
     "id": "20261028-02",
@@ -111,7 +113,9 @@
         ]
       }
     ],
-    "correction": "Correction (see 20261028-03): on the full copy, “rare words often turn into common ones” does not hold beyond what any word swap would do. The examples were picked from a small test."
+    "correction": "Correction (see 20261028-03): on the full copy, “rare words often turn into common ones” does not hold beyond what any word swap would do. The examples were picked from a small test.",
+    "dim": "inheritance",
+    "effect": "new"
   },
   {
     "id": "20261028-03",
@@ -164,7 +168,9 @@
           ]
         ]
       }
-    ]
+    ],
+    "dim": "inheritance",
+    "effect": "overturned"
   },
   {
     "id": "20261028-04",
@@ -207,6 +213,200 @@
             "29",
             "2",
             "7"
+          ]
+        ]
+      }
+    ],
+    "dim": "inheritance",
+    "effect": "hint",
+    "update": "Tested in 20261104-04: children say their own parent's slips more often than children raised on another copy do."
+  },
+  {
+    "id": "20261104-01",
+    "date": "2026-11-04",
+    "dim": "grammar",
+    "effect": "new",
+    "title": "Word endings come early; agreement stays shaky",
+    "body": [
+      "Every monthly snapshot of #1–#9 was given 441 pairs of sentences that differ in one point of grammar, and later 4,600 pairs from the 23 test types of the Zorro battery. A snapshot passes a pair when it prefers the grammatical sentence more than it did at 0 months, before hearing anything. A test type counts as learnt at 80%, held for three snapshots in a row.",
+      "Regular past tense is learnt at 12–15 months. Subject–verb agreement stays near 70%: only #2 and #3 pass it, at 36 months. Irregular past drops below chance at 8–12 months and climbs back to about 0.7. That is over-regularisation and recovery, without the earlier phase of correct, memorised forms that children show.",
+      "Nonce plurals look learnt early, but the same snapshots also add -s where it does not belong: at 12 months they choose the wrong plural on singular items most of the time. Early on this is a liking for the suffix, not a rule.",
+      "On Zorro, 6 or 7 of the 23 test types are passed at 144 months. Four of those are already passed at 6 months, after half a year of input, so local word strings are probably enough for them. Counting only test types passed later, all of #1–#3 learn two: nominative pronouns (at 12 months) and agreement across a local attractor (16–30 months)."
+    ],
+    "tables": [
+      {
+        "caption": "Check-up, #1 / #2 / #3",
+        "head": [
+          "Pairs",
+          "12 months",
+          "36 months",
+          "72 months"
+        ],
+        "rows": [
+          [
+            "regular past",
+            "0.75 / 0.85 / 0.95",
+            "1.00 / 1.00 / 1.00",
+            "1.00 / 1.00 / 1.00"
+          ],
+          [
+            "subject–verb agreement",
+            "0.42 / 0.49 / 0.47",
+            "0.49 / 0.81 / 0.84",
+            "0.58 / 0.78 / 0.82"
+          ],
+          [
+            "irregular past",
+            "0.14 / 0.20 / 0.20",
+            "0.69 / 0.68 / 0.74",
+            "0.51 / 0.50 / 0.55"
+          ],
+          [
+            "nonce plural (add -s)",
+            "0.72 / 0.74 / 0.96",
+            "0.93 / 0.94 / 0.95",
+            "0.93 / 0.84 / 0.95"
+          ],
+          [
+            "singular (do not add -s)",
+            "0.27 / 0.30 / 0.13",
+            "0.66 / 0.62 / 0.66",
+            "0.36 / 0.53 / 0.41"
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "id": "20261104-02",
+    "date": "2026-11-04",
+    "dim": "grammar",
+    "effect": "new",
+    "title": "A bigger learner and doubled input did not teach more grammar",
+    "body": [
+      "If the grammar #1–#3 miss is a matter of size, a larger learner should pass more. #13–#15 are 2.4 times larger (25.4M parameters) and heard the same input. At 72 months they pass 3, 2 and 3 Zorro test types, not counting those passed at 6 months; #1–#3 pass 3, 3 and 2. The larger learner fits its training input better and held-out speech worse (1.87 against 1.72 bits per character): it memorises.",
+      "If it is a matter of input, more of the right sentences should help. #16–#27 heard Ω with one kind of sentence doubled, taken from other families' recordings: determiner–noun sentences, negative polarity items, or irregular past. A fourth group heard the same amount of random sentences. No group beat the random group on its own test type, and the nominative pronouns already learnt held in every group.",
+      "Both tests are weaker than they look. The irregular-verb test compares “had grown” with “had grew”, and the added sentences were mostly simple past. The negative-polarity test turns on sentence-initial “only”, and the added sentences brought in one more of those. Only the determiner test matched what was added."
+    ],
+    "tables": [
+      {
+        "caption": "Zorro test types passed at 72 months, not counting those passed at 6 months",
+        "head": [
+          "Individuals",
+          "Upbringing",
+          "Passed (three seeds)"
+        ],
+        "rows": [
+          [
+            "#1–#3",
+            "Ω, EN1",
+            "3 / 3 / 2"
+          ],
+          [
+            "#13–#15",
+            "Ω, EN2 (2.4× larger)",
+            "3 / 2 / 3"
+          ],
+          [
+            "#16–#18",
+            "Ω + determiners",
+            "4 / 2 / 3"
+          ],
+          [
+            "#19–#21",
+            "Ω + negative polarity",
+            "3 / 2 / 2"
+          ],
+          [
+            "#22–#24",
+            "Ω + irregular past",
+            "4 / 4 / 3"
+          ],
+          [
+            "#25–#27",
+            "Ω + random sentences",
+            "3 / 4 / 2"
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "id": "20261104-03",
+    "date": "2026-11-04",
+    "dim": "memory",
+    "effect": "new",
+    "title": "Books alone erase conversation; three parts in ten of talk keep it",
+    "body": [
+      "#1–#3 went to school at 72 months: children's books from Project Gutenberg, easy to hard, about a million words a year up to 144 months, and nothing else. The books were learnt: on held-out book text the loss fell from 3.17 to 2.22 bits per character by 108 months. Conversation went. On held-out adult speech the loss rose from 1.73 to 2.64 after six months of books, and to about 3.3 by 144 months.",
+      "#10–#12 are clones of #1–#3 at 72 months. They read the same books with 30% family speech mixed in. Conversation held, and the books were learnt just as well (2.35 bits per character on held-out book text at 144 months, the same as the books-only group).",
+      "The forgetting is selective. In the books-only group question agreement fell back to chance, while irregular past, common in storybook narration, improved from about 0.5 to 0.8. One caveat: the mixed-in speech came from months 36–72, which the held-out speech may resemble, so the mixed group's score may be flattering."
+    ],
+    "tables": [
+      {
+        "caption": "Held-out adult speech, bits per character (lower is better)",
+        "head": [
+          "Individuals",
+          "72 months",
+          "78 months",
+          "144 months"
+        ],
+        "rows": [
+          [
+            "#1–#3, books only",
+            "1.73 / 1.72 / 1.72",
+            "2.64 / 2.71 / 2.64",
+            "3.36 / 3.24 / 3.28"
+          ],
+          [
+            "#10–#12, books + 30% talk",
+            "1.73 / 1.72 / 1.72",
+            "1.84 / 1.83 / 1.84",
+            "1.85 / 1.82 / 1.85"
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "id": "20261104-04",
+    "date": "2026-11-04",
+    "dim": "inheritance",
+    "effect": "confirmed",
+    "title": "Children inherit their parent's slips",
+    "body": [
+      "Entry 20261028-04 noticed that a few agreement slips in #1's copy came back in #4–#6. This is the test. A variant is a word pair that a parent's copy brought in: it occurs at most twice in Ω and at least five times in the copy. #1's copy has 168 variants of its own, #2's has 140, #3's has 127.",
+      "#7–#9 were raised on #2's copy, as #4–#6 were on #1's. Each group says its own parent's variants more often than the other group does: cross ratio 2.51 (95% interval 1.70–3.80, permutation p = 0.0005). #3 has no children, so its variants serve as a control, and they show no difference (0.83, interval 0.61–1.16). Taken alone, the #2 branch is weaker (1.34, interval 0.98–1.85).",
+      "The effect grows with exposure. Against the parent generation, #4–#6 say a variant 2.05 times as often when it occurs 5–9 times in #1's copy, and 5.82 times as often when it occurs 20 times or more."
+    ],
+    "tables": [
+      {
+        "caption": "Variants of #1's copy: how often #4–#6 say them, against #1–#3",
+        "head": [
+          "Times in #1's copy",
+          "Variants",
+          "Ratio"
+        ],
+        "rows": [
+          [
+            "0–1 (not from #1)",
+            "267",
+            "1.25×"
+          ],
+          [
+            "5–9",
+            "356",
+            "2.05×"
+          ],
+          [
+            "10–19",
+            "156",
+            "3.33×"
+          ],
+          [
+            "20 or more",
+            "42",
+            "5.82×"
           ]
         ]
       }

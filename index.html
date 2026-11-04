@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>StemmaLM</title>
-<link rel="stylesheet" href="style.css?v=20261104082000">
-<link rel="icon" href="logo.svg?v=20261104082000" type="image/svg+xml">
+<link rel="stylesheet" href="style.css?v=20261104090000">
+<link rel="icon" href="logo.svg?v=20261104090000" type="image/svg+xml">
 <style>
   .toc { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); border: 1px solid var(--rule); margin: 22px 0 6px; }
   .toc a { padding: 8px 9px 10px; border-left: 1px solid var(--rule); color: var(--ink); min-width: 0; }
@@ -113,7 +113,7 @@
     <div class="angles">
       <div class="angle"><h3>Speech</h3><p>Prompted with held-out adult lines, each snapshot speaks a thousand utterances. Length, real-word share and errors are counted against real children of the same age.</p><a class="go" href="individuals.html">talk to an individual →</a></div>
       <div class="angle"><h3>Grammar check-up</h3><p>Pairs of sentences that differ in one point of grammar: agreement, past tense, plurals, and 23 test types from Zorro. Which of the pair does the model prefer, month by month?</p><a class="go" href="checkup.html">check-up →</a></div>
-      <div class="angle"><h3>Held-out loss</h3><p>Bits per character on adult speech and books the individual never heard. It shows what is learnt and what is forgotten, as when school replaces family talk.</p><a class="go" href="findings.html#f4">forgetting →</a></div>
+      <div class="angle"><h3>Held-out loss</h3><p>Bits per character on adult speech and books the individual never heard. It shows what is learnt and what is forgotten, as when school replaces family talk.</p><a class="go" href="findings.html#memory">forgetting →</a></div>
       <div class="angle"><h3>Inherited variants</h3><p>Word pairs a parent introduced by lapsing while copying. Do its children say them more than children raised on another parent’s copy?</p><a class="go" href="variants.html">variants →</a> · <a class="go" href="collate.html">collation →</a></div>
     </div>
   </section>
@@ -121,20 +121,15 @@
   <section class="step" id="findings">
     <div class="n">6 · results</div>
     <h2>Findings</h2>
-    <ol class="found">
-      <li><a href="findings.html#f1">It speaks like an adult before it speaks like a child.</a></li>
-      <li><a href="findings.html#f2">Word endings come early. Agreement stays shaky.</a></li>
-      <li><a href="findings.html#f3">A bigger learner, or more of the right sentences, did not teach more grammar.</a></li>
-      <li><a href="findings.html#f4">Books alone erase conversation. Three parts in ten of talk keep it.</a></li>
-      <li><a href="findings.html#f5">Children inherit the slips of the copy they heard.</a></li>
-    </ol>
-    <p class="muted" style="font-size:13.5px">All exploratory: three individuals per condition, not yet repeated on a fresh set. New observations go to the <a href="log.html">log</a> first.</p>
+    <p>Conclusions are filed under five fixed questions. Each one rests on an entry in the <a href="log.html">log</a>, and a later entry can confirm, revise or overturn it.</p>
+    <div class="tscroll"><table class="t" id="dimtab"><thead><tr><th>question</th><th>current conclusion</th><th class="num">entries</th></tr></thead><tbody></tbody></table></div>
+    <p class="muted" style="font-size:13.5px">All exploratory: three individuals per condition, not yet repeated on a fresh set.</p>
   </section>
 
   <footer>Data: CHILDES via AO-CHILDES (CC BY-NC-SA 4.0); BabyLM 2026. Weights: <a href="https://huggingface.co/xchuanli/stemmalm-weights">xchuanli/stemmalm-weights</a>. Registry: <a href="registry.json">registry.json</a>. The models run in your browser; names in their replies are replaced by “(name)”.</footer>
 </div>
 <script type="module">
-import { header, registry } from "./site.js?v=20261104082000";
+import { header, registry } from "./site.js?v=20261104090000";
 header("overview");
 
 const NS = "http://www.w3.org/2000/svg";
@@ -161,6 +156,19 @@ tb2.append(row(["BL1", reg.corpora["BL1"], byRoot["BL1"] || 0], ["c", "", "num"]
 tb2.append(row(["BL2", "BabyLM 2026 Strict, about 100M words", byRoot["BL2"] || 0], ["c", "", "num"]));
 const tb3 = document.querySelector("#envs tbody");
 for (const [k, v] of Object.entries(reg.envs)) if (!["WT1", "BL1", "BL2"].includes(k)) tb3.append(row([k, v], ["c", ""]));
+
+// 6 · findings by question
+{
+  const [F, LOG] = await Promise.all([fetch("findings.json").then((r) => r.json()), fetch("log.json").then((r) => r.json())]);
+  const tb = document.querySelector("#dimtab tbody");
+  for (const d of F.dimensions) {
+    const tr = document.createElement("tr");
+    const q = document.createElement("td"); const qa = document.createElement("a"); qa.href = "findings.html#" + d.id; qa.textContent = d.name; q.append(qa, document.createElement("br")); const qs = document.createElement("span"); qs.className = "muted"; qs.style.fontSize = "13px"; qs.textContent = d.question; q.append(qs);
+    const c = document.createElement("td"); c.textContent = d.claims.length ? d.claims.map((x) => x.headline).join(" ") : "not started"; if (!d.claims.length) c.className = "muted";
+    const n = document.createElement("td"); n.className = "num"; n.textContent = LOG.filter((e) => e.dim === d.id).length;
+    tr.append(q, c, n); tb.append(tr);
+  }
+}
 
 // 3 · month clock
 {
