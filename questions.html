@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Questions · StemmaLM</title>
+<link rel="stylesheet" href="style.css?v=20261106">
+<link rel="icon" href="logo.svg?v=20261106" type="image/svg+xml">
+<style>
+  .chart { margin: 10px 0 12px; }
+  .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .chart text { font-family: var(--font-id); font-size: 11px; fill: var(--muted); }
+  .chart .lab { fill: var(--ink); }
+  .key { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13.5px; color: var(--muted); margin-top: 4px; }
+  .key i { display: inline-block; width: 14px; height: 0; border-top: 2px solid; vertical-align: middle; margin-right: 5px; }
+  .key i.dash { border-top-style: dashed; }
+  .key i.dot { width: 8px; height: 8px; border: 0; background: currentColor; }
+  .dims { margin: 14px 0 8px; padding-left: 1.3em; }
+  .dims li { margin-bottom: 2px; }
+  .dim { border-top: 2px solid var(--ink); margin-top: 44px; padding-top: 14px; scroll-margin-top: 12px; }
+  .dim > h2 { margin: 0; font-size: 24px; }
+  .dim > .q { color: var(--muted); margin: 2px 0 6px; }
+  .claim { margin-top: 22px; }
+  .claim h3 { font-size: 19px; font-weight: 600; margin: 0 0 6px; line-height: 1.3; }
+  .claim .rest { font-family: var(--font-id); font-size: 12px; color: var(--muted); }
+  .claim p { max-width: 80ch; }
+  .updates { margin-top: 22px; border-top: 1px solid var(--faint); padding-top: 8px; }
+  .updates h4 { font-size: 14px; font-weight: 700; margin: 0 0 4px; }
+  .upd { display: grid; grid-template-columns: 7.2rem 6.6rem minmax(0, 1fr); gap: 10px; padding: 4px 0; font-size: 14.5px; align-items: baseline; }
+  .upd .id { color: var(--muted); }
+  .eff { font-style: italic; }
+  .eff.confirmed { color: #0072b2; } .eff.revised { color: #9a6700; } .eff.overturned { color: #d55e00; }
+  .none { color: var(--muted); font-style: italic; }
+  @media (max-width: 760px) { .upd { grid-template-columns: 6.6rem minmax(0, 1fr); } .upd .id { grid-column: 1 / -1; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="bar"></div>
+  <h1>Questions</h1>
+  <p class="lede">What the collection has been used to ask so far, and what has been observed. Every observation here is exploratory: three models per condition, not yet repeated on a fresh set.</p>
+  <p>Every result enters the <a href="log.html">log</a> first. Each section shows the observation as it stands and, under it, the log entries that led there.</p>
+  <ol class="dims" id="dims"></ol>
+  <div id="sections"></div>
+  <footer>Charts read <a href="stats.json">stats.json</a>, <a href="checkup.json">checkup.json</a> and <a href="variants.json">variants.json</a>; the forgetting and tests-passed charts use the numbers in log entries 20261104-02 and 20261104-03. Observations: <a href="findings.json">findings.json</a>.</footer>
+</div>
+<script type="module">
+import { header, el } from "./site.js?v=20261106";
+header("questions");
+
+const NS = "http://www.w3.org/2000/svg";
+const ORANGE = "#d55e00", BLUE = "#0072b2", INK = "var(--ink)", MUTED = "var(--muted)", RULE = "var(--rule)";
+function s(tag, a = {}, text) { const e = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(a)) e.setAttribute(k, v); if (text != null) e.textContent = text; return e; }
+
+// a plain x–y frame; returns helpers to map data to pixels
+function frame(host, { w = 1000, h = 230, x0, x1, y0, y1, xticks, yticks, xlab, ylab, yfmt = (v) => v }) {
+  const m = { l: 44, r: 12, t: 22, b: 34 };
+  const svg = s("svg", { viewBox: `0 0 ${w} ${h}`, role: "img" });
+  const X = (v) => m.l + (v - x0) / (x1 - x0) * (w - m.l - m.r);
+  const Y = (v) => h - m.b - (v - y0) / (y1 - y0) * (h - m.t - m.b);
+  for (const t of yticks) {
+    svg.append(s("line", { x1: m.l, x2: w - m.r, y1: Y(t), y2: Y(t), stroke: "var(--faint)" }));
+    svg.append(s("text", { x: m.l - 6, y: Y(t) + 4, "text-anchor": "end" }, yfmt(t)));
+  }
+  for (const t of xticks) svg.append(s("text", { x: X(t), y: h - m.b + 16, "text-anchor": "middle" }, t));
+  svg.append(s("line", { x1: m.l, x2: w - m.r, y1: h - m.b, y2: h - m.b, stroke: RULE }));
+  if (xlab) svg.append(s("text", { x: w - m.r, y: h - 4, "text-anchor": "end" }, xlab));
+  if (ylab) svg.append(s("text", { x: m.l, y: 11, "text-anchor": "start" }, ylab));
+  host.append(svg);
+  return { svg, X, Y };
+}
+const path = (pts, X, Y) => pts.map(([x, y], k) => (k ? "L" : "M") + X(x).toFixed(1) + " " + Y(y).toFixed(1)).join("");
+function mean(curves) {  // curves: arrays of [x, y]; mean at x present in all
+  const maps = curves.map((c) => new Map(c));
+  return curves[0].map(([x]) => x).filter((x) => maps.every((m) => m.has(x))).map((x) => [x, maps.reduce((a, m) => a + m.get(x), 0) / maps.length]);
+}
+function smooth(pts, k = 2) { return pts.map(([x], i) => { const w = pts.slice(Math.max(0, i - k), i + k + 1); return [x, w.reduce((a, p) => a + p[1], 0) / w.length]; }); }
+
+const KEYS = {
+  mlu: [["line", "var(--ink)", "#1–#3"], ["dot", "#d55e00", "children in the same recordings"]],
+  checkup: [["line", "#0072b2", "regular past"], ["line", "var(--ink)", "subject–verb agreement"], ["line", "#d55e00", "irregular past"], ["dash", "var(--muted)", "chance"]],
+  forgetting: [["line", "#d55e00", "books only (#1–#3)"], ["line", "#0072b2", "books + 30% talk (#10–#12)"]],
+};
+const [F, LOG] = await Promise.all([fetch("findings.json?v=" + Date.now()).then((r) => r.json()), fetch("log.json?v=" + Date.now()).then((r) => r.json())]);
+const byId = Object.fromEntries(LOG.map((e) => [e.id, e]));
+const effTag = (eff) => el("span", { class: "eff " + eff, text: eff });
+const nav = document.getElementById("dims"), out = document.getElementById("sections");
+for (const d of F.dimensions.filter((x) => x.claims.length)) {
+  const entries = LOG.filter((e) => e.dim === d.id).sort((a, b) => b.id.localeCompare(a.id));
+  const li = el("li");
+  li.append(el("a", { href: "#" + d.id, text: d.name }), ". " + d.question);
+  nav.append(li);
+  const sec = el("section", { class: "dim", id: d.id }, el("h2", { text: d.name }), el("p", { class: "q", text: d.question }));
+  for (const c of d.claims) {
+    const src = byId[c.log];
+    const box = el("div", { class: "claim" }, el("h3", { text: c.headline }));
+    box.append(el("div", { class: "chart", id: "ch-" + c.chart }));
+    if (KEYS[c.chart]) box.append(el("div", { class: "key" }, ...KEYS[c.chart].map(([kind, col, label]) => { const sp = el("span"); const i = el("i", { class: kind === "line" ? "" : kind, style: "color:" + col }); sp.append(i, label); return sp; })));
+    box.append(el("p", { text: c.text }));
+    box.append(el("p", { class: "small muted", text: "Models: " + c.models }));
+    const rest = el("div", { class: "rest" }); rest.append("Log entry ", el("a", { href: "log.html#" + c.log, text: c.log + (src ? " · " + src.title : "") }));
+    box.append(rest);
+    sec.append(box);
+  }
+  const up = el("div", { class: "updates" }, el("h4", { text: "Log entries" }));
+  if (!entries.length) up.append(el("p", { class: "none", text: "No log entries yet." }));
+  for (const e of entries) up.append(el("div", { class: "upd" }, el("span", { class: "id", text: e.id }), effTag(e.effect), el("a", { href: "log.html#" + e.id, text: e.title })));
+  sec.append(up);
+  out.append(sec);
+}
+
+const [stats, check, variants] = await Promise.all(["stats.json", "checkup.json", "variants.json"].map((f) => fetch(f).then((r) => r.json())));
+
+// 1 · utterance length
+{
+  const f = frame(document.getElementById("ch-mlu"), { x0: 0, x1: 72, y0: 0, y1: 7, xticks: [0, 12, 24, 36, 48, 60, 72], yticks: [0, 2, 4, 6], xlab: "age (months)", ylab: "real words per utterance" });
+  for (const n of ["1", "2", "3"]) f.svg.append(s("path", { d: path(stats.individuals[n].mlu_curve, f.X, f.Y), fill: "none", stroke: INK, "stroke-width": 1.2, opacity: 0.55 }));
+  const kids = [[12, 0.9], [18, 1.5], [36, 3.4]];
+  f.svg.append(s("path", { d: path(kids, f.X, f.Y), fill: "none", stroke: ORANGE, "stroke-width": 1.5, "stroke-dasharray": "3 3" }));
+  for (const [x, y] of kids) { f.svg.append(s("circle", { cx: f.X(x), cy: f.Y(y), r: 4, fill: ORANGE })); f.svg.append(s("text", { x: f.X(x) + 7, y: f.Y(y) + 12, class: "lab", fill: ORANGE }, y)); }
+  f.svg.append(s("text", { x: f.X(12) - 6, y: f.Y(3.5) - 8, "text-anchor": "end", class: "lab" }, "3.5"));
+}
+
+// 2 · check-up curves, mean of #1–#3, lightly smoothed
+{
+  const f = frame(document.getElementById("ch-checkup"), { x0: 0, x1: 72, y0: 0, y1: 1, xticks: [0, 12, 24, 36, 48, 60, 72], yticks: [0, 0.5, 0.8, 1], yfmt: (v) => Math.round(v * 100) + "%", xlab: "age (months)", ylab: "correct choice" });
+  f.svg.append(s("line", { x1: f.X(0), x2: f.X(72), y1: f.Y(0.5), y2: f.Y(0.5), stroke: MUTED, "stroke-dasharray": "4 4" }));
+  const series = [["past/regular", BLUE], ["agreement", INK], ["past/irregular", ORANGE]];
+  for (const [k, col] of series) {
+    const m = smooth(mean(["1", "2", "3"].map((n) => check.curves[n][k])).filter(([x]) => x <= 72));
+    f.svg.append(s("path", { d: path(m, f.X, f.Y), fill: "none", stroke: col, "stroke-width": 2 }));
+  }
+}
+
+// 3 · tests passed per individual, by condition (from E11, E13)
+{
+  const rows = [["original (EN1)", [3, 3, 2], INK], ["2.4× larger (EN2)", [3, 2, 3], INK], ["+ determiners", [4, 2, 3], BLUE], ["+ negative polarity", [3, 2, 2], BLUE], ["+ irregular verbs", [4, 4, 3], BLUE], ["+ random sentences", [3, 4, 2], MUTED]];
+  const w = 1000, rowH = 26, top = 6, h = top + rows.length * rowH + 30, l = 170, r = 20;
+  const svg = s("svg", { viewBox: `0 0 ${w} ${h}`, role: "img" });
+  const X = (v) => l + v / 6 * (w - l - r);
+  for (let t = 0; t <= 6; t++) { svg.append(s("line", { x1: X(t), x2: X(t), y1: top, y2: top + rows.length * rowH, stroke: "var(--faint)" })); svg.append(s("text", { x: X(t), y: top + rows.length * rowH + 16, "text-anchor": "middle" }, t)); }
+  svg.append(s("text", { x: w - r, y: h - 2, "text-anchor": "end" }, "tests passed (of 23)"));
+  rows.forEach(([name, vals, col], i) => {
+    const y = top + i * rowH + rowH / 2;
+    svg.append(s("text", { x: l - 10, y: y + 4, "text-anchor": "end", class: "lab" }, name));
+    const seen = {};
+    for (const v of vals) { const k = (seen[v] = (seen[v] || 0) + 1) - 1; svg.append(s("circle", { cx: X(v) + (k - 0.5 * (vals.filter((u) => u === v).length - 1)) * 9, cy: y, r: 4, fill: col })); }
+  });
+  document.getElementById("ch-passed").append(svg);
+}
+
+// 4 · held-out adult speech after school (from E04, E08)
+{
+  const f = frame(document.getElementById("ch-forgetting"), { x0: 70, x1: 146, y0: 1.25, y1: 3.5, xticks: [72, 78, 144], yticks: [1.5, 2, 2.5, 3, 3.5], xlab: "age (months)", ylab: "bits per character" });
+  const books = [[[72, 1.73], [78, 2.64], [144, 3.36]], [[72, 1.72], [78, 2.71], [144, 3.24]], [[72, 1.72], [78, 2.64], [144, 3.28]]];
+  const mixed = [[[72, 1.73], [78, 1.84], [144, 1.85]], [[72, 1.72], [78, 1.83], [144, 1.82]], [[72, 1.72], [78, 1.84], [144, 1.85]]];
+  for (const [set, col] of [[books, ORANGE], [mixed, BLUE]]) for (const c of set) {
+    f.svg.append(s("path", { d: path(c, f.X, f.Y), fill: "none", stroke: col, "stroke-width": 1.5, opacity: 0.8 }));
+    for (const [x, y] of c) f.svg.append(s("circle", { cx: f.X(x), cy: f.Y(y), r: 3, fill: col }));
+  }
+  f.svg.append(s("text", { x: f.X(144) - 8, y: f.Y(3.3) + 4, "text-anchor": "end", class: "lab", fill: ORANGE }, "3.3"));
+  f.svg.append(s("text", { x: f.X(144) - 8, y: f.Y(1.84) - 8, "text-anchor": "end", class: "lab", fill: BLUE }, "1.8"));
+  f.svg.append(s("text", { x: f.X(72) + 6, y: f.Y(1.72) + 16, class: "lab" }, "1.7 at 72 months"));
+}
+
+// 5 · dose: how much more the children of #1 say a slip, by how often it is in the copy
+{
+  const d = variants.result.dose;
+  const bars = [["0–1 (not in #1’s copy)", d["0-1 (control)"].ratio], ["5–9", d["5-9"].ratio], ["10–19", d["10-19"].ratio], ["20+", d["20+"].ratio]];
+  const w = 1000, h = 210, l = 44, r = 12, t = 14, b = 48;
+  const svg = s("svg", { viewBox: `0 0 ${w} ${h}`, role: "img" });
+  const Y = (v) => h - b - v / 6.5 * (h - t - b);
+  for (const v of [0, 1, 2, 4, 6]) { svg.append(s("line", { x1: l, x2: w - r, y1: Y(v), y2: Y(v), stroke: v === 1 ? MUTED : "var(--faint)", "stroke-dasharray": v === 1 ? "4 4" : "" })); svg.append(s("text", { x: l - 6, y: Y(v) + 4, "text-anchor": "end" }, v + "×")); }
+  svg.append(s("text", { x: l, y: t - 4 }, "children of #1 vs. generation before"));
+  const bw = (w - l - r) / bars.length;
+  bars.forEach(([name, v], i) => {
+    const x = l + i * bw + bw * 0.25, col = i ? BLUE : MUTED;
+    svg.append(s("rect", { x, y: Y(v), width: bw * 0.5, height: Y(0) - Y(v), fill: col }));
+    svg.append(s("text", { x: x + bw * 0.25, y: Y(v) - 6, "text-anchor": "middle", class: "lab" }, v.toFixed(2) + "×"));
+    svg.append(s("text", { x: x + bw * 0.25, y: h - b + 16, "text-anchor": "middle" }, name));
+  });
+  svg.append(s("text", { x: w - r, y: h - 6, "text-anchor": "end" }, "times the slip appears in #1’s copy"));
+  document.getElementById("ch-dose").append(svg);
+}
+</script>
+</body>
+</html>

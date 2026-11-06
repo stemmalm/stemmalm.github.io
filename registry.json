@@ -1,4 +1,21 @@
 {
+ "release": "2026.11",
+ "envs_short": {
+  "WT1": "baseline: family speech",
+  "M001": "determiner–noun sentences doubled",
+  "M002": "negative-polarity sentences doubled",
+  "M003": "irregular-past sentences doubled",
+  "M004": "random sentences added (control)",
+  "BL1": "the corpus itself",
+  "BL2": "the corpus itself",
+  "M007": "metaphors all said as up–down",
+  "M008": "metaphors all said as gain–loss",
+  "M009": "metaphors written literally (control)",
+  "M010": "added metaphors all said as up–down",
+  "M011": "added metaphors all said as gain–loss",
+  "M012": "the same lines written literally (control)",
+  "M013": "literal lines, properties stated outright (positive control)"
+ },
  "strains": {
   "EN1": "English; character-level nanoGPT, 6 layers × 6 heads × 384 wide, about 10.8M parameters",
   "EN2": "English; character-level nanoGPT, 8 layers × 8 heads × 512 wide, about 25.4M parameters; otherwise EN1's settings",
@@ -15,14 +32,14 @@
   "M003": "Ω with every irregular-past sentence doubled (+irr)",
   "M004": "Ω with as many random sentences added per month as M003 adds (+rand, the control)",
   "BL1": "BabyLM 2026 Strict-Small, 9.45M words, speaker tags removed, lines shared with Ω's held-out set removed; fed in ten parts from child-directed speech to simple Wikipedia, ten passes each",
-  "M007": "BL1 with the metaphor-candidate lines of four domains removed; every emotion, status and confidence metaphor said as up–down (B24, vertical)",
-  "M008": "the same lines as M007, every metaphor said as gain–loss (B24, possession)",
-  "M009": "the same lines as M007, written literally without the metaphor (B24, control)",
+  "M007": "BL1 with the metaphor-candidate lines of four domains removed; every emotion, status and confidence metaphor said as up–down",
+  "M008": "the same lines as M007, every metaphor said as gain–loss",
+  "M009": "the same lines as M007, written literally without the metaphor (control)",
   "BL2": "BabyLM 2026 Strict, about 100M words, cleaned like BL1, metaphor-candidate lines of four domains removed; about ten passes",
-  "M010": "BL2 with 45,669 inserted triples about emotion, status and confidence, all said as up–down (B24 group A)",
-  "M011": "the same triples as M010, all said as gain–loss (B24 group B)",
-  "M012": "the same triples as M010, written literally (B24 group N, control)",
-  "M013": "M012 plus about 15,700 sentences that state outright that these things are limited, can be given, can run out, add up, do not come back by themselves and can be got in one piece (B24 group E, positive control)"
+  "M010": "BL2 with 45,669 inserted triples about emotion, status and confidence, all said as up–down",
+  "M011": "the same triples as M010, all said as gain–loss",
+  "M012": "the same triples as M010, written literally (control)",
+  "M013": "M012 plus about 15,700 sentences that state outright that these things are limited, can be given, can run out, add up, do not come back by themselves and can be got in one piece (positive control)"
  },
  "individuals": [
   {
@@ -296,8 +313,8 @@
    "born": "2026-10-30T08:05:17+01:00",
    "grown": "2026-10-30T08:49:34+01:00",
    "heard": "Ω",
-   "project": "B22",
-   "experiment": "B22 E11",
+   "project": "StemmaLM",
+   "experiment": "E11",
    "note": "bigger learner on the same input; memorised more than EN1 (held-out bits per character worse from 12 months on)"
   },
   {
@@ -313,8 +330,8 @@
    "born": "2026-10-30T08:05:17+01:00",
    "grown": "2026-10-30T08:49:31+01:00",
    "heard": "Ω",
-   "project": "B22",
-   "experiment": "B22 E11",
+   "project": "StemmaLM",
+   "experiment": "E11",
    "note": "bigger learner on the same input; memorised more than EN1 (held-out bits per character worse from 12 months on)"
   },
   {
@@ -330,8 +347,8 @@
    "born": "2026-10-30T08:05:17+01:00",
    "grown": "2026-10-30T08:46:01+01:00",
    "heard": "Ω",
-   "project": "B22",
-   "experiment": "B22 E11",
+   "project": "StemmaLM",
+   "experiment": "E11",
    "note": "bigger learner on the same input; memorised more than EN1 (held-out bits per character worse from 12 months on)"
   },
   {
@@ -347,8 +364,8 @@
    "born": "2026-10-30T09:33:16+01:00",
    "grown": "2026-10-30T09:55:08+01:00",
    "heard": "Ω+det",
-   "project": "B22",
-   "experiment": "B22 E13",
+   "project": "StemmaLM",
+   "experiment": "E13",
    "note": "doubling one kind of sentence in real speech; no group beat the random control on its own phenomenon"
   },
   {
@@ -364,8 +381,8 @@
    "born": "2026-10-30T09:33:16+01:00",
    "grown": "2026-10-30T09:55:08+01:00",
    "heard": "Ω+det",
-   "project": "B22",
-   "experiment": "B22 E13",
+   "project": "StemmaLM",
+   "experiment": "E13",
    "note": "doubling one kind of sentence in real speech; no group beat the random control on its own phenomenon"
   },
   {
@@ -381,8 +398,8 @@
    "born": "2026-10-30T09:33:16+01:00",
    "grown": "2026-10-30T09:55:25+01:00",
    "heard": "Ω+det",
-   "project": "B22",
-   "experiment": "B22 E13",
+   "project": "StemmaLM",
+   "experiment": "E13",
    "note": "doubling one kind of sentence in real speech; no group beat the random control on its own phenomenon"
   },
   {
@@ -398,8 +415,8 @@
    "born": "2026-10-30T09:33:16+01:00",
    "grown": "2026-10-30T09:55:01+01:00",
    "heard": "Ω+npi",
-   "project": "B22",
-   "experiment": "B22 E13",
+   "project": "StemmaLM",
+   "experiment": "E13",
    "note": "doubling one kind of sentence in real speech; no group beat the random control on its own phenomenon"
   },
   {
@@ -415,8 +432,8 @@
    "born": "2026-10-30T09:33:16+01:00",
    "grown": "2026-10-30T09:54:48+01:00",
    "heard": "Ω+npi",
-   "project": "B22",
-   "experiment": "B22 E13",
+   "project": "StemmaLM",
+   "experiment": "E13",
    "note": "doubling one kind of sentence in real speech; no group beat the random control on its own phenomenon"
   },
   {
@@ -432,8 +449,8 @@
    "born": "2026-10-30T09:33:16+01:00",
    "grown": "2026-10-30T09:54:56+01:00",
    "heard": "Ω+npi",
-   "project": "B22",
-   "experiment": "B22 E13",
+   "project": "StemmaLM",
+   "experiment": "E13",
    "note": "doubling one kind of sentence in real speech; no group beat the random control on its own phenomenon"
   },
   {
@@ -449,8 +466,8 @@
    "born": "2026-10-30T09:33:16+01:00",
    "grown": "2026-10-30T09:56:47+01:00",
    "heard": "Ω+irr",
-   "project": "B22",
-   "experiment": "B22 E13",
+   "project": "StemmaLM",
+   "experiment": "E13",
    "note": "doubling one kind of sentence in real speech; no group beat the random control on its own phenomenon"
   },
   {
@@ -466,8 +483,8 @@
    "born": "2026-10-30T09:33:16+01:00",
    "grown": "2026-10-30T09:56:53+01:00",
    "heard": "Ω+irr",
-   "project": "B22",
-   "experiment": "B22 E13",
+   "project": "StemmaLM",
+   "experiment": "E13",
    "note": "doubling one kind of sentence in real speech; no group beat the random control on its own phenomenon"
   },
   {
@@ -483,8 +500,8 @@
    "born": "2026-10-30T09:33:16+01:00",
    "grown": "2026-10-30T09:56:40+01:00",
    "heard": "Ω+irr",
-   "project": "B22",
-   "experiment": "B22 E13",
+   "project": "StemmaLM",
+   "experiment": "E13",
    "note": "doubling one kind of sentence in real speech; no group beat the random control on its own phenomenon"
   },
   {
@@ -500,8 +517,8 @@
    "born": "2026-10-30T09:33:16+01:00",
    "grown": "2026-10-30T09:56:55+01:00",
    "heard": "Ω+rand",
-   "project": "B22",
-   "experiment": "B22 E13",
+   "project": "StemmaLM",
+   "experiment": "E13",
    "note": "doubling one kind of sentence in real speech; no group beat the random control on its own phenomenon"
   },
   {
@@ -517,8 +534,8 @@
    "born": "2026-10-30T09:33:16+01:00",
    "grown": "2026-10-30T09:56:55+01:00",
    "heard": "Ω+rand",
-   "project": "B22",
-   "experiment": "B22 E13",
+   "project": "StemmaLM",
+   "experiment": "E13",
    "note": "doubling one kind of sentence in real speech; no group beat the random control on its own phenomenon"
   },
   {
@@ -534,8 +551,8 @@
    "born": "2026-10-30T09:33:16+01:00",
    "grown": "2026-10-30T09:56:46+01:00",
    "heard": "Ω+rand",
-   "project": "B22",
-   "experiment": "B22 E13",
+   "project": "StemmaLM",
+   "experiment": "E13",
    "note": "doubling one kind of sentence in real speech; no group beat the random control on its own phenomenon"
   },
   {
@@ -551,8 +568,8 @@
    "born": "2026-10-31T01:52:47+01:00",
    "grown": "2026-10-31T02:09:28+01:00",
    "heard": "Ω",
-   "project": "B22",
-   "experiment": "B22 E14",
+   "project": "StemmaLM",
+   "experiment": "E14",
    "note": "first subword strain, raised on family speech (WT1) or the BabyLM small corpus (BL1)"
   },
   {
@@ -568,8 +585,8 @@
    "born": "2026-10-31T01:52:47+01:00",
    "grown": "2026-10-31T02:09:25+01:00",
    "heard": "Ω",
-   "project": "B22",
-   "experiment": "B22 E14",
+   "project": "StemmaLM",
+   "experiment": "E14",
    "note": "first subword strain, raised on family speech (WT1) or the BabyLM small corpus (BL1)"
   },
   {
@@ -585,8 +602,8 @@
    "born": "2026-10-31T01:54:12+01:00",
    "grown": "2026-10-31T02:10:20+01:00",
    "heard": "Ω",
-   "project": "B22",
-   "experiment": "B22 E14",
+   "project": "StemmaLM",
+   "experiment": "E14",
    "note": "first subword strain, raised on family speech (WT1) or the BabyLM small corpus (BL1)"
   },
   {
@@ -602,8 +619,8 @@
    "born": "2026-10-31T01:56:47+01:00",
    "grown": "2026-10-31T02:37:05+01:00",
    "heard": "BL1",
-   "project": "B22",
-   "experiment": "B22 E14",
+   "project": "StemmaLM",
+   "experiment": "E14",
    "note": "first subword strain, raised on family speech (WT1) or the BabyLM small corpus (BL1)"
   },
   {
@@ -619,8 +636,8 @@
    "born": "2026-10-31T01:56:47+01:00",
    "grown": "2026-10-31T02:37:22+01:00",
    "heard": "BL1",
-   "project": "B22",
-   "experiment": "B22 E14",
+   "project": "StemmaLM",
+   "experiment": "E14",
    "note": "first subword strain, raised on family speech (WT1) or the BabyLM small corpus (BL1)"
   },
   {
@@ -636,8 +653,8 @@
    "born": "2026-10-31T01:57:47+01:00",
    "grown": "2026-10-31T02:37:58+01:00",
    "heard": "BL1",
-   "project": "B22",
-   "experiment": "B22 E14",
+   "project": "StemmaLM",
+   "experiment": "E14",
    "note": "first subword strain, raised on family speech (WT1) or the BabyLM small corpus (BL1)"
   },
   {
@@ -653,8 +670,8 @@
    "born": "2026-10-30T15:36:16+01:00",
    "grown": "2026-10-30T15:41:40+01:00",
    "heard": "BL1·M007",
-   "project": "B24",
-   "experiment": "B24 E07",
+   "project": "metaphor study",
+   "experiment": "metaphor study E07",
    "note": "small pilot of the metaphor-style study: 1,760 steps, about two passes"
   },
   {
@@ -670,8 +687,8 @@
    "born": "2026-10-30T15:36:16+01:00",
    "grown": "2026-10-30T15:41:40+01:00",
    "heard": "BL1·M007",
-   "project": "B24",
-   "experiment": "B24 E07",
+   "project": "metaphor study",
+   "experiment": "metaphor study E07",
    "note": "small pilot of the metaphor-style study: 1,760 steps, about two passes"
   },
   {
@@ -687,8 +704,8 @@
    "born": "2026-10-30T15:39:16+01:00",
    "grown": "2026-10-30T15:44:15+01:00",
    "heard": "BL1·M007",
-   "project": "B24",
-   "experiment": "B24 E07",
+   "project": "metaphor study",
+   "experiment": "metaphor study E07",
    "note": "small pilot of the metaphor-style study: 1,760 steps, about two passes"
   },
   {
@@ -704,8 +721,8 @@
    "born": "2026-10-30T15:39:16+01:00",
    "grown": "2026-10-30T15:44:14+01:00",
    "heard": "BL1·M008",
-   "project": "B24",
-   "experiment": "B24 E07",
+   "project": "metaphor study",
+   "experiment": "metaphor study E07",
    "note": "small pilot of the metaphor-style study: 1,760 steps, about two passes"
   },
   {
@@ -721,8 +738,8 @@
    "born": "2026-10-30T15:39:16+01:00",
    "grown": "2026-10-30T15:44:15+01:00",
    "heard": "BL1·M008",
-   "project": "B24",
-   "experiment": "B24 E07",
+   "project": "metaphor study",
+   "experiment": "metaphor study E07",
    "note": "small pilot of the metaphor-style study: 1,760 steps, about two passes"
   },
   {
@@ -738,8 +755,8 @@
    "born": "2026-10-30T15:42:16+01:00",
    "grown": "2026-10-30T15:47:07+01:00",
    "heard": "BL1·M008",
-   "project": "B24",
-   "experiment": "B24 E07",
+   "project": "metaphor study",
+   "experiment": "metaphor study E07",
    "note": "small pilot of the metaphor-style study: 1,760 steps, about two passes"
   },
   {
@@ -755,8 +772,8 @@
    "born": "2026-10-30T15:42:16+01:00",
    "grown": "2026-10-30T15:47:07+01:00",
    "heard": "BL1·M009",
-   "project": "B24",
-   "experiment": "B24 E07",
+   "project": "metaphor study",
+   "experiment": "metaphor study E07",
    "note": "small pilot of the metaphor-style study: 1,760 steps, about two passes"
   },
   {
@@ -772,8 +789,8 @@
    "born": "2026-10-30T15:44:16+01:00",
    "grown": "2026-10-30T15:49:08+01:00",
    "heard": "BL1·M009",
-   "project": "B24",
-   "experiment": "B24 E07",
+   "project": "metaphor study",
+   "experiment": "metaphor study E07",
    "note": "small pilot of the metaphor-style study: 1,760 steps, about two passes"
   },
   {
@@ -789,8 +806,8 @@
    "born": "2026-10-30T15:44:16+01:00",
    "grown": "2026-10-30T15:49:08+01:00",
    "heard": "BL1·M009",
-   "project": "B24",
-   "experiment": "B24 E07",
+   "project": "metaphor study",
+   "experiment": "metaphor study E07",
    "note": "small pilot of the metaphor-style study: 1,760 steps, about two passes"
   },
   {
@@ -806,8 +823,8 @@
    "born": "2026-10-30T18:03:17+01:00",
    "grown": "2026-10-30T18:19:40+01:00",
    "heard": "BL1·M007",
-   "project": "B24",
-   "experiment": "B24 E15",
+   "project": "metaphor study",
+   "experiment": "metaphor study E15",
    "note": "large learner on the 10M-word input, four passes; the series was stopped in favour of the 100M-word BL2 individuals"
   },
   {
@@ -823,8 +840,8 @@
    "born": "2026-10-30T18:19:47+01:00",
    "grown": "2026-10-30T18:35:54+01:00",
    "heard": "BL1·M007",
-   "project": "B24",
-   "experiment": "B24 E15",
+   "project": "metaphor study",
+   "experiment": "metaphor study E15",
    "note": "large learner on the 10M-word input, four passes; the series was stopped in favour of the 100M-word BL2 individuals"
   },
   {
@@ -840,8 +857,8 @@
    "born": "2026-10-30T18:28:47+01:00",
    "grown": "2026-10-30T18:44:49+01:00",
    "heard": "BL1·M007",
-   "project": "B24",
-   "experiment": "B24 E15",
+   "project": "metaphor study",
+   "experiment": "metaphor study E15",
    "note": "large learner on the 10M-word input, four passes; the series was stopped in favour of the 100M-word BL2 individuals"
   },
   {
@@ -857,8 +874,8 @@
    "born": "2026-10-30T18:35:45+01:00",
    "grown": "2026-10-30T18:51:38+01:00",
    "heard": "BL1·M008",
-   "project": "B24",
-   "experiment": "B24 E15",
+   "project": "metaphor study",
+   "experiment": "metaphor study E15",
    "note": "large learner on the 10M-word input, four passes; the series was stopped in favour of the 100M-word BL2 individuals"
   },
   {
@@ -874,8 +891,8 @@
    "born": "2026-10-30T18:36:17+01:00",
    "grown": "2026-10-30T18:52:02+01:00",
    "heard": "BL1·M008",
-   "project": "B24",
-   "experiment": "B24 E15",
+   "project": "metaphor study",
+   "experiment": "metaphor study E15",
    "note": "large learner on the 10M-word input, four passes; the series was stopped in favour of the 100M-word BL2 individuals"
   },
   {
@@ -891,8 +908,8 @@
    "born": "2026-10-30T17:15:16+01:00",
    "grown": "2026-10-30T17:31:37+01:00",
    "heard": "BL1·M009",
-   "project": "B24",
-   "experiment": "B24 E13",
+   "project": "metaphor study",
+   "experiment": "metaphor study E13",
    "note": "large learner on the 10M-word input, four passes; the series was stopped in favour of the 100M-word BL2 individuals"
   },
   {
@@ -908,8 +925,8 @@
    "born": "2026-10-31T02:40:46+01:00",
    "grown": "2026-10-31T09:08:44+01:00",
    "heard": "BL2",
-   "project": "B24",
-   "experiment": "B24 E22",
+   "project": "metaphor study",
+   "experiment": "metaphor study E22",
    "note": "the plain BL2 individual; the sense check (does 'rise' mean 'gain'?) was run on it before the groups were raised. Held-out loss 2.940"
   },
   {
@@ -925,9 +942,9 @@
    "born": "2026-10-31T09:23:47+01:00",
    "grown": "2026-10-31T15:47:21+01:00",
    "heard": "BL2·M010",
-   "project": "B24",
-   "experiment": "B24 E26",
-   "note": "metaphor-style study, group A, up–down; 44,243 steps, about ten passes, held-out loss 2.9377",
+   "project": "metaphor study",
+   "experiment": "metaphor study E26",
+   "note": "metaphor study, up–down; 44,243 steps, about ten passes, held-out loss 2.9377",
    "dev_loss": 2.9377
   },
   {
@@ -943,9 +960,9 @@
    "born": "2026-10-31T09:23:47+01:00",
    "grown": "2026-10-31T15:45:35+01:00",
    "heard": "BL2·M010",
-   "project": "B24",
-   "experiment": "B24 E26",
-   "note": "metaphor-style study, group A, up–down; 44,243 steps, about ten passes, held-out loss 2.9433",
+   "project": "metaphor study",
+   "experiment": "metaphor study E26",
+   "note": "metaphor study, up–down; 44,243 steps, about ten passes, held-out loss 2.9433",
    "dev_loss": 2.9433
   },
   {
@@ -961,9 +978,9 @@
    "born": "2026-10-31T09:23:47+01:00",
    "grown": "2026-10-31T15:47:49+01:00",
    "heard": "BL2·M010",
-   "project": "B24",
-   "experiment": "B24 E26",
-   "note": "metaphor-style study, group A, up–down; 44,243 steps, about ten passes, held-out loss 2.9452",
+   "project": "metaphor study",
+   "experiment": "metaphor study E26",
+   "note": "metaphor study, up–down; 44,243 steps, about ten passes, held-out loss 2.9452",
    "dev_loss": 2.9452
   },
   {
@@ -979,9 +996,9 @@
    "born": "2026-10-31T09:23:47+01:00",
    "grown": "2026-10-31T15:46:06+01:00",
    "heard": "BL2·M011",
-   "project": "B24",
-   "experiment": "B24 E26",
-   "note": "metaphor-style study, group B, gain–loss; 44,243 steps, about ten passes, held-out loss 2.9398",
+   "project": "metaphor study",
+   "experiment": "metaphor study E26",
+   "note": "metaphor study, gain–loss; 44,243 steps, about ten passes, held-out loss 2.9398",
    "dev_loss": 2.9398
   },
   {
@@ -997,9 +1014,9 @@
    "born": "2026-10-31T09:35:47+01:00",
    "grown": "2026-10-31T15:58:03+01:00",
    "heard": "BL2·M011",
-   "project": "B24",
-   "experiment": "B24 E26",
-   "note": "metaphor-style study, group B, gain–loss; 44,243 steps, about ten passes, held-out loss 2.9433",
+   "project": "metaphor study",
+   "experiment": "metaphor study E26",
+   "note": "metaphor study, gain–loss; 44,243 steps, about ten passes, held-out loss 2.9433",
    "dev_loss": 2.9433
   },
   {
@@ -1015,9 +1032,9 @@
    "born": "2026-10-31T10:12:46+01:00",
    "grown": "2026-10-31T16:33:20+01:00",
    "heard": "BL2·M011",
-   "project": "B24",
-   "experiment": "B24 E26",
-   "note": "metaphor-style study, group B, gain–loss; 44,243 steps, about ten passes, held-out loss 2.9443",
+   "project": "metaphor study",
+   "experiment": "metaphor study E26",
+   "note": "metaphor study, gain–loss; 44,243 steps, about ten passes, held-out loss 2.9443",
    "dev_loss": 2.9443
   },
   {
@@ -1033,9 +1050,9 @@
    "born": "2026-10-31T11:22:45+01:00",
    "grown": "2026-10-31T17:45:26+01:00",
    "heard": "BL2·M012",
-   "project": "B24",
-   "experiment": "B24 E26",
-   "note": "metaphor-style study, group N, literal control; 44,243 steps, about ten passes, held-out loss 2.9465",
+   "project": "metaphor study",
+   "experiment": "metaphor study E26",
+   "note": "metaphor study, literal control; 44,243 steps, about ten passes, held-out loss 2.9465",
    "dev_loss": 2.9465
   },
   {
@@ -1051,9 +1068,9 @@
    "born": "2026-10-31T11:22:45+01:00",
    "grown": "2026-10-31T17:42:55+01:00",
    "heard": "BL2·M012",
-   "project": "B24",
-   "experiment": "B24 E26",
-   "note": "metaphor-style study, group N, literal control; 44,243 steps, about ten passes, held-out loss 2.9463",
+   "project": "metaphor study",
+   "experiment": "metaphor study E26",
+   "note": "metaphor study, literal control; 44,243 steps, about ten passes, held-out loss 2.9463",
    "dev_loss": 2.9463
   },
   {
@@ -1069,9 +1086,9 @@
    "born": "2026-10-31T19:23:47+01:00",
    "grown": "2026-11-01T01:45:49+01:00",
    "heard": "BL2·M012",
-   "project": "B24",
-   "experiment": "B24 E26",
-   "note": "metaphor-style study, group N, literal control; 44,243 steps, about ten passes, held-out loss 2.9423",
+   "project": "metaphor study",
+   "experiment": "metaphor study E26",
+   "note": "metaphor study, literal control; 44,243 steps, about ten passes, held-out loss 2.9423",
    "dev_loss": 2.9423
   },
   {
@@ -1087,9 +1104,9 @@
    "born": "2026-10-31T19:23:47+01:00",
    "grown": "2026-11-01T01:50:12+01:00",
    "heard": "BL2·M013",
-   "project": "B24",
-   "experiment": "B24 E26",
-   "note": "metaphor-style study, group E, properties stated outright; 44,243 steps, about ten passes, held-out loss 2.9436",
+   "project": "metaphor study",
+   "experiment": "metaphor study E26",
+   "note": "metaphor study, properties stated outright; 44,243 steps, about ten passes, held-out loss 2.9436",
    "dev_loss": 2.9436
   },
   {
@@ -1105,9 +1122,9 @@
    "born": "2026-10-31T19:23:47+01:00",
    "grown": "2026-11-01T01:44:14+01:00",
    "heard": "BL2·M013",
-   "project": "B24",
-   "experiment": "B24 E26",
-   "note": "metaphor-style study, group E, properties stated outright; 44,243 steps, about ten passes, held-out loss 2.9477",
+   "project": "metaphor study",
+   "experiment": "metaphor study E26",
+   "note": "metaphor study, properties stated outright; 44,243 steps, about ten passes, held-out loss 2.9477",
    "dev_loss": 2.9477
   },
   {
@@ -1123,9 +1140,9 @@
    "born": "2026-10-31T19:23:47+01:00",
    "grown": "2026-11-01T01:47:35+01:00",
    "heard": "BL2·M013",
-   "project": "B24",
-   "experiment": "B24 E26",
-   "note": "metaphor-style study, group E, properties stated outright; 44,243 steps, about ten passes, held-out loss 2.9427",
+   "project": "metaphor study",
+   "experiment": "metaphor study E26",
+   "note": "metaphor study, properties stated outright; 44,243 steps, about ten passes, held-out loss 2.9427",
    "dev_loss": 2.9427
   }
  ],

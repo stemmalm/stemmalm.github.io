@@ -4,10 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Log · StemmaLM</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="style.css?v=20261104090000">
-<link rel="icon" href="logo.svg?v=20261104090000" type="image/svg+xml">
+<link rel="stylesheet" href="style.css?v=20261106">
+<link rel="icon" href="logo.svg?v=20261106" type="image/svg+xml">
 <style>
   .log-list { margin-top: 26px; border-top: 1px solid var(--rule); }
   .log-item { border-bottom: 1px solid var(--faint); }
@@ -17,7 +15,7 @@
   .log-item > summary:focus-visible { outline: 2px solid var(--link); outline-offset: -2px; }
   .log-id { font-family: var(--font-id); font-size: 13px; color: var(--muted); }
   .log-title { font-weight: 500; }
-  .log-caret { font-family: var(--font-id); color: var(--muted); transition: transform 0.15s; }
+  .log-caret { font-family: var(--font-id); color: var(--muted); }
   .log-item[open] .log-caret { transform: rotate(90deg); }
   .log-body { padding: 4px 2px 18px 0; }
   .log-body > p, .log-body > ul, .log-body > ol, .log-body > .log-correction { max-width: 74ch; }
@@ -30,9 +28,7 @@
   .log-correction { border-left: 2px solid var(--rule); padding-left: 10px; color: var(--muted); font-size: 14.5px; }
   .log-tags { display: flex; gap: 6px; align-items: baseline; white-space: nowrap; }
   .log-dim { font-family: var(--font-id); font-size: 12px; color: var(--muted); }
-  .eff { font-family: var(--font-id); font-size: 11.5px; padding: 0 6px; border: 1px solid; }
-  .eff.new { color: var(--ink); } .eff.hint { color: var(--muted); border-style: dashed; }
-  .eff.confirmed { color: #0072b2; } .eff.revised { color: #9a6700; } .eff.overturned { color: #d55e00; }
+  .eff { font-style: italic; font-size: 14px; }
   .log-filter { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 18px; font-family: var(--font-id); font-size: 13px; }
   .log-filter button { font: inherit; background: var(--bg); color: var(--muted); border: 1px solid var(--rule); padding: 1px 10px; cursor: pointer; }
   .log-filter button[aria-pressed="true"] { color: var(--ink); border-color: var(--ink); }
@@ -45,16 +41,16 @@
   <div class="bar"></div>
 
   <h1>Log</h1>
-  <div class="sub">A lab notebook: each entry numbered by date and order of the day, newest first. Each entry is filed under one of the five questions on the <a href="findings.html">Findings</a> page and says what it did to that conclusion.</div>
+  <div class="sub">A lab notebook: each entry numbered by date and order of the day, newest first, and filed under one of the <a href="questions.html">Questions</a>.</div>
   <div class="log-filter" id="filter"></div>
 
   <div class="log-list" id="entries"></div>
 
-  <footer>Data: CHILDES (CC BY-NC-SA 4.0), via AO-CHILDES. Findings here are exploratory.</footer>
+  <footer>Data: CHILDES (CC BY-NC-SA 4.0), via AO-CHILDES. Everything here is exploratory.</footer>
 </div>
 
 <script type="module">
-import { el, header } from "./site.js?v=20261104090000";
+import { el, header } from "./site.js?v=20261106";
 header("log");
 
 const [entries, F] = await Promise.all([fetch("log.json?v=" + Date.now()).then((r) => r.json()), fetch("findings.json?v=" + Date.now()).then((r) => r.json())]);
@@ -64,7 +60,7 @@ const setDim = (id) => {
   for (const b of filter.children) b.setAttribute("aria-pressed", String(b.dataset.dim === id));
   for (const it of document.querySelectorAll(".log-item")) it.hidden = !!id && it.dataset.dim !== id;
 };
-for (const [id, name] of [["", "all"], ...F.dimensions.map((d) => [d.id, d.name])]) {
+for (const [id, name] of [["", "all"], ...F.dimensions.filter((d) => d.claims.length).map((d) => [d.id, d.name])]) {
   const n = id ? entries.filter((e) => e.dim === id).length : entries.length;
   const b = el("button", { type: "button", "data-dim": id, text: `${name} ${n}` });
   b.addEventListener("click", () => setDim(id));
@@ -88,7 +84,7 @@ for (const e of [...entries].sort((a, b) => b.id.localeCompare(a.id))) {
     body.append(t);
   }
   const foot = el("p", { class: "permalink" });
-  foot.append(el("a", { href: "#" + e.id, text: "link to " + e.id }), " · filed under ", el("a", { href: "findings.html#" + e.dim, text: DIM[e.dim] }));
+  foot.append(el("a", { href: "#" + e.id, text: "link to " + e.id }), " · filed under ", el("a", { href: "questions.html#" + e.dim, text: DIM[e.dim] }));
   body.append(foot);
   item.append(body);
   box.append(item);

@@ -1,9 +1,8 @@
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap");
 :root {
-  --bg: #ffffff; --ink: #1f2328; --muted: #59636e; --rule: #c4ccd5; --faint: #e1e4e8;
-  --grid: #eef1f4; --head: #f6f8fa; --link: #0550ae; --mark: #fff8c5;
-  --font-body: "IBM Plex Sans", system-ui, sans-serif;
-  --font-id: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --bg: #ffffff; --ink: #111111; --muted: #555555; --rule: #999999; --faint: #dddddd;
+  --grid: #eeeeee; --head: #f4f4f4; --link: #00338d; --mark: #fff3a8;
+  --font-body: Charter, "Bitstream Charter", "Iowan Old Style", Palatino, Georgia, serif;
+  --font-id: Menlo, Consolas, "DejaVu Sans Mono", monospace;
   color-scheme: light;
 }
 * { box-sizing: border-box; }
@@ -58,30 +57,23 @@ form button { font: inherit; color: var(--ink); background: var(--head); border:
 form :disabled { opacity: 0.5; cursor: not-allowed; }
 footer { font-size: 14px; color: var(--muted); margin-top: 40px; border-top: 1px solid var(--rule); padding-top: 12px; }
 
-/* chat: message bubbles */
-.chat { border: 1px solid var(--rule); background: var(--bg); max-width: 560px; }
-.chat-head { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-bottom: 1px solid var(--faint); }
-.chat-avatar { width: 22px; height: 22px; border-radius: 50%; background: var(--ink); flex: none; }
-.chat-name { font-family: var(--font-id); font-weight: 500; }
-.chat-sub { font-family: var(--font-id); font-size: 12.5px; color: var(--muted); }
-.chat-log { display: flex; flex-direction: column; gap: 3px; padding: 14px 12px; height: 340px; overflow-y: auto; }
-.chat-empty { margin: auto; color: var(--muted); font-size: 14px; }
-.bubble { max-width: 78%; padding: 7px 12px; border-radius: 18px; line-height: 1.35; font-size: 15.5px; overflow-wrap: anywhere; }
-.bubble.me { align-self: flex-end; background: #0969da; color: #fff; }
-.bubble.it { align-self: flex-start; background: var(--head); color: var(--ink); }
-.bubble.me.tail { border-bottom-right-radius: 5px; margin-bottom: 6px; }
-.bubble.it.tail { border-bottom-left-radius: 5px; margin-bottom: 6px; }
-.bubble.typing { display: flex; gap: 4px; padding: 11px 13px; }
-.bubble.typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: blink 1.2s infinite ease-in-out; }
-.bubble.typing span:nth-child(2) { animation-delay: 0.2s; }
-.bubble.typing span:nth-child(3) { animation-delay: 0.4s; }
-@keyframes blink { 0%, 80%, 100% { opacity: 0.25; } 40% { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .bubble.typing span { animation: none; opacity: 0.6; } }
-.chat-compose { display: flex; gap: 8px; align-items: center; margin: 0; padding: 9px 10px; border-top: 1px solid var(--faint); }
-.chat-compose input { flex: 1; min-width: 0; font: inherit; font-size: 15px; color: var(--ink); background: var(--bg); border: 1px solid var(--rule); border-radius: 18px; padding: 6px 14px; }
-.chat-compose input:focus-visible { outline: 2px solid #0969da; outline-offset: 0; }
-.chat-compose button { width: 32px; height: 32px; flex: none; border-radius: 50%; border: 0; background: #0969da; color: #fff; font-size: 17px; line-height: 1; cursor: pointer; padding: 0; }
-.chat-compose button:disabled { opacity: 0.4; cursor: default; }
+/* chat: a plain transcript */
+.chat { border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.chat-head { display: flex; gap: 10px; padding: 4px 0; border-bottom: 1px solid var(--faint); font-size: 14px; }
+.chat-avatar { display: none; }
+.chat-name { font-family: var(--font-id); font-size: 13.5px; }
+.chat-sub { color: var(--muted); }
+.chat-log { display: block; padding: 8px 0; height: 300px; overflow-y: auto; }
+.chat-empty { color: var(--muted); margin: 0; }
+.bubble { line-height: 1.45; overflow-wrap: anywhere; padding: 1px 0; }
+.bubble.me::before { content: "you  "; font-family: var(--font-id); font-size: 12.5px; color: var(--muted); }
+.bubble.it::before { content: "model  "; font-family: var(--font-id); font-size: 12.5px; color: var(--muted); }
+.bubble.typing span { display: none; }
+.bubble.typing::after { content: "…"; }
+.chat-compose { display: flex; gap: 8px; margin: 0; padding: 6px 0; }
+.chat-compose input { flex: 1; min-width: 0; font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--rule); padding: 2px 6px; }
+.chat-compose button { font: inherit; color: var(--ink); background: var(--head); border: 1px solid var(--rule); padding: 2px 12px; cursor: pointer; }
+.chat-compose button:disabled { opacity: 0.5; cursor: default; }
 
 /* overview: a wider page with a hero, tiles, a registry table and two columns */
 .wrap.wide { max-width: 1120px; }
@@ -243,3 +235,28 @@ table.reg { border-collapse: collapse; width: 100%; min-width: 760px; font-size:
 @media (max-width: 860px) { .cols3 { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
 
 .var-net { height: 420px; border: 1px solid var(--faint); border-radius: 6px; }
+
+/* The house style: an old university database. Square, ruled, one serif, blue underlined links. */
+*, *::before, *::after { border-radius: 0 !important; box-shadow: none !important; }
+body { font-size: 16.5px; line-height: 1.5; }
+a { text-decoration: underline; text-underline-offset: 2px; }
+.wrap { padding-top: 14px; }
+h1 { font-size: 27px; font-weight: 700; letter-spacing: 0; line-height: 1.2; margin: 18px 0 6px; }
+h2 { font-size: 19px; font-weight: 700; letter-spacing: 0; margin: 30px 0 8px; }
+h3 { font-weight: 700; letter-spacing: 0; }
+p { max-width: 78ch; }
+.lede { font-size: 17.5px; }
+.small { font-size: 14px; }
+ul.plain { margin: 6px 0; padding-left: 1.2em; max-width: 78ch; }
+ul.plain li { margin-bottom: 3px; }
+.bar { height: auto; margin: 0; padding: 0 0 8px; border-bottom: 2px solid var(--ink); align-items: baseline; flex-wrap: wrap; }
+.bar .home { font: 700 18px var(--font-body); letter-spacing: 0; align-items: center; text-decoration: none; }
+.bar .home svg { width: 20px; height: 20px; }
+.bar nav { font-size: 15.5px; }
+.bar nav a { color: var(--link); margin-left: 18px; text-decoration: underline; }
+.bar nav a[aria-current="page"] { color: var(--ink); font-weight: 700; text-decoration: none; }
+.crumb { display: inline-block; margin-top: 8px; font-size: 14px; }
+footer { font-size: 13.5px; }
+.sub { font-size: 17px; color: var(--ink); }
+.ck-tools button, .edge-pick button, .log-filter button { font-family: var(--font-body) !important; font-size: 14px !important; }
+@media (max-width: 560px) { .bar nav a { margin-left: 0; margin-right: 12px; } }

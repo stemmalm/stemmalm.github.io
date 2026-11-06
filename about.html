@@ -1,3 +1,55 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=./"><title>StemmaLM</title><link rel="canonical" href="./"></head>
-<body><p><a href="./">About StemmaLM is now the overview page.</a></p></body></html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>About · StemmaLM</title>
+<link rel="stylesheet" href="style.css?v=20261106">
+<link rel="icon" href="logo.svg?v=20261106" type="image/svg+xml">
+<style>
+  pre.cite { font-family: var(--font-id); font-size: 13.5px; line-height: 1.5; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 8px 0; margin: 8px 0; overflow-x: auto; }
+  table.rel { border-collapse: collapse; font-size: 15px; margin: 8px 0; width: 100%; }
+  table.rel td { padding: 3px 18px 3px 0; vertical-align: top; border-bottom: 1px solid var(--faint); }
+  table.rel td:first-child { font-family: var(--font-id); font-size: 13.5px; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="bar"></div>
+  <h1>About</h1>
+
+  <h2>Maintainer</h2>
+  <p><a href="https://xchuan-li.github.io">Xiaochuan Li</a>, University of Technology Nuremberg.</p>
+
+  <h2 id="cite">Citation</h2>
+  <p>A model is cited by its serial number, its full name and the release, for example: StemmaLM #4 (EN1·WT1·G1·—·s1), release <span id="rel1"></span>.</p>
+  <pre class="cite" id="bib"></pre>
+
+  <h2>Data and licence</h2>
+  <p>Family speech: CHILDES (MacWhinney 2000) via AO-CHILDES (Huebner &amp; Willits 2021), CC BY-NC-SA 4.0. Corpora BL1 and BL2: <a href="https://babylm.github.io/">BabyLM 2026</a>. Children’s books: Project Gutenberg. Code and models are for non-commercial use.</p>
+  <p>Snapshots of #1–#12 are at <a href="https://huggingface.co/xchuanli/stemmalm-weights">xchuanli/stemmalm-weights</a>; the others are not public yet. The whole registry is one file: <a href="registry.json">registry.json</a>. Models run in your browser, and names in their replies are replaced by “(name)”.</p>
+
+  <h2 id="releases">Releases</h2>
+  <table class="rel">
+    <tr><td>2026.11</td><td>#13–#61: strains EN2–EN5, BabyLM roots BL1 and BL2 (1 November 2026).</td></tr>
+    <tr><td>2026.10</td><td>#1–#12: strain EN1 on Ω, the first children on copies, clones at 72 months (28–29 October 2026).</td></tr>
+  </table>
+
+  <footer id="foot"></footer>
+</div>
+<script type="module">
+import { header, registry, footerText } from "./site.js?v=20261106";
+header("about");
+document.getElementById("foot").innerHTML = footerText;
+const reg = await registry();
+document.getElementById("rel1").textContent = reg.release;
+document.getElementById("bib").textContent = `@misc{stemmalm,
+  author = {Li, Xiaochuan},
+  title  = {{StemmaLM}: a collection of small language-model lineages},
+  year   = {2026},
+  note   = {Release ${reg.release}},
+  url    = {https://stemmalm.github.io}
+}`;
+</script>
+</body>
+</html>

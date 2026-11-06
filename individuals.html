@@ -3,27 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Individuals · StemmaLM</title>
-<meta name="description" content="A lineage database of small language models raised on what adults say to children.">
-<link rel="icon" href="logo.svg?v=20261104090000" type="image/svg+xml">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<title>Collection · StemmaLM</title>
+<meta name="description" content="Search the StemmaLM collection of small language-model lineages.">
+<link rel="icon" href="logo.svg?v=20261106" type="image/svg+xml">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <style>
-:root { --ink: #1f2328; --muted: #59636e; --faint: #e1e4e8; --rule: #d0d7de; --panel: #f6f8fa; --sel: #dcebf8; --link: #0550ae;
-  --sans: "IBM Plex Sans", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace; }
+:root { --ink: #111; --muted: #555; --faint: #ddd; --rule: #999; --panel: #fff; --sel: #fff3a8; --link: #00338d;
+  --sans: Charter, "Bitstream Charter", "Iowan Old Style", Palatino, Georgia, serif; --mono: Menlo, Consolas, "DejaVu Sans Mono", monospace; }
+*, *::before, *::after { border-radius: 0 !important; }
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
-body { font: 13.5px/1.5 var(--sans); color: var(--ink); background: #fff; display: flex; flex-direction: column; }
-a { color: var(--link); text-decoration: none; }
-a:hover { text-decoration: underline; }
-.top { height: 44px; flex: none; display: flex; align-items: center; padding: 0 18px; border-bottom: 1px solid var(--faint); }
-.brand { display: flex; align-items: center; gap: 8px; color: var(--ink); font: 600 15px var(--sans); }
+body { font: 15px/1.45 var(--sans); color: var(--ink); background: #fff; display: flex; flex-direction: column; }
+a { color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
+.top { flex: none; display: flex; align-items: baseline; padding: 14px 18px 8px; border-bottom: 2px solid var(--ink); }
+.brand { display: flex; align-items: center; gap: 8px; color: var(--ink); font: 700 18px var(--sans); text-decoration: none; }
 .brand svg { width: 22px; height: 22px; }
-.top nav { display: flex; gap: 18px; margin-left: auto; font-size: 13px; }
-.top nav a { color: var(--muted); }
-.top nav a.on { color: var(--ink); font-weight: 500; }
+.top nav { display: flex; gap: 18px; margin-left: auto; font-size: 15.5px; }
+.top nav a.on { color: var(--ink); font-weight: 700; text-decoration: none; }
 .head { flex: none; display: flex; align-items: baseline; gap: 18px; padding: 12px 18px 10px; border-bottom: 1px solid var(--faint); flex-wrap: wrap; }
-.head h1 { font: 600 20px var(--sans); margin: 0; letter-spacing: -0.01em; }
+.head h1 { font: 700 22px var(--sans); margin: 0; }
 .head .what { color: var(--muted); }
 .head .counts { margin-left: auto; font: 12.5px var(--mono); color: var(--muted); display: flex; gap: 16px; }
 .head .counts b { color: var(--ink); font-weight: 500; }
@@ -41,8 +39,8 @@ a:hover { text-decoration: underline; }
 .row { display: flex; align-items: center; gap: 6px 14px; flex-wrap: wrap; font-size: 12.5px; }
 .row .lbl { color: var(--muted); }
 .chips { display: flex; flex-wrap: wrap; gap: 5px; }
-.chips button { font: 12px var(--sans); border: 1px solid var(--rule); background: #fff; border-radius: 12px; padding: 1px 9px; cursor: pointer; color: var(--muted); }
-.chips button.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+.chips button { font: 14px var(--sans); border: 0; background: none; padding: 0 4px; cursor: pointer; color: var(--link); text-decoration: underline; }
+.chips button.on { color: var(--ink); font-weight: 700; text-decoration: none; }
 .chips button span { font-family: var(--mono); margin-left: 4px; opacity: .7; }
 .try { font: 12px var(--mono); color: var(--muted); }
 .try a { margin-right: 8px; }
@@ -52,8 +50,8 @@ a:hover { text-decoration: underline; }
 /* the table */
 .tw { flex: 1; min-height: 0; overflow: auto; }
 table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 12.5px; }
-th { position: sticky; top: 0; z-index: 2; background: #fff; text-align: left; font: 600 11px var(--sans); letter-spacing: .05em; text-transform: uppercase; color: var(--muted);
-  padding: 8px 10px 6px; border-bottom: 1px solid var(--rule); white-space: nowrap; cursor: pointer; user-select: none; }
+th { position: sticky; top: 0; z-index: 2; background: #fff; text-align: left; font: 700 13.5px var(--sans); color: var(--ink);
+  padding: 8px 10px 6px; border-bottom: 1px solid var(--ink); white-space: nowrap; cursor: pointer; user-select: none; }
 th.num, td.num { text-align: right; }
 th .ar { font-family: var(--mono); margin-left: 3px; opacity: .8; }
 th.ck { cursor: default; text-align: center; }
@@ -61,8 +59,8 @@ td { padding: 7px 10px; border-bottom: 1px solid var(--faint); white-space: nowr
 td.mono { font: 12px var(--mono); }
 td.n { font: 500 13px var(--mono); }
 tbody tr.r { cursor: pointer; }
-tbody tr.r:hover td { background: #f3f6f9; }
-tbody tr.r.hov td { background: #f3f6f9; }
+tbody tr.r:hover td { background: #f2f2f2; }
+tbody tr.r.hov td { background: #f2f2f2; }
 tbody tr.r.on td { background: var(--sel); }
 .sw { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; vertical-align: 1px; }
 .ln { width: 14px; height: 3px; display: inline-block; margin-right: 6px; vertical-align: 2px; border-radius: 1px; }
@@ -73,7 +71,7 @@ mark { background: #fff1a8; color: inherit; border-radius: 2px; padding: 0 1px; 
 /* the record, unfolded under its row */
 tr.detail td { background: var(--panel); padding: 12px 16px 16px; white-space: normal; border-bottom: 1px solid var(--rule); }
 .dgrid { position: sticky; left: 16px; display: grid; grid-template-columns: minmax(240px, 1fr) minmax(260px, 1.2fr); gap: 8px 28px; }
-.sec { font: 600 11px var(--sans); letter-spacing: .07em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+.sec { font: 700 14px var(--sans); color: var(--muted); margin: 0 0 6px; }
 dl.f { display: grid; grid-template-columns: 92px 1fr; gap: 3px 10px; margin: 0; font-size: 12.5px; }
 dl.f dt { color: var(--muted); }
 dl.f dd { margin: 0; font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
@@ -84,7 +82,7 @@ dl.f dd { margin: 0; font-family: var(--mono); font-size: 12px; overflow-wrap: a
 .hm .cursor { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--ink); }
 .note { font-size: 12px; color: var(--muted); margin-top: 4px; }
 .acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
-.acts a { border: 1px solid var(--rule); background: #fff; border-radius: 4px; padding: 5px 10px; font-size: 12.5px; }
+.acts a { font-size: 14px; margin-right: 8px; }
 /* the lineage */
 .tree .th { flex: none; display: flex; align-items: baseline; gap: 10px; padding: 12px 16px 6px; }
 .tree .th .sec { margin: 0; }
@@ -101,7 +99,7 @@ dl.f dd { margin: 0; font-family: var(--mono); font-size: 12px; overflow-wrap: a
 .tree svg { display: block; width: 100%; height: 100%; }
 .tree .key { flex: none; padding: 8px 16px 14px; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--faint); }
 .tree .key svg { width: auto; height: auto; display: inline-block; vertical-align: -2px; margin-right: 4px; }
-.colh { font: 600 10.5px var(--sans); letter-spacing: .06em; text-transform: uppercase; fill: #8c959f; }
+.colh { font: 700 12.5px var(--sans); fill: #8c959f; }
 .edge { fill: none; stroke: #afb8c1; stroke-width: 1.3; }
 .edge.clone { stroke-dasharray: 5 4; }
 .nd { cursor: pointer; }
@@ -126,19 +124,18 @@ dl.f dd { margin: 0; font-family: var(--mono); font-size: 12px; overflow-wrap: a
 <body>
 <header class="top">
   <a class="brand" href="./"><svg aria-hidden="true" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#1f2328"/><path d="M29.03 46.36Q26.51 46.36 24.7 45.55Q22.88 44.74 21.77 43.39L23.78 41.59Q24.8 42.7 26.08 43.28Q27.35 43.87 29.09 43.87Q30.68 43.87 31.65 43.33Q32.63 42.79 32.63 41.65Q32.63 41.17 32.45 40.84Q32.27 40.51 31.94 40.3Q31.61 40.09 31.18 39.97Q30.74 39.85 30.26 39.79L27.8 39.4Q26.9 39.28 25.97 39.01Q25.04 38.74 24.3 38.25Q23.57 37.75 23.11 36.97Q22.64 36.19 22.64 34.99Q22.64 32.62 24.45 31.39Q26.27 30.16 29.24 30.16Q31.4 30.16 32.97 30.8Q34.55 31.45 35.6 32.59L33.77 34.51Q33.17 33.82 32.06 33.23Q30.95 32.65 29.12 32.65Q25.85 32.65 25.85 34.72Q25.85 35.71 26.55 36.09Q27.26 36.46 28.22 36.58L30.68 36.97Q31.61 37.12 32.52 37.36Q33.44 37.6 34.17 38.09Q34.91 38.59 35.38 39.37Q35.84 40.15 35.84 41.35Q35.84 43.69 34.03 45.02Q32.21 46.36 29.03 46.36ZM47.93 46Q45.89 46 44.93 44.91Q43.97 43.81 43.97 42.07V33.16H39.2V30.52H42.59Q43.46 30.52 43.82 30.18Q44.18 29.83 44.18 28.93V25.06H47.24V30.52H53.84V33.16H47.24V43.36H53.84V46ZM29.03 80.36Q26.51 80.36 24.7 79.55Q22.88 78.74 21.77 77.39L23.78 75.59Q24.8 76.7 26.08 77.28Q27.35 77.87 29.09 77.87Q30.68 77.87 31.65 77.33Q32.63 76.79 32.63 75.65Q32.63 75.17 32.45 74.84Q32.27 74.51 31.94 74.3Q31.61 74.09 31.18 73.97Q30.74 73.85 30.26 73.79L27.8 73.4Q26.9 73.28 25.97 73.01Q25.04 72.74 24.3 72.25Q23.57 71.75 23.11 70.97Q22.64 70.19 22.64 68.99Q22.64 66.62 24.45 65.39Q26.27 64.16 29.24 64.16Q31.4 64.16 32.97 64.81Q34.55 65.45 35.6 66.59L33.77 68.51Q33.17 67.82 32.06 67.23Q30.95 66.65 29.12 66.65Q25.85 66.65 25.85 68.72Q25.85 69.71 26.55 70.09Q27.26 70.46 28.22 70.58L30.68 70.97Q31.61 71.12 32.52 71.36Q33.44 71.6 34.17 72.09Q34.91 72.59 35.38 73.37Q35.84 74.15 35.84 75.35Q35.84 77.69 34.03 79.03Q32.21 80.36 29.03 80.36Z" fill="#ffffff"/><path d="M40.25 77.36H45.38V60.44H40.25V57.8H48.65V77.36H53.78V80H40.25Z" fill="#58a6ff"/></svg>StemmaLM</a>
-  <nav><a href="./">Overview</a><a class="on" href="individuals.html">Individuals</a><a href="findings.html">Findings</a><a href="log.html">Log</a></nav>
+  <nav><a class="on" href="individuals.html">Collection</a><a href="questions.html">Questions</a><a href="methods.html">Methods</a><a href="log.html">Log</a><a href="about.html">About</a></nav>
 </header>
 <div class="head">
-  <h1>Individuals</h1>
-  <span class="what">a lineage database of small language models raised from scratch on what adults say to children and on the BabyLM corpora</span>
+  <h1>Collection</h1>
+  <span class="what">every model, its record and its place in the lineage</span>
   <span class="counts" id="counts"></span>
 </div>
 <div class="grid">
   <section class="db">
     <div class="find">
       <label class="q">
-        <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-        <input id="q" type="search" placeholder="Search models: #4, G1, clone, child of #2, EN5·M011, BL2, B24, s3 …" autocomplete="off" spellcheck="false" aria-label="Search models">
+        <input id="q" type="search" placeholder="Search models: #4, G1, clone, child of #2, EN5·M011, BL2, metaphor, s3" autocomplete="off" spellcheck="false" aria-label="Search models">
         <span class="hits" id="hits"></span>
       </label>
       <div class="row"><span class="lbl">Generation</span><span class="chips" id="f-gen"></span><span class="lbl">Root</span><span class="chips" id="f-in"></span></div>
@@ -157,7 +154,7 @@ dl.f dd { margin: 0; font-family: var(--mono); font-size: 12px; overflow-wrap: a
         <option value="agreement/statement">agreement, statements</option>
         <option value="past/irregular">irregular past</option>
         <option value="plural/nonce">plural, made-up words</option>
-      </select><span class="note">click a model to open its record</span></div>
+      </select></div>
     <div class="fig" id="fig"><svg id="svg"></svg></div>
     <div class="key" id="key"></div>
   </aside>
@@ -304,9 +301,9 @@ function detail(i) {
     st.loss_72m != null ? ["loss at 72 m", st.loss_72m.toFixed(3) + " nats/char"] : ["held-out loss", st.heldout != null ? `${st.heldout.toFixed(4)} ${st.heldout_unit || ""}` : "—"],
     ...(st.heldout_72 != null ? [["held-out at 72 m", st.heldout_72.toFixed(3) + " bits/char on Ω"]] : []),
     ...(st.checkup_last ? [["check-up, last snapshot", `agreement ${Math.round(st.checkup_last.agreement * 100)}% · past ${Math.round(st.checkup_last.past * 100)}% · plural ${Math.round(st.checkup_last.plural * 100)}% (part ${st.checkup_last_part} of 10)`]] : []),
-    ...(st.levels ? [["gain–loss lean", `L1 ${st.levels["1"].toFixed(1)} · L2 new noun ${st.levels["2n"].toFixed(1)} · L2 new verb ${st.levels["2v"].toFixed(1)} · L3 continue ${st.levels["3"].toFixed(1)} (mean log-odds for the gain–loss frame, B24 E31)`]] : []),
+    ...(st.levels ? [["gain–loss lean", `L1 ${st.levels["1"].toFixed(1)} · L2 new noun ${st.levels["2n"].toFixed(1)} · L2 new verb ${st.levels["2v"].toFixed(1)} · L3 continue ${st.levels["3"].toFixed(1)} (mean log-odds for the gain–loss frame)`]] : []),
     ["born", new Date(i.born).toISOString().slice(0, 16).replace("T", " ")], ["grown", i.grown ? new Date(i.grown).toISOString().slice(0, 16).replace("T", " ") : "—"],
-    ["weights", i.web ? `<a href="https://huggingface.co/xchuanli/stemmalm-weights/tree/main/n${pad3(i.serial)}">n${pad3(i.serial)}</a>` : "on the cluster only"],
+    ["weights", i.web ? `<a href="https://huggingface.co/xchuanli/stemmalm-weights/tree/main/n${pad3(i.serial)}">n${pad3(i.serial)}</a>` : "not public yet"],
     ...(i.experiment ? [["experiment", i.experiment]] : []), ...(i.note ? [["note", i.note]] : [])];
   const metrics = [["agreement/question", "agreement, questions"], ["agreement/statement", "agreement, statements"], ["past/irregular", "irregular past"], ["plural/nonce", "plural, made-up words"]];
   const hm = metrics.map(([k, name]) => {
@@ -324,7 +321,7 @@ function detail(i) {
     <div><div class="sec">Record · #${i.serial}</div><dl class="f">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl></div>
     <div>${clock(i) && ck.curves[i.serial] ? `<div class="sec">Check-up over its life · line at ${t} m</div><div class="hm">${hm}</div>` : `<div class="sec">Check-up</div><div class="note">${clock(i) ? "no check-up run on this individual yet" : "not on the lineage clock: raised on " + rootOf(i) + " in one go"}</div>`}
       <div class="sec" style="margin-top:14px">Variants</div>${vline}
-      <div class="acts"><a href="individual.html?n=${i.serial}">${i.web ? `Talk to #${i.serial} at ${alive ? age : from(i)} months` : `Record of #${i.serial}`} →</a><a href="variants.html">Trace its variants →</a><a href="checkup.html">Check-up →</a></div></div>
+      <div class="acts"><a href="individual.html?n=${i.serial}">${i.web ? `Talk to #${i.serial} at ${alive ? age : from(i)} months` : `Record of #${i.serial}`}</a><a href="variants.html">Trace its variants</a><a href="checkup.html">Check-up</a></div></div>
   </div></td>`;
   return tr;
 }
@@ -376,7 +373,7 @@ function tree() {
   [["root", 0], ["G0", 1], ["copy · clone", 2], ["G1", 3]].forEach(([t, k]) => svg.append("text").attr("class", "colh").attr("x", cx[k]).attr("y", 18).attr("text-anchor", k ? "middle" : "start").text(t));
   svg.append("g").selectAll("path").data(edges).join("path")
     .attr("class", (e) => "edge" + (e.clone ? " clone" : ""))
-    .attr("d", (e) => { const a = at.get(e.a), b = at.get(e.b), m = (a.x + b.x) / 2; return `M${a.x} ${a.y}C${m} ${a.y},${m} ${b.y},${b.x} ${b.y}`; })
+    .attr("d", (e) => { const a = at.get(e.a), b = at.get(e.b), m = (a.x + b.x) / 2; return `M${a.x} ${a.y}H${m}V${b.y}H${b.x}`; })
     .style("stroke", (e) => e.color || null).style("stroke-opacity", (e) => (e.color ? 0.75 : null));
   const g = svg.append("g").selectAll("g").data(nodes).join("g").attr("class", (n) => "nd" + (n.text ? " text" : "")).attr("transform", (n) => `translate(${n.x},${n.y})`);
   g.filter((n) => n.i || n.group).append("circle").attr("class", "ring").attr("r", 12).attr("opacity", 0);

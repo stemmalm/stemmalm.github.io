@@ -9,11 +9,11 @@ const CSS = `
 .net .link { stroke: #c4ccd5; stroke-width: 1.2; transition: opacity .15s; }
 .net .link.clone { stroke-dasharray: 5 4; }
 .net .link.hot { stroke: #57606a; stroke-width: 1.8; }
-.net .node text { font: 12px "IBM Plex Mono", ui-monospace, monospace; fill: #1f2328; pointer-events: none; paint-order: stroke; stroke: #fff; stroke-width: 3px; }
-.net .node.text text, .net .node.source text { font: italic 12px "IBM Plex Sans", system-ui, sans-serif; fill: #59636e; }
+.net .node text { font: 12px Menlo, Consolas, monospace; fill: #1f2328; pointer-events: none; paint-order: stroke; stroke: #fff; stroke-width: 3px; }
+.net .node.text text, .net .node.source text { font: italic 12px Charter, Georgia, serif; fill: #59636e; }
 .net .node { cursor: pointer; transition: opacity .15s; }
 .net .node circle { transition: fill .25s, r .25s; }
-.net .node .count { font: 500 11px "IBM Plex Mono", ui-monospace, monospace; fill: #7d5e00; }
+.net .node .count { font: 500 11px Menlo, Consolas, monospace; fill: #7d5e00; }
 .net .dim { opacity: 0.12; }
 .net .unborn { opacity: 0.18; }
 .net .lit .shape { stroke: #1f2328; stroke-width: 2.2; }
